@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IoU and Non-Maximum Suppression, Explained with Examples | Vision Field Notes</title>
+<meta name="description" content="Intersection over Union and non-maximum suppression explained step by step, with worked examples, code, and typical IoU and NMS threshold choices for detectors.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/iou-and-nms-explained/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IoU and Non-Maximum Suppression, Explained with Examples | Vision Field Notes"><meta property="og:description" content="Intersection over Union and non-maximum suppression explained step by step, with worked examples, code, and typical IoU and NMS threshold choices for detectors.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/iou-and-nms-explained/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "IoU and Non-Maximum Suppression, Explained with Examples", "description": "Intersection over Union and non-maximum suppression explained step by step, with worked examples, code, and typical IoU and NMS threshold choices for detectors.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/iou-and-nms-explained/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO and Detection Basics</a></div><h1>IoU and Non-Maximum Suppression, Explained with Examples</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 5 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#intersection-over-union">Intersection over Union</a></li><li><a href="#why-nms-is-needed">Why NMS is needed</a></li><li><a href="#nms-step-by-step">NMS step by step</a></li><li><a href="#choosing-the-nms-iou-threshold">Choosing the NMS IoU threshold</a></li><li><a href="#running-nms-in-practice">Running NMS in practice</a></li><li><a href="#class-aware-versus-class-agnostic">Class-aware versus class-agnostic</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#key-points">Key points</a></li></ul></nav><p>Two small ideas sit behind almost every object detector: Intersection over Union (IoU) and non-maximum suppression (NMS). IoU measures how much two boxes overlap. NMS uses that measure to remove duplicate detections. Once you understand both, many odd behaviours become easy to explain: why two people standing together become one box, why a single object gets two boxes, and why a metric changes when you change a threshold.</p>
+<h2 id="intersection-over-union">Intersection over Union</h2>
+<p>IoU compares two boxes. Take the area where they overlap (the intersection) and divide it by the total area they cover together (the union).</p>
+<p>IoU = area of overlap / area of union</p>
+<p>The result is between 0 and 1.</p>
+<ul>
+<li>0 means the boxes do not touch.</li>
+<li>1 means they are identical.</li>
+<li>Values in between measure how well they agree.</li>
+</ul>
+<h3 id="a-worked-example">A worked example</h3>
+<p>Take two boxes in pixel coordinates, written as (x1, y1, x2, y2) for the top-left and bottom-right corners.</p>
+<ul>
+<li>Box A: (0, 0, 10, 10). Its area is 10 x 10 = 100.</li>
+<li>Box B: (5, 5, 15, 15). Its area is also 100.</li>
+</ul>
+<p>The overlap is the square from (5, 5) to (10, 10). Its area is 5 x 5 = 25. The union is 100 + 100 - 25 = 175. So IoU = 25 / 175, about 0.14.</p>
+<p>Subtracting the overlap once matters. If you add the two areas without subtracting it, you count the overlap twice.</p>
+<h3 id="iou-in-code">IoU in code</h3>
+<pre><code class="language-python">def iou(a, b):
+    # boxes are (x1, y1, x2, y2)
+    ix1, iy1 = max(a[0], b[0]), max(a[1], b[1])
+    ix2, iy2 = min(a[2], b[2]), min(a[3], b[3])
+    inter = max(0, ix2 - ix1) * max(0, iy2 - iy1)
+    area_a = (a[2] - a[0]) * (a[3] - a[1])
+    area_b = (b[2] - b[0]) * (b[3] - b[1])
+    union = area_a + area_b - inter
+    return inter / union if union &gt; 0 else 0.0
+
+print(iou((0, 0, 10, 10), (5, 5, 15, 15)))  # about 0.143
+</code></pre>
+<p>The <code>max(0, ...)</code> guards matter. Without them, boxes that do not overlap produce a negative width and a wrong answer.</p>
+<h3 id="where-iou-is-used">Where IoU is used</h3>
+<p>IoU appears in at least three places, and it is easy to mix them up:</p>
+<ol>
+<li><strong>Evaluation.</strong> A prediction counts as correct only if its IoU with a true box passes a threshold, such as 0.5. See <a href="/vision-field-notes/posts/map-precision-recall-explained/">mAP, Precision and Recall</a>.</li>
+<li><strong>Training.</strong> Detectors often use an IoU-based term in the loss, and some use it to decide which predictions are matched to which labels.</li>
+<li><strong>NMS.</strong> IoU between predictions decides which are duplicates. This is the one we look at next.</li>
+</ol>
+<p>The thresholds in these three places are separate settings. Changing one does not change the others.</p>
+<h2 id="why-nms-is-needed">Why NMS is needed</h2>
+<p>A detector produces many candidate boxes. Several nearby locations in the feature map can all notice the same object, so one dog can end up with five slightly different boxes, each with its own confidence. Showing all five would be wrong. You want one box per object.</p>
+<p>NMS keeps the best box and removes the others that overlap it heavily.</p>
+<h2 id="nms-step-by-step">NMS step by step</h2>
+<p>For one class at a time:</p>
+<ol>
+<li>Drop all boxes below the confidence threshold.</li>
+<li>Sort the remaining boxes by confidence, highest first.</li>
+<li>Take the top box. Keep it.</li>
+<li>Compute its IoU with every other remaining box. Remove any box whose IoU is above the NMS IoU threshold.</li>
+<li>Repeat from step 3 with the boxes that are left, until none remain.</li>
+</ol>
+<h3 id="a-small-example">A small example</h3>
+<p>Suppose a model produces three boxes of class "person":</p>
+<table>
+<thead>
+<tr>
+<th>Box</th>
+<th>Confidence</th>
+<th>IoU with box 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0.92</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.80</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0.60</td>
+<td>0.05</td>
+</tr>
+</tbody>
+</table>
+<p>With an NMS threshold of 0.5, box 1 is kept first. Box 2 overlaps it by 0.75, which is above 0.5, so it is removed as a duplicate. Box 3 overlaps by only 0.05, so it survives and is treated as a separate person. Result: two detections.</p>
+<p>If you had set the threshold to 0.8, box 2 would survive because 0.75 is below 0.8, and you would see a duplicate. This shows the direction of the setting.</p>
+<h2 id="choosing-the-nms-iou-threshold">Choosing the NMS IoU threshold</h2>
+<p>The NMS IoU threshold answers: how much overlap do I accept before calling two boxes the same object?</p>
+<ul>
+<li><strong>Lower value (strict).</strong> Removes boxes even with small overlap. Fewer duplicates, but real neighbouring objects that overlap can be wrongly merged. In a crowd this hurts recall.</li>
+<li><strong>Higher value (lenient).</strong> Keeps more overlapping boxes. Crowded scenes are handled better, but you may see duplicate boxes on single objects.</li>
+</ul>
+<p>Values in the range of about 0.45 to 0.7 are common starting points, and Ultralytics exposes the setting as <code>iou</code> in prediction and validation. Check the current documentation for the default in the version you use, because it can differ between prediction and validation and between releases.</p>
+<p>The right value depends on your scene:</p>
+<table>
+<thead>
+<tr>
+<th>Scene</th>
+<th>Tendency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sparse objects, such as a lone vehicle at a gate</td>
+<td>A lower or middle value works well</td>
+</tr>
+<tr>
+<td>Dense crowds or stacked items</td>
+<td>A higher value, tested carefully</td>
+</tr>
+<tr>
+<td>Large objects with a few close neighbours</td>
+<td>Middle value</td>
+</tr>
+</tbody>
+</table>
+<p>Do not tune this on a hunch. Collect clips that show your worst crowding cases, vary the threshold, and count duplicates and merges by eye.</p>
+<h2 id="running-nms-in-practice">Running NMS in practice</h2>
+<p>With the Ultralytics package, NMS is already part of prediction:</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+model = YOLO(&quot;yolov8n.pt&quot;)
+results = model.predict(&quot;crowd.jpg&quot;, conf=0.25, iou=0.5)
+print(len(results[0].boxes))
+</code></pre>
+<p>If you build your own pipeline, for example after exporting to ONNX, you may need to apply NMS yourself. OpenCV has a function for it:</p>
+<pre><code class="language-python">import cv2
+import numpy as np
+
+boxes = [[0, 0, 10, 10], [1, 1, 11, 11], [50, 50, 20, 20]]  # x, y, w, h
+scores = [0.9, 0.8, 0.7]
+keep = cv2.dnn.NMSBoxes(boxes, scores, score_threshold=0.25, nms_threshold=0.5)
+print(np.array(keep).flatten())
+</code></pre>
+<p>Notice that <code>cv2.dnn.NMSBoxes</code> expects boxes as x, y, width, height, not corner coordinates. Passing the wrong format is a very common bug, and it produces boxes that are removed or kept for no obvious reason. PyTorch users can use <code>torchvision.ops.nms</code>, which takes boxes as (x1, y1, x2, y2), scores, and an IoU threshold.</p>
+<h2 id="class-aware-versus-class-agnostic">Class-aware versus class-agnostic</h2>
+<p>Standard NMS runs per class, so a "car" box and a "truck" box on the same vehicle can both survive. Sometimes that is what you want. If your classes overlap in meaning, you may prefer class-agnostic NMS, which treats all boxes alike and keeps only the highest-scoring one. Ultralytics has an option for this, called <code>agnostic_nms</code>, in prediction. The choice should follow your definition of the classes.</p>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li><strong>Confusing the two IoU thresholds.</strong> The NMS threshold removes duplicates. The evaluation threshold decides what counts as correct. They are different settings.</li>
+<li><strong>Wrong box format.</strong> Corner format versus x, y, width, height mistakes silently break results.</li>
+<li><strong>Tuning NMS to hide a different problem.</strong> Duplicate boxes can also come from a very low confidence threshold. Fix the cause.</li>
+<li><strong>Forgetting that NMS adds time.</strong> With many candidate boxes it costs something. A sensible confidence threshold first reduces the work.</li>
+<li><strong>Ignoring crowded scenes in testing.</strong> A threshold that works on sparse test images can merge people in a crowd.</li>
+</ul>
+<h2 id="key-points">Key points</h2>
+<ul>
+<li>IoU is overlap divided by union, from 0 to 1.</li>
+<li>NMS keeps the highest-confidence box and removes boxes that overlap it above the threshold.</li>
+<li>A lower NMS threshold removes more boxes, which can merge close objects. A higher one keeps more, which can leave duplicates.</li>
+<li>The NMS threshold and the evaluation IoU threshold are separate.</li>
+<li>Check box formats whenever you write your own post-processing.</li>
+<li>Tune on footage that includes your crowded cases.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/confidence-threshold-tuning/">Confidence Thresholds: Tuning a Detector to Cut False Alarms</a>, <a href="/vision-field-notes/posts/map-precision-recall-explained/">mAP, Precision and Recall</a> and <a href="/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/">Anchor-Free vs Anchor-Based Object Detectors</a>.</p></article><div class="related"><h2 class="sec">More in YOLO and Detection Basics</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/"><div class="cat">YOLO and Detection Basics</div><h3>Anchor-Free vs Anchor-Based Object Detectors</h3><p>Anchor-free vs anchor-based object detectors: what anchors are, why newer YOLO versions dropped them, and what the change means for training and deployment.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/choosing-yolo-model-size/"><div class="cat">YOLO and Detection Basics</div><h3>Nano, Small, Medium: How to Choose a YOLO Model Size</h3><p>How to choose a YOLO model size and input resolution: a method that starts from your hardware budget and accuracy needs, not a guess at nano, small or medium.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/classification-vs-detection-vs-segmentation/"><div class="cat">YOLO and Detection Basics</div><h3>Classification vs Detection vs Segmentation: Pick the Right Task</h3><p>Classification vs detection vs segmentation: how to choose the right computer vision task for your project, with a decision guide, cost trade-offs and examples.</p><div class="meta">5 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

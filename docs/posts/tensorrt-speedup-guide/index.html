@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TensorRT for YOLO: When and How to Use It | Vision Field Notes</title>
+<meta name="description" content="TensorRT for YOLO explained: what it optimises, how to build an engine, FP16 and INT8 modes, portability limits and a safe workflow for NVIDIA GPUs.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/tensorrt-speedup-guide/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TensorRT for YOLO: When and How to Use It | Vision Field Notes"><meta property="og:description" content="TensorRT for YOLO explained: what it optimises, how to build an engine, FP16 and INT8 modes, portability limits and a safe workflow for NVIDIA GPUs.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/tensorrt-speedup-guide/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "TensorRT for YOLO: When and How to Use It", "description": "TensorRT for YOLO explained: what it optimises, how to build an engine, FP16 and INT8 modes, portability limits and a safe workflow for NVIDIA GPUs.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/tensorrt-speedup-guide/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge Hardware and Deployment</a></div><h1>TensorRT for YOLO: When and How to Use It</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#what-tensorrt-actually-does">What TensorRT actually does</a></li><li><a href="#when-it-is-worth-it">When it is worth it</a></li><li><a href="#the-safe-workflow">The safe workflow</a></li><li><a href="#building-an-engine-with-ultralytics">Building an engine with Ultralytics</a></li><li><a href="#precision-modes">Precision modes</a></li><li><a href="#portability-limits">Portability limits</a></li><li><a href="#input-shape-and-batch-size">Input shape and batch size</a></li><li><a href="#pre-and-post-processing-still-matter">Pre- and post-processing still matter</a></li><li><a href="#common-problems">Common problems</a></li><li><a href="#licence-note">Licence note</a></li><li><a href="#key-points">Key points</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav><p>TensorRT is NVIDIA's inference optimiser and runtime. You give it a trained network, usually through ONNX, and it builds an optimised "engine" for your specific GPU. For NVIDIA hardware, including Jetson boards, it is one of the most effective ways to speed up a detector. It also adds some friction. This article explains what it does, when it is worth using and how to adopt it without surprises.</p>
+<h2 id="what-tensorrt-actually-does">What TensorRT actually does</h2>
+<p>TensorRT takes a network graph and applies several optimisations:</p>
+<ul>
+<li><strong>Layer fusion.</strong> Operations that run one after another, such as convolution, bias and activation, can be merged into one kernel. This reduces memory traffic.</li>
+<li><strong>Kernel selection.</strong> For each layer, it tests candidate GPU kernels and picks fast ones for your device. This is why building an engine can take a while.</li>
+<li><strong>Reduced precision.</strong> It can run layers in FP16 or INT8 instead of FP32, when your hardware supports it, which usually speeds up inference and cuts memory use.</li>
+<li><strong>Memory planning.</strong> It reuses buffers to reduce memory use.</li>
+</ul>
+<p>None of this changes your training. It is a deployment step. The result is a binary engine file that is fast but tied to its environment.</p>
+<h2 id="when-it-is-worth-it">When it is worth it</h2>
+<p>TensorRT is a good idea when:</p>
+<ul>
+<li>You deploy on NVIDIA GPUs, especially Jetson devices, where GPU time is precious.</li>
+<li>You run many streams or need low latency.</li>
+<li>Your PyTorch inference is the bottleneck, as shown by profiling.</li>
+</ul>
+<p>It is less useful when:</p>
+<ul>
+<li>Your bottleneck is video decoding, network, or Python code around the model. A faster engine will not fix a slow pipeline.</li>
+<li>You deploy on non-NVIDIA hardware. TensorRT will not run there.</li>
+<li>You are still changing models every day. Engine builds add time to each iteration.</li>
+</ul>
+<p>Always profile first. If model inference is a small part of the total time, optimising it gives little gain. The article on <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">measuring FPS and latency correctly</a> shows how to split end-to-end time into stages.</p>
+<h2 id="the-safe-workflow">The safe workflow</h2>
+<p>A reliable path is:</p>
+<ol>
+<li>Train and validate the PyTorch model.</li>
+<li>Export to ONNX and confirm the ONNX output matches (see <a href="/vision-field-notes/posts/export-yolo-to-onnx/">exporting YOLO to ONNX</a>).</li>
+<li>Build a TensorRT engine on the target device or a matching environment.</li>
+<li>Validate the engine's accuracy on your validation set.</li>
+<li>Benchmark with realistic input, after warm-up.</li>
+<li>Deploy with the exact same library versions you built with.</li>
+</ol>
+<p>Skipping step 4 is the most common mistake. Faster but less accurate is not a win.</p>
+<h2 id="building-an-engine-with-ultralytics">Building an engine with Ultralytics</h2>
+<p>Ultralytics wraps the process:</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+model = YOLO(&quot;best.pt&quot;)
+model.export(format=&quot;engine&quot;, half=True, imgsz=640)
+</code></pre>
+<p>This produces a <code>.engine</code> file you can load again with <code>YOLO("best.engine")</code>. The export needs TensorRT installed in your environment, and it needs an NVIDIA GPU. On Jetson, TensorRT comes with JetPack, so you usually do not install it separately.</p>
+<p>Other export arguments exist, such as <code>int8=True</code> with calibration data, <code>dynamic</code>, <code>batch</code> and <code>workspace</code>. Names and defaults can change between versions, so check the current Ultralytics export documentation instead of copying flags from old posts.</p>
+<p>You can also use NVIDIA's <code>trtexec</code> command-line tool, which ships with TensorRT, to build an engine directly from an ONNX file. It is useful when you want fine control or you work outside Ultralytics.</p>
+<h2 id="precision-modes">Precision modes</h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Speed</th>
+<th>Accuracy risk</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FP32</td>
+<td>Baseline</td>
+<td>None</td>
+<td>Largest and slowest</td>
+</tr>
+<tr>
+<td>FP16</td>
+<td>Usually faster</td>
+<td>Low for most detectors</td>
+<td>A sensible default on modern NVIDIA GPUs</td>
+</tr>
+<tr>
+<td>INT8</td>
+<td>Often fastest</td>
+<td>Higher, must be checked</td>
+<td>Needs calibration data</td>
+</tr>
+</tbody>
+</table>
+<p>FP16 is the easy win. Most detectors lose very little accuracy, and the speed and memory benefit is usually clear. Still, verify on your own data.</p>
+<p>INT8 needs more care. TensorRT must learn the value ranges of activations, which it does using a calibration dataset: a few hundred representative images is a common starting point, but check the guidance for your tool. If the calibration images do not look like production images, accuracy can drop in ways that a headline metric hides. The details are in <a href="/vision-field-notes/posts/int8-quantization-explained/">INT8 quantization for detectors</a>.</p>
+<h2 id="portability-limits">Portability limits</h2>
+<p>This is the part that surprises people. A TensorRT engine is not a portable model file. It is tied to:</p>
+<ul>
+<li>The GPU architecture. An engine built for one GPU model may not run on another.</li>
+<li>The TensorRT version. Engines usually must be rebuilt after upgrading TensorRT.</li>
+<li>Often the CUDA and driver environment as well.</li>
+</ul>
+<p>So keep the ONNX file as your portable source of truth, and treat the engine as a build artefact. Rebuild it on each target device type, ideally as part of your deployment script or container build. Store the ONNX, record the TensorRT version and note the build options. If you deploy with containers, see <a href="/vision-field-notes/posts/dockerize-a-computer-vision-app/">Dockerize a computer vision app</a> for how to keep the environment reproducible.</p>
+<h2 id="input-shape-and-batch-size">Input shape and batch size</h2>
+<p>Engines are optimised for specific input shapes. A fixed shape is the simplest and often the fastest. If you need several shapes or batch sizes, you can use dynamic shapes with optimisation profiles, but this adds complexity. For many camera systems, a fixed input size and a small fixed batch is enough.</p>
+<p>Batching can raise throughput when you process many streams, but it also raises latency, because frames wait for a batch to fill. Decide which matters for your use case: total streams per device, or time from frame to alert.</p>
+<h2 id="pre-and-post-processing-still-matter">Pre- and post-processing still matter</h2>
+<p>The engine only covers the network. Resizing, colour conversion, NMS and tracking happen elsewhere. If those run slowly on the CPU in Python, the end-to-end speed will not match the engine's speed. Options include optimising NumPy code, using GPU-based pre-processing, or including NMS in the engine, which some export paths support. Make changes only after profiling, because each one adds complexity.</p>
+<h2 id="common-problems">Common problems</h2>
+<ul>
+<li><strong>Engine fails to load after an update.</strong> Version mismatch. Rebuild the engine.</li>
+<li><strong>Accuracy drops after INT8.</strong> Poor calibration data or sensitive layers. Compare per-class metrics, not only overall mAP, and try FP16 instead.</li>
+<li><strong>No speed-up.</strong> The bottleneck is elsewhere, or the GPU is sharing time with other jobs. Profile the full pipeline.</li>
+<li><strong>Build takes a long time on a small device.</strong> This is normal. Build once, save the engine and reuse it.</li>
+<li><strong>Different results than PyTorch.</strong> Small differences are normal; large ones suggest a pre-processing mismatch or a conversion issue.</li>
+<li><strong>Memory errors during build.</strong> Reduce the workspace size or close other processes using the GPU.</li>
+</ul>
+<h2 id="licence-note">Licence note</h2>
+<p>Ultralytics YOLO models are AGPL-3.0, with a commercial licence available from Ultralytics. Converting the model to TensorRT does not change the licence of the underlying weights and code. Check the current licence terms for your product.</p>
+<h2 id="key-points">Key points</h2>
+<ul>
+<li>TensorRT optimises a trained network for a specific NVIDIA GPU; it does not change training.</li>
+<li>Profile first, because model time may not be your bottleneck.</li>
+<li>Go via ONNX, build the engine on the target environment and keep ONNX as the source.</li>
+<li>FP16 is a safe first step; INT8 needs representative calibration data and careful checks.</li>
+<li>Engines are tied to the GPU and TensorRT version, so automate rebuilds.</li>
+<li>Validate accuracy after conversion, not only speed.</li>
+</ul>
+<h2 id="next-steps">Next steps</h2>
+<p>Read <a href="/vision-field-notes/posts/int8-quantization-explained/">INT8 Quantization for Detectors</a> for the next level of optimisation, and <a href="/vision-field-notes/posts/raspberry-pi-vs-jetson-orin-nano/">Raspberry Pi vs Jetson Orin Nano</a> if you are still choosing hardware.</p></article><div class="related"><h2 class="sec">More in Edge Hardware and Deployment</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/best-cameras-for-computer-vision/"><div class="cat">Edge Hardware and Deployment</div><h3>Choosing a Camera for Computer Vision Projects</h3><p>How to choose a camera for computer vision: USB, CSI, IP/RTSP and depth cameras compared, with advice on shutter, lens, lighting and what really matters.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/dockerize-a-computer-vision-app/"><div class="cat">Edge Hardware and Deployment</div><h3>Dockerize a Computer Vision App for Edge and Cloud</h3><p>Dockerize a computer vision app: Dockerfile patterns for OpenCV and ONNX Runtime, GPU access, smaller images, pinned versions and reproducible builds.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/export-yolo-to-onnx/"><div class="cat">Edge Hardware and Deployment</div><h3>Export YOLO to ONNX and Run It with ONNX Runtime</h3><p>Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences.</p><div class="meta">5 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

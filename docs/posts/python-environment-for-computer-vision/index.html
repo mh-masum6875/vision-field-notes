@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Setting Up a Clean Python Environment for Computer Vision | Vision Field Notes</title>
+<meta name="description" content="Set up a clean Python environment for computer vision: venv, pinned requirements, matching PyTorch to CUDA, and reproducible installs for training and edge.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/python-environment-for-computer-vision/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Setting Up a Clean Python Environment for Computer Vision | Vision Field Notes"><meta property="og:description" content="Set up a clean Python environment for computer vision: venv, pinned requirements, matching PyTorch to CUDA, and reproducible installs for training and edge.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/python-environment-for-computer-vision/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Setting Up a Clean Python Environment for Computer Vision", "description": "Set up a clean Python environment for computer vision: venv, pinned requirements, matching PyTorch to CUDA, and reproducible installs for training and edge.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/python-environment-for-computer-vision/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/tools-and-workflow/">Tools and Workflow</a></div><h1>Setting Up a Clean Python Environment for Computer Vision</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 5 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#one-environment-per-project">One environment per project</a></li><li><a href="#choose-the-python-version-deliberately">Choose the Python version deliberately</a></li><li><a href="#install-pytorch-the-right-way">Install PyTorch the right way</a></li><li><a href="#record-exactly-what-you-installed">Record exactly what you installed</a></li><li><a href="#opencv-package-conflicts">OpenCV package conflicts</a></li><li><a href="#keep-training-and-deployment-environments-separate">Keep training and deployment environments separate</a></li><li><a href="#make-results-reproducible">Make results reproducible</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#a-quick-test-script">A quick test script</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>Many computer vision problems that look like model problems are really environment problems. A package updated and the output changed. PyTorch cannot see the GPU. Two libraries want different versions of NumPy. A project that worked last month fails on a fresh machine.</p>
+<p>A clean, pinned environment prevents most of this. It takes about ten minutes to set up and saves a lot of time later.</p>
+<h2 id="one-environment-per-project">One environment per project</h2>
+<p>Never install everything into the system Python. Create a separate virtual environment for each project, so that upgrading a library for one project cannot break another.</p>
+<pre><code class="language-bash">python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+python -m pip install --upgrade pip
+</code></pre>
+<p>Keep the environment folder inside or next to the project, and add it to <code>.gitignore</code>. You never commit it. You commit the file that describes it.</p>
+<p>Tools like conda are also fine, especially when you need non-Python dependencies. The principle is the same: isolate, and record what is installed. Pick one tool per project and stay with it.</p>
+<h2 id="choose-the-python-version-deliberately">Choose the Python version deliberately</h2>
+<p>Libraries support a range of Python versions, and the newest Python release is often not yet supported by every deep learning package. Check the install instructions for PyTorch and for any other key library before you pick a version. A version that is a little behind the newest is usually the safer choice for production. Write the version you chose in your README.</p>
+<h2 id="install-pytorch-the-right-way">Install PyTorch the right way</h2>
+<p>PyTorch is the part most likely to go wrong, because the build must match your hardware.</p>
+<ul>
+<li>For a <strong>CPU-only</strong> machine, a CPU build is enough.</li>
+<li>For an <strong>NVIDIA GPU</strong>, you need a build compiled for a CUDA version your driver supports.</li>
+</ul>
+<p>The reliable approach is to use the official install selector on the PyTorch website. You choose your operating system, package manager and compute platform, and it gives you the exact command. Run that command first, before installing other libraries, because other packages may pull in a different PyTorch build as a dependency.</p>
+<p>Then check what you got:</p>
+<pre><code class="language-python">import torch
+print(torch.__version__)
+print(torch.cuda.is_available())
+</code></pre>
+<p>If <code>torch.cuda.is_available()</code> prints <code>False</code> on a machine with an NVIDIA GPU, the usual causes are:</p>
+<ol>
+<li>A CPU-only PyTorch build was installed.</li>
+<li>The NVIDIA driver is missing or too old for the CUDA version the build uses.</li>
+<li>In a container, the GPU was not passed through to it.</li>
+</ol>
+<p>Fix the first by reinstalling with the correct command. Check the second with <code>nvidia-smi</code>, which shows the driver and the highest CUDA version it supports. Note that the PyTorch wheels bundle their own CUDA runtime, so you usually do not need to install a full CUDA toolkit just to run PyTorch. You do need a recent enough driver.</p>
+<p>On edge devices, such as NVIDIA Jetson boards, the rules are different. Those devices have their own vendor-supplied PyTorch builds matched to the system image, and installing a generic wheel from the normal index may not work. Follow the vendor's instructions for your exact software release. The same goes for Raspberry Pi, where you often run an exported model with ONNX Runtime and skip PyTorch entirely. See <a href="/vision-field-notes/posts/yolo-on-raspberry-pi-5/">running YOLO on a Raspberry Pi 5</a>.</p>
+<h2 id="record-exactly-what-you-installed">Record exactly what you installed</h2>
+<p>Installing is not enough. You must be able to repeat it. There are two levels.</p>
+<p><strong>Direct requirements.</strong> A short <code>requirements.txt</code> listing what you chose, with versions:</p>
+<pre><code class="language-text">ultralytics==&lt;version you tested&gt;
+opencv-python-headless==&lt;version you tested&gt;
+onnxruntime==&lt;version you tested&gt;
+numpy==&lt;version you tested&gt;
+</code></pre>
+<p>Replace the placeholders with the versions you actually used. You can see them with <code>pip list</code> or <code>pip show &lt;package&gt;</code>.</p>
+<p><strong>Full snapshot.</strong> <code>pip freeze &gt; requirements.lock.txt</code> records every installed package including indirect dependencies. This is the file that rebuilds the exact environment. Many teams keep both: the short file to show intent, the full one to reproduce.</p>
+<p>Install from the file with <code>pip install -r requirements.txt</code>. For PyTorch, keep the install command in the README because the right wheel source depends on the machine, and it may differ from the plain index.</p>
+<p>Pinning has a cost. You must update versions on purpose, read release notes, and test. That is a good trade for anything that runs in production, and unneeded overhead for a throwaway notebook.</p>
+<h2 id="opencv-package-conflicts">OpenCV package conflicts</h2>
+<p>As covered in <a href="/vision-field-notes/posts/opencv-essentials-for-cv-engineers/">OpenCV essentials</a>, install only one of <code>opencv-python</code> and <code>opencv-python-headless</code>. Some libraries list one of them as a dependency, so after installing, run <code>pip list</code> and check you do not have both. If you do, uninstall both and reinstall the one you want.</p>
+<h2 id="keep-training-and-deployment-environments-separate">Keep training and deployment environments separate</h2>
+<p>Training needs large packages: PyTorch, experiment tools, plotting libraries, a CUDA-enabled build. A deployed edge or server app often needs much less: OpenCV, ONNX Runtime, NumPy and your own code.</p>
+<p>Use two requirement files, for example <code>requirements-train.txt</code> and <code>requirements-runtime.txt</code>. A smaller runtime environment installs faster, uses less disk, has fewer things that can break, and gives a smaller container image. This is also easier to secure and update. The patterns for packaging are in <a href="/vision-field-notes/posts/dockerize-a-computer-vision-app/">how to dockerize a computer vision app</a>.</p>
+<h2 id="make-results-reproducible">Make results reproducible</h2>
+<p>An environment alone does not make a result reproducible. Also record:</p>
+<ul>
+<li>The random seed, where your tool lets you set one.</li>
+<li>The dataset version.</li>
+<li>The exact command used to train.</li>
+<li>The git commit of your code.</li>
+</ul>
+<p>Even with a seed, GPU operations can be non-deterministic, so two runs may differ slightly. Treat small differences as normal, and use tracking to record each run. See <a href="/vision-field-notes/posts/experiment-tracking-tensorboard-wandb-mlflow/">experiment tracking with TensorBoard, Weights &amp; Biases and MLflow</a>.</p>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li><strong>Installing into the system Python.</strong> One upgrade breaks something unrelated.</li>
+<li><strong>Installing PyTorch last.</strong> Another package replaces it with a CPU build.</li>
+<li><strong>Using <code>pip install</code> with no versions in a project that others will run.</strong> Their install may differ from yours.</li>
+<li><strong>Mixing <code>pip</code> and <code>conda</code> carelessly</strong> in the same environment. If you must mix, install conda packages first and pip packages after.</li>
+<li><strong>Forgetting to activate the environment.</strong> If <code>which python</code> (or <code>where python</code> on Windows) points outside your project, you are not in it.</li>
+<li><strong>Copying the <code>.venv</code> folder to another machine.</strong> Virtual environments are not portable. Rebuild from the requirements file.</li>
+<li><strong>Never updating.</strong> Pinned versions that are years old miss bug fixes and security updates. Schedule an occasional review.</li>
+</ul>
+<h2 id="a-quick-test-script">A quick test script</h2>
+<p>Keep a small <code>check_env.py</code> in the repo that prints the Python version, imports your key libraries, prints their versions, and reports whether a GPU is visible. Run it after any install, and in CI or on a new machine. It turns "it does not work" into a specific line of output.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>One virtual environment per project, outside version control.</li>
+<li>Choose a Python version that your key libraries support.</li>
+<li>Install PyTorch first, using the official selector command for your hardware.</li>
+<li>Check <code>torch.cuda.is_available()</code> and <code>nvidia-smi</code> on GPU machines.</li>
+<li>Keep a pinned <code>requirements.txt</code> and a full <code>pip freeze</code> snapshot.</li>
+<li>Install only one OpenCV package.</li>
+<li>Separate training and runtime requirements.</li>
+<li>Record seed, dataset version, command and commit with each run.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/train-on-google-colab/">training on Google Colab</a>, <a href="/vision-field-notes/posts/dockerize-a-computer-vision-app/">dockerize a computer vision app</a>.</p></article><div class="related"><h2 class="sec">More in Tools and Workflow</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/cloud-gpus-for-training-compared/"><div class="cat">Tools and Workflow</div><h3>Cloud GPUs for Model Training: How to Choose</h3><p>How to choose a cloud GPU for training vision models: compare cost models, GPU memory, storage and reliability, and avoid the habits that waste money.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/experiment-tracking-tensorboard-wandb-mlflow/"><div class="cat">Tools and Workflow</div><h3>Experiment Tracking: TensorBoard, Weights &amp; Biases and MLflow</h3><p>Why experiment tracking matters for computer vision, what to log on every training run, and how TensorBoard, Weights &amp; Biases and MLflow compare.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/host-cv-demos-free-on-github-pages/"><div class="cat">Tools and Workflow</div><h3>Host Computer Vision Demos for Free on GitHub Pages</h3><p>Host a computer vision demo for free on GitHub Pages: static hosting, running an ONNX model in the browser, size limits, licensing and a shareable portfolio demo.</p><div class="meta">6 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

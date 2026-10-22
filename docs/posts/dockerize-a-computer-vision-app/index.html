@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dockerize a Computer Vision App for Edge and Cloud | Vision Field Notes</title>
+<meta name="description" content="Dockerize a computer vision app: Dockerfile patterns for OpenCV and ONNX Runtime, GPU access, smaller images, pinned versions and reproducible builds.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/dockerize-a-computer-vision-app/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dockerize a Computer Vision App for Edge and Cloud | Vision Field Notes"><meta property="og:description" content="Dockerize a computer vision app: Dockerfile patterns for OpenCV and ONNX Runtime, GPU access, smaller images, pinned versions and reproducible builds.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/dockerize-a-computer-vision-app/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Dockerize a Computer Vision App for Edge and Cloud", "description": "Dockerize a computer vision app: Dockerfile patterns for OpenCV and ONNX Runtime, GPU access, smaller images, pinned versions and reproducible builds.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/dockerize-a-computer-vision-app/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge Hardware and Deployment</a></div><h1>Dockerize a Computer Vision App for Edge and Cloud</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 5 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#what-docker-does-and-does-not-solve">What Docker does and does not solve</a></li><li><a href="#a-minimal-cpu-image">A minimal CPU image</a></li><li><a href="#video-input-inside-a-container">Video input inside a container</a></li><li><a href="#gpu-access">GPU access</a></li><li><a href="#keep-images-small">Keep images small</a></li><li><a href="#reproducibility">Reproducibility</a></li><li><a href="#runtime-settings-that-matter-on-the-edge">Runtime settings that matter on the edge</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav><p>"It works on my machine" is a bigger problem in computer vision than in most fields. Your app depends on OpenCV builds, codec libraries, Python packages, CUDA versions and drivers. A container packages the user-space parts of that stack, so the same image runs on your laptop, a cloud server and an edge device.</p>
+<p>This article gives practical Dockerfile patterns for vision apps, explains GPU access and shows how to keep images small and reproducible.</p>
+<h2 id="what-docker-does-and-does-not-solve">What Docker does and does not solve</h2>
+<p>A container shares the host's kernel. It packages your code, Python, libraries and system packages. It does not package the GPU driver. For GPU use, the host needs a compatible NVIDIA driver, and a runtime component passes the GPU into the container.</p>
+<p>Docker also does not make a model faster. It makes deployment repeatable, simplifies rollbacks and isolates apps from each other on a shared device.</p>
+<h2 id="a-minimal-cpu-image">A minimal CPU image</h2>
+<p>For an app using OpenCV and ONNX Runtime on CPU, start from a slim Python image:</p>
+<pre><code class="language-dockerfile">FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY src/ ./src/
+COPY models/best.onnx ./models/best.onnx
+
+CMD [&quot;python&quot;, &quot;src/main.py&quot;]
+</code></pre>
+<p>With a <code>requirements.txt</code> such as:</p>
+<pre><code>opencv-python-headless==&lt;pinned version&gt;
+onnxruntime==&lt;pinned version&gt;
+numpy==&lt;pinned version&gt;
+</code></pre>
+<p>Replace the placeholders with the exact versions you tested. Pinning is the key to reproducibility, and <code>pip freeze</code> from a working environment is a good source.</p>
+<h3 id="use-the-headless-opencv-package">Use the headless OpenCV package</h3>
+<p>The standard <code>opencv-python</code> wheel expects GUI libraries that a slim image does not include, and you may see errors about missing shared libraries such as <code>libGL</code>. In a container with no display, use <code>opencv-python-headless</code>. You cannot call <code>cv2.imshow</code> in it, which is fine for a server or edge device. Save frames or stream results instead.</p>
+<h3 id="layer-order-matters">Layer order matters</h3>
+<p>Docker caches layers. Copy <code>requirements.txt</code> and install dependencies before copying your source code. Then a code change does not trigger a slow reinstall. This single habit saves a lot of time.</p>
+<h2 id="video-input-inside-a-container">Video input inside a container</h2>
+<p>How the container gets frames depends on the source:</p>
+<ul>
+<li><strong>RTSP or network streams:</strong> nothing special. The container needs network access to the camera. See <a href="/vision-field-notes/posts/read-rtsp-streams-with-opencv/">reading RTSP streams with OpenCV and FFmpeg</a>. Make sure the OpenCV build you use has FFmpeg support, which the standard pip wheels normally include.</li>
+<li><strong>USB cameras:</strong> pass the device into the container with the <code>--device</code> option, for example <code>--device /dev/video0</code>.</li>
+<li><strong>Files:</strong> mount a directory with <code>-v</code> for test videos and outputs.</li>
+</ul>
+<p>Example run command:</p>
+<pre><code class="language-bash">docker run --rm --device /dev/video0 -v &quot;$PWD/out:/app/out&quot; cv-app:latest
+</code></pre>
+<h2 id="gpu-access">GPU access</h2>
+<p>For NVIDIA GPUs on a Linux host:</p>
+<ol>
+<li>Install the NVIDIA driver on the host.</li>
+<li>Install the NVIDIA Container Toolkit.</li>
+<li>Run containers with <code>--gpus all</code>, or the subset you need.</li>
+</ol>
+<pre><code class="language-bash">docker run --rm --gpus all cv-app-gpu:latest
+</code></pre>
+<p>For the image, choose a base that matches your needs:</p>
+<ul>
+<li><strong>Official CUDA images from NVIDIA</strong> give you CUDA libraries, in "runtime" or "devel" variants. Runtime variants are smaller and enough to run apps; development variants include compilers and headers for building things.</li>
+<li><strong>Framework images</strong> such as the PyTorch images bundle CUDA with the framework, and are convenient but large.</li>
+<li><strong>ONNX Runtime GPU</strong> needs the <code>onnxruntime-gpu</code> package, and its version must match the CUDA and cuDNN versions it was built for. Check the compatibility table in the current ONNX Runtime documentation instead of guessing.</li>
+</ul>
+<p>The usual failure is a version mismatch between the host driver, the CUDA version in the image and the library you installed. When the GPU is not used, check this first. You can confirm in code: ONNX Runtime's <code>ort.get_available_providers()</code> lists providers, and <code>torch.cuda.is_available()</code> tells you about PyTorch.</p>
+<h3 id="jetson-devices">Jetson devices</h3>
+<p>Jetson boards use NVIDIA's JetPack stack and require container images built for that Arm platform. Use the base images NVIDIA publishes for Jetson, and match them to your JetPack version. You cannot use ordinary x86 CUDA images there. See <a href="/vision-field-notes/posts/tensorrt-speedup-guide/">TensorRT for YOLO</a> for notes on engines, which should be built on the target.</p>
+<h3 id="raspberry-pi">Raspberry Pi</h3>
+<p>Pi images are Arm builds. Most Python wheels for Arm exist, but check availability for each package. Build for the right platform. On a laptop you can use <code>docker buildx</code> to build multi-platform images, although building on the target is simpler for small projects.</p>
+<h2 id="keep-images-small">Keep images small</h2>
+<p>Smaller images pull faster over weak connections and start sooner. Practical steps:</p>
+<ul>
+<li>Use slim bases rather than full ones.</li>
+<li>Install only what you need. Avoid pulling PyTorch into an image that only runs ONNX Runtime.</li>
+<li>Use <code>pip --no-cache-dir</code>, as in the example.</li>
+<li>Use a <code>.dockerignore</code> file to keep datasets, notebooks, <code>.git</code> and virtual environments out of the build context.</li>
+<li>Use multi-stage builds when you must compile something: build in one stage, copy only the result into the final stage.</li>
+<li>Do not bake large training datasets into images. Mount them.</li>
+</ul>
+<p>Should the model be inside the image? For small models, including them gives a self-contained, versioned unit. For larger or frequently updated models, mounting a volume or downloading at start avoids rebuilding. Choose based on how often models change. Whatever you choose, log the model's file name and hash at startup so you know what is running.</p>
+<h2 id="reproducibility">Reproducibility</h2>
+<ul>
+<li><strong>Pin the base image.</strong> <code>python:3.11-slim</code> still moves with updates. For strict reproducibility, pin to a specific tag or digest.</li>
+<li><strong>Pin Python packages</strong> with exact versions, as above.</li>
+<li><strong>Record versions in logs</strong> at start: OpenCV, ONNX Runtime and model hash.</li>
+<li><strong>Tag images with a version</strong> or commit, not just <code>latest</code>. This makes rollbacks possible.</li>
+<li><strong>Keep the build in version control</strong> with the Dockerfile and requirements file next to the code.</li>
+</ul>
+<p>For local environment setup outside containers, see <a href="/vision-field-notes/posts/python-environment-for-computer-vision/">setting up a clean Python environment for computer vision</a>.</p>
+<h2 id="runtime-settings-that-matter-on-the-edge">Runtime settings that matter on the edge</h2>
+<ul>
+<li><strong>Restart policy.</strong> <code>--restart unless-stopped</code> restarts after crashes and reboots.</li>
+<li><strong>Resource limits.</strong> Memory limits stop a leaking process from taking down the device. Test them, because a limit set too low causes the process to be killed.</li>
+<li><strong>Logs.</strong> Docker's default logging can grow without limit. Configure log rotation.</li>
+<li><strong>Non-root user.</strong> Create a user in the image and run as that user where possible, except where device access requires otherwise.</li>
+<li><strong>Health checks.</strong> A <code>HEALTHCHECK</code> can test that the app is producing results, not only that the process exists.</li>
+<li><strong>Time zone and clock.</strong> Containers use the host clock; make sure the host has correct time.</li>
+</ul>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li>Using the non-headless OpenCV package and getting missing library errors.</li>
+<li>Not matching CUDA, cuDNN and library versions.</li>
+<li>Copying all code before installing dependencies, which defeats caching.</li>
+<li>Using the <code>latest</code> tag in production.</li>
+<li>Forgetting to mount persistent storage for outputs, then losing them when the container is removed.</li>
+<li>Running as root without needing to.</li>
+<li>Not rotating logs, and filling the disk.</li>
+</ul>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Dockerfile uses a slim or matching CUDA base, pinned.</li>
+<li>Requirements pinned with exact versions; headless OpenCV used.</li>
+<li>Dependencies installed before code is copied.</li>
+<li><code>.dockerignore</code> excludes data and virtual environments.</li>
+<li>Camera device, network and volumes configured at run time.</li>
+<li>GPU access tested with a real inference call.</li>
+<li>Restart policy, log rotation and health check set.</li>
+<li>Image tagged with a version; model hash logged at start.</li>
+</ul>
+<h2 id="next-steps">Next steps</h2>
+<p>Read <a href="/vision-field-notes/posts/python-environment-for-computer-vision/">Setting Up a Clean Python Environment for Computer Vision</a>, then <a href="/vision-field-notes/posts/power-cooling-storage-edge-ai-box/">Power, Cooling and Storage for a Reliable Edge AI Box</a>.</p></article><div class="related"><h2 class="sec">More in Edge Hardware and Deployment</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/best-cameras-for-computer-vision/"><div class="cat">Edge Hardware and Deployment</div><h3>Choosing a Camera for Computer Vision Projects</h3><p>How to choose a camera for computer vision: USB, CSI, IP/RTSP and depth cameras compared, with advice on shutter, lens, lighting and what really matters.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/export-yolo-to-onnx/"><div class="cat">Edge Hardware and Deployment</div><h3>Export YOLO to ONNX and Run It with ONNX Runtime</h3><p>Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/int8-quantization-explained/"><div class="cat">Edge Hardware and Deployment</div><h3>INT8 Quantization for Detectors: Benefits and Risks</h3><p>INT8 quantization for object detectors: post-training vs quantization-aware training, calibration data, what accuracy risks to expect and how to test them.</p><div class="meta">6 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Host Computer Vision Demos for Free on GitHub Pages | Vision Field Notes</title>
+<meta name="description" content="Host a computer vision demo for free on GitHub Pages: static hosting, running an ONNX model in the browser, size limits, licensing and a shareable portfolio demo.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/host-cv-demos-free-on-github-pages/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Host Computer Vision Demos for Free on GitHub Pages | Vision Field Notes"><meta property="og:description" content="Host a computer vision demo for free on GitHub Pages: static hosting, running an ONNX model in the browser, size limits, licensing and a shareable portfolio demo.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/host-cv-demos-free-on-github-pages/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Host Computer Vision Demos for Free on GitHub Pages", "description": "Host a computer vision demo for free on GitHub Pages: static hosting, running an ONNX model in the browser, size limits, licensing and a shareable portfolio demo.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/host-cv-demos-free-on-github-pages/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/tools-and-workflow/">Tools and Workflow</a></div><h1>Host Computer Vision Demos for Free on GitHub Pages</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#what-github-pages-can-and-cannot-do">What GitHub Pages can and cannot do</a></li><li><a href="#the-plan">The plan</a></li><li><a href="#things-that-go-wrong">Things that go wrong</a></li><li><a href="#licensing">Licensing</a></li><li><a href="#privacy-an-advantage-of-browser-demos">Privacy: an advantage of browser demos</a></li><li><a href="#make-the-demo-useful-not-just-working">Make the demo useful, not just working</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>A working demo is more convincing than a screenshot. A person can open a link, try your model on an image, and see what it does. GitHub Pages lets you host such a demo for free, as long as the demo is a <strong>static site</strong>. This article explains how to build one, what the limits are, and what to watch out for with licences and privacy.</p>
+<h2 id="what-github-pages-can-and-cannot-do">What GitHub Pages can and cannot do</h2>
+<p>GitHub Pages serves static files: HTML, CSS, JavaScript, images, and data files such as model weights. It does not run Python or any other server code. So you cannot host a Flask or FastAPI app there.</p>
+<p>That sounds limiting, but computer vision has a good answer: run the model <strong>in the visitor's browser</strong>. The page loads a model file, and JavaScript runs inference locally using WebAssembly or WebGPU. Nothing is sent to a server. The technique is covered in <a href="/vision-field-notes/posts/onnx-runtime-web-in-the-browser/">running object detection in the browser with ONNX Runtime Web</a>.</p>
+<p>For a model that needs a real server, such as a large model or a live camera feed, you need a different host. A static page can still act as the front end and call an API that you host elsewhere.</p>
+<p>Check GitHub's current documentation for the size limits on repositories and published sites, and the usage rules for Pages. They change, and a very large model file may not fit comfortably.</p>
+<h2 id="the-plan">The plan</h2>
+<ol>
+<li>Train a small model and export it to ONNX.</li>
+<li>Build a page that loads an image (or webcam frame), preprocesses it, runs the model, and draws boxes.</li>
+<li>Put the files in a GitHub repository.</li>
+<li>Turn on GitHub Pages for that repository.</li>
+</ol>
+<h3 id="step-1-choose-a-model-that-fits-the-browser">Step 1: choose a model that fits the browser</h3>
+<p>Browser demos work best with small models. A nano-sized detector at a modest input size downloads quickly and runs acceptably on most laptops. Larger models take longer to download and run, and may be slow on phones. See <a href="/vision-field-notes/posts/choosing-yolo-model-size/">choosing a YOLO model size</a> for how to trade accuracy against cost.</p>
+<p>Export with Ultralytics:</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+model = YOLO(&quot;best.pt&quot;)
+model.export(format=&quot;onnx&quot;, imgsz=640)
+</code></pre>
+<p>Test the exported file in Python with ONNX Runtime first. If the Python output is wrong, the browser output will be wrong too, and Python is far easier to debug. The export and checking steps are in <a href="/vision-field-notes/posts/export-yolo-to-onnx/">exporting YOLO to ONNX</a>.</p>
+<h3 id="step-2-build-the-page">Step 2: build the page</h3>
+<p>A minimal structure:</p>
+<pre><code class="language-text">my-demo/
+  index.html
+  app.js
+  style.css
+  model/best.onnx
+</code></pre>
+<p>The JavaScript does the following:</p>
+<ul>
+<li>Loads the model with ONNX Runtime Web.</li>
+<li>Reads an image from a file input or a canvas.</li>
+<li>Resizes it to the model input size and converts pixel values into the tensor layout the model expects (the preprocessing must match training).</li>
+<li>Runs the model and decodes the output into boxes.</li>
+<li>Applies a confidence threshold and non-maximum suppression, then draws results on a canvas.</li>
+</ul>
+<p>The decoding step is the one that trips people up. The raw output of an exported detector is not a neat list of boxes. You must know its shape and meaning for your model version. Print the output shape in Python, and port exactly that logic. For background on the filtering step, see <a href="/vision-field-notes/posts/iou-and-nms-explained/">IoU and non-maximum suppression</a>.</p>
+<p>Use relative paths for the model and scripts, because Pages serves a project site under a sub-path such as <code>/repo-name/</code>. An absolute path starting with <code>/</code> will break there.</p>
+<h3 id="step-3-publish">Step 3: publish</h3>
+<p>Push the repository to GitHub. In the repository settings, open the Pages section and choose to publish from a branch (and folder) that contains your <code>index.html</code>. After a short wait, the site becomes available at an address based on your username and repository name. Check GitHub's documentation for the current steps, since the settings screens change over time.</p>
+<p>If you want your own address, you can add a custom domain. That needs a domain name and DNS settings, and it is optional. The default address is fine for a demo.</p>
+<h2 id="things-that-go-wrong">Things that go wrong</h2>
+<ul>
+<li><strong>Model file not loading.</strong> Check the browser's developer console. Common causes are a wrong path, a very large file, or opening <code>index.html</code> directly from disk. Browsers restrict loading local files, so test with a small local web server (for example <code>python -m http.server</code>) instead.</li>
+<li><strong>Wrong colours or wrong results.</strong> The channel order, scaling (0-255 vs 0-1) or input size differs from the training pipeline. Compare against Python on the same image.</li>
+<li><strong>Slow first run.</strong> The model must download and initialise. Show a loading message so people do not think the page is broken.</li>
+<li><strong>Memory errors on phones.</strong> Reduce the input size or use a smaller model.</li>
+<li><strong>Stale cache.</strong> After you replace the model, browsers may keep the old one. Rename the file or add a version in its name.</li>
+</ul>
+<h2 id="licensing">Licensing</h2>
+<p>Check the licence of everything you publish. If your model came from Ultralytics YOLOv5 or later generations, it falls under AGPL-3.0, and a commercial licence is available from Ultralytics. YOLOv7 is GPL-3.0. Publishing model weights and code in a public repository is a form of distribution, so read the terms and decide how to licence your repository. Check the current licence for the exact version you use. This is not legal advice, and a deeper look is in <a href="/vision-field-notes/posts/yolo-licenses-explained/">YOLO licences explained</a>.</p>
+<p>Also check your data. Do not publish images you do not have the right to share, and do not ship a demo that contains private footage. For sample images, use ones you own or that carry a licence that allows redistribution.</p>
+<h2 id="privacy-an-advantage-of-browser-demos">Privacy: an advantage of browser demos</h2>
+<p>If inference runs in the browser, uploaded images never leave the visitor's device. You can say so on the page, but only if it is true, so check that your code makes no network calls with user images. This is a real benefit for demos that involve photos of people. See <a href="/vision-field-notes/posts/privacy-and-ethics-camera-analytics/">privacy and ethics in camera analytics</a> for related habits.</p>
+<h2 id="make-the-demo-useful-not-just-working">Make the demo useful, not just working</h2>
+<p>A demo that shows a portfolio-worthy result has a few extras:</p>
+<ul>
+<li>Sample images, so visitors do not need their own.</li>
+<li>A plain description of the task, the data, and what the model cannot do.</li>
+<li>An honest note on known failure cases.</li>
+<li>A link to the code repository and to a write-up.</li>
+<li>A confidence slider, which lets visitors see the trade-off for themselves.</li>
+</ul>
+<p>Be careful not to claim accuracy you have not measured on real held-out data. A demo on a few chosen images can make any model look good. How to present results honestly is covered in <a href="/vision-field-notes/posts/computer-vision-portfolio-that-gets-clients/">building a computer vision portfolio that gets clients</a>.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Use a static site; run the model client-side with ONNX Runtime Web.</li>
+<li>Pick a small model and a modest input size.</li>
+<li>Verify the exported ONNX model in Python before touching JavaScript.</li>
+<li>Match preprocessing and output decoding to the Python version.</li>
+<li>Use relative paths; test with a local web server.</li>
+<li>Check current GitHub Pages size limits and usage rules.</li>
+<li>Check licences for the model, code and sample images.</li>
+<li>Add sample images, a short description, and honest limitations.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/onnx-runtime-web-in-the-browser/">running object detection in the browser with ONNX Runtime Web</a>, <a href="/vision-field-notes/posts/computer-vision-portfolio-that-gets-clients/">building a portfolio that gets clients</a>.</p></article><div class="related"><h2 class="sec">More in Tools and Workflow</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/cloud-gpus-for-training-compared/"><div class="cat">Tools and Workflow</div><h3>Cloud GPUs for Model Training: How to Choose</h3><p>How to choose a cloud GPU for training vision models: compare cost models, GPU memory, storage and reliability, and avoid the habits that waste money.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/experiment-tracking-tensorboard-wandb-mlflow/"><div class="cat">Tools and Workflow</div><h3>Experiment Tracking: TensorBoard, Weights &amp; Biases and MLflow</h3><p>Why experiment tracking matters for computer vision, what to log on every training run, and how TensorBoard, Weights &amp; Biases and MLflow compare.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/opencv-essentials-for-cv-engineers/"><div class="cat">Tools and Workflow</div><h3>OpenCV Essentials Every Computer Vision Engineer Needs</h3><p>The OpenCV functions you use daily: reading images and video, drawing boxes, colour spaces, resizing, transforms, and the pitfalls that cause silent bugs.</p><div class="meta">5 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

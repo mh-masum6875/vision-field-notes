@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>mAP, Precision and Recall: How to Read Detection Results | Vision Field Notes</title>
+<meta name="description" content="Learn how to read precision, recall, mAP50 and mAP50-95 in object detection results, and which metric matters most for your own use case and camera setup.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/map-precision-recall-explained/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mAP, Precision and Recall: How to Read Detection Results | Vision Field Notes"><meta property="og:description" content="Learn how to read precision, recall, mAP50 and mAP50-95 in object detection results, and which metric matters most for your own use case and camera setup.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/map-precision-recall-explained/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "mAP, Precision and Recall: How to Read Detection Results", "description": "Learn how to read precision, recall, mAP50 and mAP50-95 in object detection results, and which metric matters most for your own use case and camera setup.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/map-precision-recall-explained/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO and Detection Basics</a></div><h1>mAP, Precision and Recall: How to Read Detection Results</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#start-with-the-three-outcomes">Start with the three outcomes</a></li><li><a href="#precision">Precision</a></li><li><a href="#recall">Recall</a></li><li><a href="#they-pull-against-each-other">They pull against each other</a></li><li><a href="#average-precision-and-map">Average precision and mAP</a></li><li><a href="#map50-versus-map50-95">mAP50 versus mAP50-95</a></li><li><a href="#which-metric-should-you-use">Which metric should you use?</a></li><li><a href="#getting-the-numbers-from-ultralytics">Getting the numbers from Ultralytics</a></li><li><a href="#the-confusion-matrix">The confusion matrix</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#a-practical-routine">A practical routine</a></li><li><a href="#key-points">Key points</a></li></ul></nav><p>After training a detector you get a table of numbers: precision, recall, mAP50, mAP50-95. They look similar and people often quote the biggest one. That is a mistake. Each number answers a different question, and the right one for you depends on what a wrong detection costs.</p>
+<p>This article explains each metric in plain terms, shows how to get them from Ultralytics, and gives a way to choose.</p>
+<h2 id="start-with-the-three-outcomes">Start with the three outcomes</h2>
+<p>For every prediction, a detector is either right or wrong, and for every real object it either finds it or does not. That gives three counts:</p>
+<ul>
+<li><strong>True positive (TP):</strong> a predicted box that matches a real object.</li>
+<li><strong>False positive (FP):</strong> a predicted box with no real object, or a duplicate, or the wrong class.</li>
+<li><strong>False negative (FN):</strong> a real object the model missed.</li>
+</ul>
+<p>"Matches" needs a rule. The usual rule is that the predicted box overlaps the true box enough, measured by Intersection over Union (IoU), and the class is correct. If IoU is new to you, read <a href="/vision-field-notes/posts/iou-and-nms-explained/">IoU and Non-Maximum Suppression</a> first.</p>
+<h2 id="precision">Precision</h2>
+<p>Precision = TP / (TP + FP).</p>
+<p>It answers: of everything the model reported, how much was correct? High precision means few false alarms. If precision is 0.5, half of your alerts are wrong.</p>
+<h2 id="recall">Recall</h2>
+<p>Recall = TP / (TP + FN).</p>
+<p>It answers: of everything that was really there, how much did the model find? High recall means few misses. If recall is 0.5, the model misses half the real objects.</p>
+<h2 id="they-pull-against-each-other">They pull against each other</h2>
+<p>You can raise one by sacrificing the other, and the confidence threshold is the lever. Lower the threshold and the model reports more boxes. Recall goes up because fewer objects are missed, and precision goes down because more junk gets through. Raise the threshold and the opposite happens.</p>
+<p>So a single precision number is meaningless unless you know the threshold it was measured at. The same is true for recall. This is why a summary that does not depend on one threshold is useful.</p>
+<h2 id="average-precision-and-map">Average precision and mAP</h2>
+<p>If you sweep the threshold from high to low and plot precision against recall, you get a precision-recall curve for one class. The area under that curve is the <strong>average precision (AP)</strong> for that class. A model that keeps high precision even as recall rises has a large area. A model whose precision collapses quickly has a small one.</p>
+<p><strong>mAP</strong> is the mean of AP over all classes. If you have three classes, mAP is the average of the three AP values. Two things follow:</p>
+<ul>
+<li>A rare class counts as much as a common one. One weak class pulls mAP down even if the others are excellent.</li>
+<li>mAP says nothing about which class is weak. Always look at per-class values too.</li>
+</ul>
+<h2 id="map50-versus-map50-95">mAP50 versus mAP50-95</h2>
+<p>The "50" and "50-95" refer to the IoU threshold used to decide whether a box counts as a match.</p>
+<ul>
+<li><strong>mAP50:</strong> a prediction counts if IoU with the true box is at least 0.5. This is forgiving. A box that covers about half of the object can still count.</li>
+<li><strong>mAP50-95:</strong> the average of mAP computed at IoU thresholds from 0.5 to 0.95 in steps of 0.05. This rewards tight, accurate boxes, because high thresholds only accept boxes that fit well.</li>
+</ul>
+<p>This is why mAP50-95 is always lower than mAP50. They are not competing measures of the same thing. A big gap between them tells you the model finds objects but its boxes are loose. That might be a labelling problem, a resolution problem or a model-size problem.</p>
+<h2 id="which-metric-should-you-use">Which metric should you use?</h2>
+<p>It depends on the job. Match the metric to the cost of mistakes.</p>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Look at first</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Safety alert where missing an event is dangerous</td>
+<td>Recall at a chosen threshold</td>
+<td>Misses are the costly error</td>
+</tr>
+<tr>
+<td>Alerts sent to people who will ignore noisy systems</td>
+<td>Precision at a chosen threshold</td>
+<td>False alarms destroy trust</td>
+</tr>
+<tr>
+<td>Counting objects</td>
+<td>Both, plus count error on real footage</td>
+<td>Over and under counts both bias the total</td>
+</tr>
+<tr>
+<td>Measuring size or position precisely</td>
+<td>mAP50-95</td>
+<td>Box tightness matters</td>
+</tr>
+<tr>
+<td>Comparing two models in general</td>
+<td>mAP50-95, then per-class AP</td>
+<td>A broader, stricter summary</td>
+</tr>
+<tr>
+<td>Presence only ("is there at least one?")</td>
+<td>mAP50 or recall</td>
+<td>Exact box fit is not needed</td>
+</tr>
+</tbody>
+</table>
+<p>For many production alerting tasks, the pair precision and recall at your operating threshold matters more than mAP. mAP is great for comparing models. It does not tell you how the system behaves at the one threshold you will deploy.</p>
+<h2 id="getting-the-numbers-from-ultralytics">Getting the numbers from Ultralytics</h2>
+<pre><code class="language-python">from ultralytics import YOLO
+
+model = YOLO(&quot;runs/detect/train/weights/best.pt&quot;)
+metrics = model.val(data=&quot;data.yaml&quot;)
+
+print(&quot;precision:&quot;, metrics.box.mp)
+print(&quot;recall:   &quot;, metrics.box.mr)
+print(&quot;mAP50:    &quot;, metrics.box.map50)
+print(&quot;mAP50-95: &quot;, metrics.box.map)
+</code></pre>
+<p>Here <code>mp</code> and <code>mr</code> are the mean precision and recall across classes, as reported by the validator. Note that validation uses its own settings, including a low confidence threshold used to trace out the curve, so the printed precision and recall are summary values and not what you would see at a typical deployment threshold. Check the documentation for the current defaults. The validation run also saves plots, such as a precision-recall curve and a confusion matrix, in its output folder. Open them. They tell you more than the single numbers.</p>
+<h2 id="the-confusion-matrix">The confusion matrix</h2>
+<p>The confusion matrix shows, for each real class, what the model predicted. Read it for patterns:</p>
+<ul>
+<li>A bright column or row for "background" means many missed objects or many false detections.</li>
+<li>Off-diagonal cells between two classes mean the model confuses them. That is usually a labelling or definition problem: are the two classes really different?</li>
+<li>A class that mostly lands in background may have too few examples or inconsistent boxes.</li>
+</ul>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li><strong>Reporting mAP on the training set.</strong> Always evaluate on data the model has never seen. For video, split by camera and time, not by random frame, otherwise the score is inflated. See <a href="/vision-field-notes/posts/train-val-test-split-video-frames/">Train/Validation Split for Video Frames</a>.</li>
+<li><strong>Using a tiny validation set.</strong> With a few dozen images, one object changes a metric noticeably. Treat small-set results as rough.</li>
+<li><strong>Quoting one number.</strong> Give mAP50-95 with precision and recall and the threshold. State the image size and model.</li>
+<li><strong>Ignoring class balance.</strong> Mean values can hide a failing rare class.</li>
+<li><strong>Comparing numbers across datasets.</strong> A model scoring higher on an easy dataset is not better than one scoring lower on a hard one.</li>
+<li><strong>Trusting metrics over footage.</strong> Scores are an average. Watch the failures on real video, including night, glare and crowding.</li>
+</ul>
+<h2 id="a-practical-routine">A practical routine</h2>
+<ol>
+<li>Validate on a held-out set that looks like deployment.</li>
+<li>Read per-class AP and the confusion matrix, not just the headline.</li>
+<li>Decide which error is more costly: false alarms or misses.</li>
+<li>Choose a confidence threshold that gives acceptable precision and recall for that cost, as covered in <a href="/vision-field-notes/posts/confidence-threshold-tuning/">Confidence Thresholds: Tuning a Detector to Cut False Alarms</a>.</li>
+<li>Test that threshold on fresh real footage and count actual errors.</li>
+</ol>
+<h2 id="key-points">Key points</h2>
+<ul>
+<li>Precision is how many reported detections were right. Recall is how many real objects were found.</li>
+<li>Both depend on the confidence threshold, so always state it.</li>
+<li>mAP summarises across thresholds and classes. mAP50 is lenient on box fit, mAP50-95 is strict.</li>
+<li>Choose the metric by the cost of mistakes, not by the biggest number.</li>
+<li>Check per-class results and the confusion matrix.</li>
+<li>Evaluate on data that is truly separate from training.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/confidence-threshold-tuning/">Confidence Thresholds: Tuning a Detector to Cut False Alarms</a>, <a href="/vision-field-notes/posts/spotting-overfitting-in-detection/">How to Spot Overfitting in Object Detection</a> and <a href="/vision-field-notes/posts/iou-and-nms-explained/">IoU and Non-Maximum Suppression</a>.</p></article><div class="related"><h2 class="sec">More in YOLO and Detection Basics</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/"><div class="cat">YOLO and Detection Basics</div><h3>Anchor-Free vs Anchor-Based Object Detectors</h3><p>Anchor-free vs anchor-based object detectors: what anchors are, why newer YOLO versions dropped them, and what the change means for training and deployment.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/choosing-yolo-model-size/"><div class="cat">YOLO and Detection Basics</div><h3>Nano, Small, Medium: How to Choose a YOLO Model Size</h3><p>How to choose a YOLO model size and input resolution: a method that starts from your hardware budget and accuracy needs, not a guess at nano, small or medium.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/classification-vs-detection-vs-segmentation/"><div class="cat">YOLO and Detection Basics</div><h3>Classification vs Detection vs Segmentation: Pick the Right Task</h3><p>Classification vs detection vs segmentation: how to choose the right computer vision task for your project, with a decision guide, cost trade-offs and examples.</p><div class="meta">5 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

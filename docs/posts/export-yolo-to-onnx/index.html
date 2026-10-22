@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Export YOLO to ONNX and Run It with ONNX Runtime | Vision Field Notes</title>
+<meta name="description" content="Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/export-yolo-to-onnx/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Export YOLO to ONNX and Run It with ONNX Runtime | Vision Field Notes"><meta property="og:description" content="Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/export-yolo-to-onnx/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Export YOLO to ONNX and Run It with ONNX Runtime", "description": "Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/export-yolo-to-onnx/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge Hardware and Deployment</a></div><h1>Export YOLO to ONNX and Run It with ONNX Runtime</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 5 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#why-use-onnx">Why use ONNX</a></li><li><a href="#step-1-export">Step 1: export</a></li><li><a href="#step-2-inspect-the-model">Step 2: inspect the model</a></li><li><a href="#step-3-pre-processing">Step 3: pre-processing</a></li><li><a href="#step-4-run-inference">Step 4: run inference</a></li><li><a href="#step-5-decode-the-output">Step 5: decode the output</a></li><li><a href="#why-results-differ-from-modelpredict">Why results differ from model.predict</a></li><li><a href="#validate-after-export">Validate after export</a></li><li><a href="#performance-tips-for-cpu">Performance tips for CPU</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav><p>ONNX (Open Neural Network Exchange) is a common file format for neural networks. Exporting a trained YOLO model to ONNX lets you run it without PyTorch, on many kinds of hardware, through runtimes such as ONNX Runtime. It is also the usual first step before TensorRT or other accelerators.</p>
+<p>This article shows how to export, check and run an ONNX model, and explains the part that trips people up: when you leave the Ultralytics <code>predict</code> function, you must do pre-processing and post-processing yourself.</p>
+<h2 id="why-use-onnx">Why use ONNX</h2>
+<ul>
+<li><strong>Smaller runtime.</strong> You can deploy with <code>onnxruntime</code>, OpenCV and NumPy, without installing PyTorch.</li>
+<li><strong>Portability.</strong> The same file can run on CPU, and with the right execution provider on GPU or other accelerators.</li>
+<li><strong>A common starting point.</strong> Many conversion tools (TensorRT, OpenVINO, vendor compilers) accept ONNX.</li>
+</ul>
+<p>ONNX is not automatically faster than PyTorch. Whether it helps depends on the model, hardware and runtime settings. Measure it; see <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">measuring FPS and latency correctly</a>.</p>
+<h2 id="step-1-export">Step 1: export</h2>
+<p>With Ultralytics, export is one call:</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+model = YOLO(&quot;best.pt&quot;)          # your trained weights
+model.export(format=&quot;onnx&quot;, imgsz=640)
+</code></pre>
+<p>This writes <code>best.onnx</code> next to the weights. A few export options are worth knowing:</p>
+<ul>
+<li><code>imgsz</code> sets the input size baked into the graph. Use the same size you trained and validated with.</li>
+<li><code>dynamic=True</code> allows variable input sizes. It is flexible, but fixed shapes are often simpler and can run better on some runtimes.</li>
+<li><code>simplify=True</code> runs a graph simplifier. It is commonly on by default for ONNX export, but check the current Ultralytics docs for the defaults in your version.</li>
+<li><code>half=True</code> exports in FP16, which is only useful on hardware that benefits from it. For CPU use, stay with FP32.</li>
+</ul>
+<p>If you are not sure about a flag in your version, check the Ultralytics documentation rather than guessing.</p>
+<h2 id="step-2-inspect-the-model">Step 2: inspect the model</h2>
+<p>Before writing any code, look at what the file expects. Netron, a free model viewer, shows the graph. You can also read the input and output details in Python:</p>
+<pre><code class="language-python">import onnxruntime as ort
+
+sess = ort.InferenceSession(&quot;best.onnx&quot;, providers=[&quot;CPUExecutionProvider&quot;])
+inp = sess.get_inputs()[0]
+print(inp.name, inp.shape, inp.type)
+for out in sess.get_outputs():
+    print(out.name, out.shape)
+</code></pre>
+<p>For a standard Ultralytics detection model at 640 input, you typically see an input shaped like <code>[1, 3, 640, 640]</code> and a single output shaped like <code>[1, 4 + number_of_classes, 8400]</code>. The 8400 comes from the three detection scales at 640 input: 80x80, 40x40 and 20x20 grids add up to 8400 candidate predictions. If you change <code>imgsz</code>, this count changes.</p>
+<p>Note that this layout applies to the recent anchor-free Ultralytics detection models. Older YOLOv5 exports differ: they include an objectness value per prediction. Always print your own model's output shape and do not assume.</p>
+<h2 id="step-3-pre-processing">Step 3: pre-processing</h2>
+<p>The model expects the same input it saw in training. In Ultralytics, that means:</p>
+<ol>
+<li><strong>Letterbox resize.</strong> Resize while keeping the aspect ratio, then pad to the square input size. Do not stretch the image.</li>
+<li><strong>Colour order.</strong> OpenCV loads images as BGR; the model expects RGB.</li>
+<li><strong>Scale.</strong> Divide pixel values by 255 to get floats between 0 and 1.</li>
+<li><strong>Layout.</strong> Change from HWC to CHW and add a batch dimension.</li>
+</ol>
+<p>A compact version:</p>
+<pre><code class="language-python">import cv2
+import numpy as np
+
+def preprocess(img_bgr, size=640):
+    h, w = img_bgr.shape[:2]
+    scale = min(size / h, size / w)
+    nh, nw = int(round(h * scale)), int(round(w * scale))
+    resized = cv2.resize(img_bgr, (nw, nh))
+    canvas = np.full((size, size, 3), 114, dtype=np.uint8)
+    top, left = (size - nh) // 2, (size - nw) // 2
+    canvas[top:top + nh, left:left + nw] = resized
+    rgb = cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
+    x = rgb.astype(np.float32) / 255.0
+    x = np.transpose(x, (2, 0, 1))[None]
+    return x, scale, left, top
+</code></pre>
+<p>The grey padding value of 114 matches the Ultralytics letterbox convention. You must return <code>scale</code>, <code>left</code> and <code>top</code> because you need them to map boxes back to the original image.</p>
+<h2 id="step-4-run-inference">Step 4: run inference</h2>
+<pre><code class="language-python">x, scale, left, top = preprocess(frame)
+outputs = sess.run(None, {inp.name: x})
+pred = outputs[0]          # shape [1, 4 + nc, 8400]
+</code></pre>
+<h2 id="step-5-decode-the-output">Step 5: decode the output</h2>
+<p>For the anchor-free format, each of the 8400 columns holds four box values followed by one score per class. The box is in centre-x, centre-y, width, height form, in the pixel space of the letterboxed input.</p>
+<p>Steps:</p>
+<ol>
+<li>Transpose to <code>[8400, 4 + nc]</code>.</li>
+<li>For each row, take the best class score and its class index.</li>
+<li>Drop rows below your confidence threshold.</li>
+<li>Convert boxes from centre format to corner format.</li>
+<li>Run non-maximum suppression (NMS).</li>
+<li>Undo the letterbox: subtract the padding, divide by the scale, and clip to the image size.</li>
+</ol>
+<pre><code class="language-python">def postprocess(pred, scale, left, top, conf=0.25, iou=0.45):
+    p = pred[0].T                       # [8400, 4 + nc]
+    scores = p[:, 4:]
+    cls = scores.argmax(axis=1)
+    conf_all = scores.max(axis=1)
+    keep = conf_all &gt;= conf
+    p, cls, conf_all = p[keep], cls[keep], conf_all[keep]
+    cx, cy, w, h = p[:, 0], p[:, 1], p[:, 2], p[:, 3]
+    x1 = (cx - w / 2 - left) / scale
+    y1 = (cy - h / 2 - top) / scale
+    boxes = np.stack([x1, y1, w / scale, h / scale], axis=1)
+    idx = cv2.dnn.NMSBoxes(boxes.tolist(), conf_all.tolist(), conf, iou)
+    idx = np.array(idx).reshape(-1)
+    return boxes[idx], conf_all[idx], cls[idx]
+</code></pre>
+<p><code>cv2.dnn.NMSBoxes</code> expects boxes as <code>[x, y, width, height]</code>, which is why the code builds them that way. This simple version applies NMS across all classes at once. Ultralytics runs NMS per class by default, so two overlapping boxes of different classes may behave differently. For details on how NMS works and what the thresholds mean, see <a href="/vision-field-notes/posts/iou-and-nms-explained/">IoU and NMS explained</a>.</p>
+<h2 id="why-results-differ-from-modelpredict">Why results differ from <code>model.predict</code></h2>
+<p>If your ONNX output does not match Ultralytics, check these in order:</p>
+<ul>
+<li><strong>Wrong colour order.</strong> Feeding BGR instead of RGB lowers accuracy without any error message.</li>
+<li><strong>Stretched instead of letterboxed.</strong> Boxes will be shifted or the wrong size.</li>
+<li><strong>Missing /255 scaling.</strong> Scores collapse.</li>
+<li><strong>Box mapping errors.</strong> Forgetting to remove padding or divide by scale.</li>
+<li><strong>Different thresholds.</strong> Match the confidence and IoU thresholds you used in the comparison.</li>
+<li><strong>Different input size.</strong> The export <code>imgsz</code> must match what you feed.</li>
+</ul>
+<p>A good test: run the same single image through both paths, print the top few detections from each and compare. Small differences in scores are normal; large differences mean a bug.</p>
+<h2 id="validate-after-export">Validate after export</h2>
+<p>Do not assume the exported model equals the original. Run your validation set through both and compare metrics. Ultralytics can validate some exported formats directly, but you can also write your own evaluation loop. The point is to confirm accuracy before deployment. <a href="/vision-field-notes/posts/map-precision-recall-explained/">mAP, precision and recall</a> explains what to compare.</p>
+<h2 id="performance-tips-for-cpu">Performance tips for CPU</h2>
+<ul>
+<li>Reduce <code>imgsz</code> if accuracy allows.</li>
+<li>Control threads with ONNX Runtime session options, for example <code>intra_op_num_threads</code>, and test a few values on your hardware.</li>
+<li>Keep the Python loop lean. Pre-processing in NumPy can cost as much as inference on a small model.</li>
+<li>Reuse one session. Creating a session per frame is very slow.</li>
+<li>Warm up with a few dummy runs before timing.</li>
+</ul>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Exported with the same <code>imgsz</code> as training and validation.</li>
+<li>Input and output shapes printed and understood.</li>
+<li>Letterbox, RGB and /255 applied; boxes mapped back correctly.</li>
+<li>NMS implemented and thresholds matched to your comparison.</li>
+<li>Metrics on a validation set compared with the original model.</li>
+<li>One session reused; warm-up done before timing.</li>
+</ul>
+<h2 id="next-steps">Next steps</h2>
+<p>Continue with <a href="/vision-field-notes/posts/tensorrt-speedup-guide/">TensorRT for YOLO</a> if you have an NVIDIA GPU, or <a href="/vision-field-notes/posts/int8-quantization-explained/">INT8 Quantization for Detectors</a> to shrink the model further.</p></article><div class="related"><h2 class="sec">More in Edge Hardware and Deployment</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/best-cameras-for-computer-vision/"><div class="cat">Edge Hardware and Deployment</div><h3>Choosing a Camera for Computer Vision Projects</h3><p>How to choose a camera for computer vision: USB, CSI, IP/RTSP and depth cameras compared, with advice on shutter, lens, lighting and what really matters.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/dockerize-a-computer-vision-app/"><div class="cat">Edge Hardware and Deployment</div><h3>Dockerize a Computer Vision App for Edge and Cloud</h3><p>Dockerize a computer vision app: Dockerfile patterns for OpenCV and ONNX Runtime, GPU access, smaller images, pinned versions and reproducible builds.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/int8-quantization-explained/"><div class="cat">Edge Hardware and Deployment</div><h3>INT8 Quantization for Detectors: Benefits and Risks</h3><p>INT8 quantization for object detectors: post-training vs quantization-aware training, calibration data, what accuracy risks to expect and how to test them.</p><div class="meta">6 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anchor-Free vs Anchor-Based Object Detectors | Vision Field Notes</title>
+<meta name="description" content="Anchor-free vs anchor-based object detectors: what anchors are, why newer YOLO versions dropped them, and what the change means for training and deployment.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Anchor-Free vs Anchor-Based Object Detectors | Vision Field Notes"><meta property="og:description" content="Anchor-free vs anchor-based object detectors: what anchors are, why newer YOLO versions dropped them, and what the change means for training and deployment.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Anchor-Free vs Anchor-Based Object Detectors", "description": "Anchor-free vs anchor-based object detectors: what anchors are, why newer YOLO versions dropped them, and what the change means for training and deployment.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO and Detection Basics</a></div><h1>Anchor-Free vs Anchor-Based Object Detectors</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#what-an-anchor-is">What an anchor is</a></li><li><a href="#how-training-uses-anchors">How training uses anchors</a></li><li><a href="#the-problems-with-anchors">The problems with anchors</a></li><li><a href="#what-anchor-free-means">What anchor-free means</a></li><li><a href="#side-by-side">Side by side</a></li><li><a href="#what-this-means-for-you-in-practice">What this means for you in practice</a></li><li><a href="#a-note-on-history">A note on history</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#key-points">Key points</a></li></ul></nav><p>If you moved from YOLOv5 to YOLOv8, you may have noticed something missing: there are no anchor settings. Older tutorials talk about anchor sizes, autoanchor and anchor ratios. Newer ones do not mention them. This article explains what anchors are, why many detectors dropped them, and what the change means in practice.</p>
+<h2 id="what-an-anchor-is">What an anchor is</h2>
+<p>A detector has to output boxes of many sizes and shapes. Predicting a box from nothing is hard. Predicting a small correction to a sensible starting box is easier.</p>
+<p>An <strong>anchor</strong> is that starting box. It is a predefined width and height, placed at every position of a grid over the image. The model does not predict a full box. It predicts how to adjust an anchor: shift it a little, stretch it, and say whether an object is there.</p>
+<p>A typical anchor-based detector uses several anchors at each grid cell, with different shapes: a tall narrow one for people, a wide one for cars, and so on. Anchors are usually grouped by scale, because the detector makes predictions at several feature-map resolutions. Fine grids handle small objects, coarse grids handle large ones.</p>
+<h2 id="how-training-uses-anchors">How training uses anchors</h2>
+<p>During training, each labelled box has to be matched to some anchors. A common rule is that an anchor is responsible for an object if their shapes are similar enough. The matched anchors are trained to predict the object. Anchors with no match are trained to predict "background".</p>
+<p>This matching step is where anchor-based design affects results. If your objects have shapes far from every anchor, few anchors match well and learning is poorer.</p>
+<p>That is why YOLOv5 includes an automatic step that analyses your labels and adjusts the anchors to fit them, using a clustering approach. It was a practical fix for the main weakness of anchors: they are a hyperparameter tied to your data.</p>
+<h2 id="the-problems-with-anchors">The problems with anchors</h2>
+<p>Anchors work, but they bring costs.</p>
+<ul>
+<li><strong>Extra hyperparameters.</strong> The number, sizes and aspect ratios of anchors are choices you must make or let a tool make.</li>
+<li><strong>Dataset dependence.</strong> Anchors tuned for one dataset may suit another poorly. Moving from street scenes to close-up parts needs a rethink.</li>
+<li><strong>Many redundant predictions.</strong> With several anchors at every location, most are negatives. The imbalance between a few positives and many negatives complicates training.</li>
+<li><strong>Messier post-processing.</strong> More candidate boxes means more work for non-maximum suppression. See <a href="/vision-field-notes/posts/iou-and-nms-explained/">IoU and Non-Maximum Suppression</a>.</li>
+<li><strong>Awkward for unusual shapes.</strong> Very elongated objects, such as poles or cables, can fit poorly into a fixed anchor set.</li>
+</ul>
+<h2 id="what-anchor-free-means">What anchor-free means</h2>
+<p>An anchor-free detector skips the predefined boxes. Instead of adjusting an anchor, each location on the feature map predicts the object's box directly, for example as distances from that location to the four sides of the box, or as a centre plus size. Different anchor-free methods use different details, but the principle is the same: no hand-chosen box shapes.</p>
+<p>Many anchor-free designs also change how training matches predictions to labels. Rather than a fixed shape-similarity rule, they may use a dynamic assignment that picks the best-fitting predictions for each object based on how well the model is currently doing. The details vary by model, so read the documentation of the version you use rather than assuming.</p>
+<p>Ultralytics describes YOLOv8 and later as anchor-free, with a decoupled head that predicts class and box in separate branches. YOLOv5 is anchor-based.</p>
+<h2 id="side-by-side">Side by side</h2>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Anchor-based (e.g. YOLOv5)</th>
+<th>Anchor-free (e.g. YOLOv8, YOLO11)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Starting box shapes</td>
+<td>Predefined anchors</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Anchor tuning</td>
+<td>Needed, often automated</td>
+<td>Not needed</td>
+</tr>
+<tr>
+<td>Sensitivity to object shape distribution</td>
+<td>Higher</td>
+<td>Lower</td>
+</tr>
+<tr>
+<td>Candidate boxes per location</td>
+<td>Several</td>
+<td>Typically fewer</td>
+</tr>
+<tr>
+<td>Output tensor layout</td>
+<td>Includes anchor and objectness dimensions</td>
+<td>Different layout</td>
+</tr>
+<tr>
+<td>Custom post-processing code</td>
+<td>Written for the older layout</td>
+<td>Must be rewritten for the new layout</td>
+</tr>
+</tbody>
+</table>
+<p>The last two rows deserve attention. If you export a model and decode the raw output yourself, the code is specific to the architecture. Decoding code for YOLOv5 output does not work on YOLOv8 output. If you stay with the Ultralytics API for inference, you are protected from this.</p>
+<h2 id="what-this-means-for-you-in-practice">What this means for you in practice</h2>
+<h3 id="training">Training</h3>
+<p>With an anchor-free model, you do not tune anchors. That removes a step and one source of poor results on unusual datasets. It does not remove the need for good data. A model with bad labels trains badly either way.</p>
+<p>If you still use an anchor-based model, make sure the anchors fit your data. Check that your object sizes are reasonable at your chosen input size, and let the automatic anchor fitting run if your framework has it. Look at the training log to confirm what it did. Read the documentation of your version for how to inspect the result.</p>
+<h3 id="small-and-unusual-objects">Small and unusual objects</h3>
+<p>Anchor-free is not a magic fix for small objects. Small objects are hard because they cover few pixels. The remedies are more resolution, tiling, or better data, as described in <a href="/vision-field-notes/posts/class-imbalance-and-small-objects/">Class Imbalance and Small Objects</a>. Anchor-free design mainly saves you from tuning shapes.</p>
+<h3 id="speed">Speed</h3>
+<p>Do not assume anchor-free means faster. Speed depends on the whole architecture, the input size and the runtime. Measure on your target device. <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">Measuring FPS and Latency Correctly</a> explains how.</p>
+<h3 id="migration">Migration</h3>
+<p>If you move a project from an anchor-based to an anchor-free model:</p>
+<ol>
+<li>Retrain rather than reusing weights. The weights are not interchangeable.</li>
+<li>Keep your dataset and split the same, so you can compare results fairly.</li>
+<li>Check any custom decoding, tracking glue or export code that assumed the old output layout.</li>
+<li>Re-tune the confidence and NMS thresholds. The score distributions are not guaranteed to match.</li>
+<li>Validate on real footage before switching live systems.</li>
+</ol>
+<h2 id="a-note-on-history">A note on history</h2>
+<p>Anchors became popular because they made training stable and reasonably accurate in the early days of modern detectors, and several well-known detectors relied on them. Anchor-free methods grew in popularity as researchers found ways to get comparable or better accuracy without the extra tuning. The trend in the YOLO family follows that wider shift. It is a design preference with trade-offs, not a proof that anchors were wrong.</p>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li><strong>Treating anchors as the cause of every problem.</strong> Poor results usually come from data, labels or resolution before architecture details.</li>
+<li><strong>Copying old decoding code to a new model.</strong> The output shapes differ.</li>
+<li><strong>Expecting a free accuracy gain.</strong> Changing the detector type does not fix a weak dataset.</li>
+<li><strong>Comparing models unfairly.</strong> Use the same data, split and image size. See <a href="/vision-field-notes/posts/yolov5-vs-yolov8-vs-yolo11/">YOLOv5 vs YOLOv8 vs YOLO11</a>.</li>
+</ul>
+<h2 id="key-points">Key points</h2>
+<ul>
+<li>Anchors are predefined boxes that an anchor-based detector adjusts instead of predicting boxes from scratch.</li>
+<li>They add hyperparameters that depend on your data, which YOLOv5 partly automates.</li>
+<li>Anchor-free detectors predict boxes directly, removing anchor tuning.</li>
+<li>YOLOv5 is anchor-based. YOLOv8 and later Ultralytics models are anchor-free.</li>
+<li>Output layouts differ, so custom decoding code is not portable.</li>
+<li>Anchor-free does not automatically mean faster or better on your data. Test it.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/yolov5-vs-yolov8-vs-yolo11/">YOLOv5 vs YOLOv8 vs YOLO11</a>, <a href="/vision-field-notes/posts/yolov7-reparameterization/">How YOLOv7 Gets Real-Time Speed with Re-parameterization</a> and <a href="/vision-field-notes/posts/class-imbalance-and-small-objects/">Class Imbalance and Small Objects</a>.</p></article><div class="related"><h2 class="sec">More in YOLO and Detection Basics</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/choosing-yolo-model-size/"><div class="cat">YOLO and Detection Basics</div><h3>Nano, Small, Medium: How to Choose a YOLO Model Size</h3><p>How to choose a YOLO model size and input resolution: a method that starts from your hardware budget and accuracy needs, not a guess at nano, small or medium.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/classification-vs-detection-vs-segmentation/"><div class="cat">YOLO and Detection Basics</div><h3>Classification vs Detection vs Segmentation: Pick the Right Task</h3><p>Classification vs detection vs segmentation: how to choose the right computer vision task for your project, with a decision guide, cost trade-offs and examples.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/confidence-threshold-tuning/"><div class="cat">YOLO and Detection Basics</div><h3>Confidence Thresholds: Tuning a Detector to Cut False Alarms</h3><p>How to tune a confidence threshold for an object detector: read the precision-recall curve, tune per class, and cut false alarms without missing real events.</p><div class="meta">6 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

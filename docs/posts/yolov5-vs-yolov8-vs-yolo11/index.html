@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YOLOv5 vs YOLOv8 vs YOLO11: Which Should You Use? | Vision Field Notes</title>
+<meta name="description" content="YOLOv5 vs YOLOv8 vs YOLO11 compared in practice: workflow, accuracy and speed trade-offs, export support and licence, plus a simple way to decide.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/yolov5-vs-yolov8-vs-yolo11/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="YOLOv5 vs YOLOv8 vs YOLO11: Which Should You Use? | Vision Field Notes"><meta property="og:description" content="YOLOv5 vs YOLOv8 vs YOLO11 compared in practice: workflow, accuracy and speed trade-offs, export support and licence, plus a simple way to decide.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/yolov5-vs-yolov8-vs-yolo11/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "YOLOv5 vs YOLOv8 vs YOLO11: Which Should You Use?", "description": "YOLOv5 vs YOLOv8 vs YOLO11 compared in practice: workflow, accuracy and speed trade-offs, export support and licence, plus a simple way to decide.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/yolov5-vs-yolov8-vs-yolo11/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO and Detection Basics</a></div><h1>YOLOv5 vs YOLOv8 vs YOLO11: Which Should You Use?</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#the-short-version">The short version</a></li><li><a href="#what-changed-between-generations">What changed between generations</a></li><li><a href="#workflow-and-ecosystem">Workflow and ecosystem</a></li><li><a href="#accuracy-and-speed-trade-offs">Accuracy and speed trade-offs</a></li><li><a href="#export-and-deployment-support">Export and deployment support</a></li><li><a href="#licence">Licence</a></li><li><a href="#how-to-decide">How to decide</a></li><li><a href="#a-fair-comparison-checklist">A fair comparison checklist</a></li><li><a href="#key-points">Key points</a></li></ul></nav><p>Three Ultralytics model generations are in wide use: YOLOv5, YOLOv8 and YOLO11. People ask which one to pick. The honest answer is that for a new project the newest supported generation is usually a sensible default, and the differences matter less than your data. This article explains what actually differs, so you can decide without chasing leaderboard numbers.</p>
+<p>I am deliberately not quoting benchmark scores or speeds here. They depend on the dataset, the input size, the hardware and the export format, and they change between releases. Check the Ultralytics documentation for current figures, then measure on your own data.</p>
+<h2 id="the-short-version">The short version</h2>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>YOLOv5</th>
+<th>YOLOv8</th>
+<th>YOLO11</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Detection style</td>
+<td>Anchor-based</td>
+<td>Anchor-free</td>
+<td>Anchor-free</td>
+</tr>
+<tr>
+<td>Main package</td>
+<td>Original YOLOv5 repo, also usable via <code>ultralytics</code></td>
+<td><code>ultralytics</code></td>
+<td><code>ultralytics</code></td>
+</tr>
+<tr>
+<td>Tasks</td>
+<td>Detection, classification, segmentation</td>
+<td>Detection, segmentation, classification, pose, oriented boxes</td>
+<td>Same family of tasks as YOLOv8</td>
+</tr>
+<tr>
+<td>Licence</td>
+<td>AGPL-3.0</td>
+<td>AGPL-3.0</td>
+<td>AGPL-3.0</td>
+</tr>
+<tr>
+<td>Best for</td>
+<td>Existing projects already built on it</td>
+<td>Stable, widely documented default</td>
+<td>New projects wanting the latest Ultralytics line</td>
+</tr>
+</tbody>
+</table>
+<p>Treat the table as orientation, not a spec sheet. Verify the details in the current documentation.</p>
+<h2 id="what-changed-between-generations">What changed between generations</h2>
+<h3 id="yolov5">YOLOv5</h3>
+<p>YOLOv5 made YOLO easy to use. A clear training script, sensible defaults, and automatic handling of many details led to wide adoption. It uses anchors: predefined box shapes that the model adjusts. It can compute suitable anchors for your dataset automatically. Many tutorials, forum answers and older tutorials online refer to it, which is useful when you are debugging.</p>
+<p>Its workflow is script based. You run <code>train.py</code> and <code>detect.py</code> from the repository with command line flags. That works, but it is less convenient to embed in a larger Python program than a package API.</p>
+<h3 id="yolov8">YOLOv8</h3>
+<p>YOLOv8 moved to the <code>ultralytics</code> Python package, which gives one consistent interface for several tasks. The same <code>YOLO</code> class handles training, validation, prediction and export. It also moved to an anchor-free design with a decoupled head, which means box regression and classification are predicted by separate branches. Anchor-free detection removes the anchor settings you would otherwise tune. The article on <a href="/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/">anchor-free vs anchor-based detectors</a> explains the idea.</p>
+<p>For most people, the practical gain was the workflow. Training, validating and exporting is a handful of lines:</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+model = YOLO(&quot;yolov8n.pt&quot;)
+model.train(data=&quot;data.yaml&quot;, epochs=50, imgsz=640)
+metrics = model.val()
+model.export(format=&quot;onnx&quot;)
+</code></pre>
+<h3 id="yolo11">YOLO11</h3>
+<p>YOLO11 continues the same package and API. Ultralytics describes it as an update with architecture refinements aimed at a better accuracy and efficiency balance. From a user's point of view, you change the weights name, for example from <code>yolov8n.pt</code> to <code>yolo11n.pt</code>, and the rest of your code stays almost the same. Note that the name has no "v".</p>
+<p>Because the interface is shared, trying YOLO11 on a project that already uses YOLOv8 is cheap. That is the best argument for not agonising over the choice.</p>
+<h2 id="workflow-and-ecosystem">Workflow and ecosystem</h2>
+<p>If you are starting today, the <code>ultralytics</code> package is the easiest path. It gives you:</p>
+<ul>
+<li>One API for train, val, predict, track and export.</li>
+<li>Pretrained weights in the usual n, s, m, l, x sizes for each generation.</li>
+<li>Built-in export to formats such as ONNX, TensorRT and others, depending on your install and hardware.</li>
+<li>Active documentation and a large user community.</li>
+</ul>
+<p>YOLOv5 users often keep the older repository because their pipeline already works. That is a valid reason. Rewriting a working production pipeline just to switch versions is rarely worth it unless you hit a real limit.</p>
+<h2 id="accuracy-and-speed-trade-offs">Accuracy and speed trade-offs</h2>
+<p>Newer generations aim for better accuracy at a similar cost, or similar accuracy at a lower cost. That is the general direction, and it often holds on public benchmarks. But three things can reverse it on your project:</p>
+<ol>
+<li><strong>Your data is different.</strong> A small custom dataset of one class in a fixed camera view behaves very differently from COCO. Model differences can shrink or flip.</li>
+<li><strong>Your hardware path matters.</strong> A model that is faster on a GPU may not be faster on a Raspberry Pi CPU after export. Some operations convert well to a given runtime and others do not.</li>
+<li><strong>Model size matters more than version.</strong> Moving from a nano to a small model usually changes results more than moving from one generation to the next. See <a href="/vision-field-notes/posts/choosing-yolo-model-size/">Nano, Small, Medium: How to Choose a YOLO Model Size</a>.</li>
+</ol>
+<p>The way to settle it is a fair comparison. Train each candidate on the same split with the same image size and number of epochs, validate on the same held-out set, and time the exported model on the target device. Report precision, recall and mAP together with measured latency. Do not compare a model you tuned for a day against one you ran with defaults.</p>
+<h2 id="export-and-deployment-support">Export and deployment support</h2>
+<p>All three can usually be exported to ONNX, and from there to runtimes such as ONNX Runtime or TensorRT. Support for specific formats and operators changes between releases, so check the current export documentation for your target. If you deploy on a device with a vendor toolchain, such as an accelerator with its own compiler, confirm that the model and operators are supported before you commit. Finding out late is expensive.</p>
+<p>Post-processing is another gotcha. Anchor-based and anchor-free models have different output layouts. If you write your own decoding code after exporting to ONNX, code written for YOLOv5 output will not work on YOLOv8 output without changes. If you stay inside the <code>ultralytics</code> package for inference, this is handled for you. For details of the export route, see <a href="/vision-field-notes/posts/export-yolo-to-onnx/">Export YOLO to ONNX and Run It with ONNX Runtime</a>.</p>
+<h2 id="licence">Licence</h2>
+<p>All three Ultralytics lines are released under AGPL-3.0, and Ultralytics offers a commercial licence. AGPL-3.0 has obligations that matter if you distribute software or offer it over a network. This is not legal advice: read the current licence terms and ask a qualified person if you are building a commercial product. The full discussion is in <a href="/vision-field-notes/posts/yolo-licenses-explained/">YOLO Licenses Explained</a>.</p>
+<p>If licence terms are a blocker, you can look at detectors released under more permissive licences. Check each one's licence, and also the licence of the pretrained weights and the training data.</p>
+<h2 id="how-to-decide">How to decide</h2>
+<p>Use this simple order of questions:</p>
+<ol>
+<li><strong>Do you have a working YOLOv5 pipeline in production?</strong> Keep it unless you have a concrete problem. Plan a migration for when you next retrain.</li>
+<li><strong>Is this a new project?</strong> Start with the newest Ultralytics generation you are comfortable with, in a small size.</li>
+<li><strong>Do you need pose, oriented boxes or segmentation?</strong> Use the <code>ultralytics</code> package, which covers these tasks in one API.</li>
+<li><strong>Is your target hardware unusual?</strong> Test export and runtime on that device first, before training anything large.</li>
+<li><strong>Is the result close between two versions?</strong> Pick the one with better documentation and fewer deployment problems. Reliability beats a small metric gain.</li>
+</ol>
+<h2 id="a-fair-comparison-checklist">A fair comparison checklist</h2>
+<ul>
+<li>Same dataset split, same image size, same epochs.</li>
+<li>Same augmentation settings, or note every difference.</li>
+<li>Multiple runs if the dataset is small, since results vary between runs.</li>
+<li>Measure on the exported model on the target device, not only the PyTorch model on a workstation.</li>
+<li>Include your hardest cases: night footage, occlusion, small objects.</li>
+</ul>
+<h2 id="key-points">Key points</h2>
+<ul>
+<li>For new work, the newest supported Ultralytics generation is a reasonable default, and switching between YOLOv8 and YOLO11 is cheap because the API is shared.</li>
+<li>YOLOv5 is anchor-based and script driven. YOLOv8 and YOLO11 are anchor-free and package driven.</li>
+<li>Model size and your data usually matter more than the version number.</li>
+<li>Output formats differ, so custom post-processing code is not portable across generations.</li>
+<li>All three are AGPL-3.0 with a commercial option. Check the current licence.</li>
+<li>Decide by running a fair test on your own data and target device.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/choosing-yolo-model-size/">Nano, Small, Medium: How to Choose a YOLO Model Size</a>, <a href="/vision-field-notes/posts/yolo-licenses-explained/">YOLO Licenses Explained</a> and <a href="/vision-field-notes/posts/train-yolo-on-a-custom-dataset/">Train YOLO on a Custom Dataset</a>.</p></article><div class="related"><h2 class="sec">More in YOLO and Detection Basics</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/"><div class="cat">YOLO and Detection Basics</div><h3>Anchor-Free vs Anchor-Based Object Detectors</h3><p>Anchor-free vs anchor-based object detectors: what anchors are, why newer YOLO versions dropped them, and what the change means for training and deployment.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/choosing-yolo-model-size/"><div class="cat">YOLO and Detection Basics</div><h3>Nano, Small, Medium: How to Choose a YOLO Model Size</h3><p>How to choose a YOLO model size and input resolution: a method that starts from your hardware budget and accuracy needs, not a guess at nano, small or medium.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/classification-vs-detection-vs-segmentation/"><div class="cat">YOLO and Detection Basics</div><h3>Classification vs Detection vs Segmentation: Pick the Right Task</h3><p>Classification vs detection vs segmentation: how to choose the right computer vision task for your project, with a decision guide, cost trade-offs and examples.</p><div class="meta">5 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

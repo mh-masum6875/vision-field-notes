@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How to Spot Overfitting in Object Detection | Vision Field Notes</title>
+<meta name="description" content="How to spot overfitting in object detection: read loss curves and validation metrics, recognise the warning signs, and apply practical fixes that work.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/spotting-overfitting-in-detection/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to Spot Overfitting in Object Detection | Vision Field Notes"><meta property="og:description" content="How to spot overfitting in object detection: read loss curves and validation metrics, recognise the warning signs, and apply practical fixes that work.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/spotting-overfitting-in-detection/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "How to Spot Overfitting in Object Detection", "description": "How to spot overfitting in object detection: read loss curves and validation metrics, recognise the warning signs, and apply practical fixes that work.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/spotting-overfitting-in-detection/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/datasets-and-training/">Datasets and Training</a></div><h1>How to Spot Overfitting in Object Detection</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#what-overfitting-means-here">What overfitting means here</a></li><li><a href="#where-to-look">Where to look</a></li><li><a href="#overfitting-or-something-else">Overfitting or something else?</a></li><li><a href="#practical-fixes">Practical fixes</a></li><li><a href="#a-simple-diagnostic-routine">A simple diagnostic routine</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#key-points">Key points</a></li></ul></nav><p>An overfit detector has memorised its training images instead of learning the task. It looks excellent on data it has seen and disappoints on anything new. In a detection project this usually shows up as a model that scores well in the lab and fails on the first real camera.</p>
+<p>This article explains what overfitting looks like in detection, how to read the curves a training run produces, and what to do about it.</p>
+<h2 id="what-overfitting-means-here">What overfitting means here</h2>
+<p>A model has a fixed capacity to fit patterns. If the training set is small, narrow or repetitive, the model can use that capacity to remember specific images, backgrounds and even individual lighting conditions, rather than the general shape of the objects.</p>
+<p>The core symptom is a gap: performance on training data keeps improving while performance on held-out data stalls or gets worse.</p>
+<p>Note that there is a related but different problem: data leakage. If your validation set contains near-copies of training images, validation metrics look great even for a badly overfit model. That hides overfitting rather than showing it. Fix the split first. See <a href="/vision-field-notes/posts/train-val-test-split-video-frames/">Train/Validation Split for Video Frames: Avoid Data Leakage</a>.</p>
+<h2 id="where-to-look">Where to look</h2>
+<p>An Ultralytics training run writes <code>results.csv</code> and a <code>results.png</code> plot in the run folder. They contain the numbers you need.</p>
+<h3 id="loss-curves">Loss curves</h3>
+<p>Detection training reports several loss terms, typically for box localisation, classification and an objectness or distribution term depending on the version. Each has a training and a validation curve.</p>
+<p>Healthy: both fall together and level off, with a small gap.</p>
+<p>Overfitting: training loss keeps falling, validation loss flattens and then rises. The point where the validation curve turns upward is roughly where useful learning ended.</p>
+<p>Check each loss term separately. Sometimes the classification loss overfits first while box loss is still fine.</p>
+<h3 id="validation-metrics">Validation metrics</h3>
+<p>Plot precision, recall, mAP50 and mAP50-95 per epoch. In a healthy run these rise and settle. In an overfit run they peak and then drift downward or become noisy while training loss keeps improving.</p>
+<p>Metrics on a small validation set are noisy. A drop of a small amount between two epochs may be nothing. Look at the trend over many epochs, not single points.</p>
+<h3 id="training-set-metrics-vs-validation-metrics">Training-set metrics vs validation metrics</h3>
+<p>For a direct check, evaluate the final model on a sample of the training images and on the validation images, using the same settings. A large gap, such as near-perfect on training and clearly worse on validation, is the clearest sign.</p>
+<h3 id="qualitative-signs">Qualitative signs</h3>
+<p>Numbers can miss what your eyes catch. Run the model on footage it has never seen and watch for:</p>
+<ul>
+<li>Strong results on the original camera, poor results on a new one.</li>
+<li>Detections that depend on a specific background, such as only firing in front of one wall.</li>
+<li>Confident detections of things that merely resemble training backgrounds.</li>
+<li>Misses when lighting, weather or angle differs from the training data.</li>
+</ul>
+<p>If performance collapses with small changes in conditions, the model has learned the dataset, not the task.</p>
+<h2 id="overfitting-or-something-else">Overfitting or something else?</h2>
+<p>Not every poor result is overfitting. Use this table to separate causes.</p>
+<table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Likely cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Training and validation metrics both low</td>
+<td>Underfitting, bad labels, or model too small</td>
+</tr>
+<tr>
+<td>Training great, validation poor</td>
+<td>Overfitting or train/validation mismatch</td>
+</tr>
+<tr>
+<td>Validation great, real footage poor</td>
+<td>Data leakage or unrepresentative validation set</td>
+</tr>
+<tr>
+<td>One class poor, others fine</td>
+<td>Too few examples or ambiguous labels for that class</td>
+</tr>
+<tr>
+<td>Metrics noisy from epoch to epoch</td>
+<td>Validation set too small</td>
+</tr>
+</tbody>
+</table>
+<p>Underfitting is addressed differently: more training, a larger model, better labels. Applying anti-overfitting fixes to an underfit model makes it worse.</p>
+<h2 id="practical-fixes">Practical fixes</h2>
+<p>Roughly in order of effectiveness:</p>
+<h3 id="1-add-more-varied-data">1. Add more varied data</h3>
+<p>This is almost always the best remedy. Add examples from different times, weather, cameras and sites. More images that look the same do little. See <a href="/vision-field-notes/posts/how-many-images-do-you-need/">How Many Images Do You Need to Train an Object Detector?</a>.</p>
+<h3 id="2-stop-at-the-right-time">2. Stop at the right time</h3>
+<p>Keep the checkpoint with the best validation result rather than the last epoch. Ultralytics saves <code>best.pt</code> for this. It also supports an early-stopping option called <code>patience</code>, which ends training when validation stops improving. Check the documentation for your version for the exact behaviour.</p>
+<h3 id="3-use-realistic-augmentation">3. Use realistic augmentation</h3>
+<p>Augmentation increases the effective variety the model sees. Keep it realistic for your camera. See <a href="/vision-field-notes/posts/data-augmentation-for-detection/">Data Augmentation for Object Detection: What Helps and What Hurts</a>.</p>
+<h3 id="4-start-from-pretrained-weights-and-consider-freezing">4. Start from pretrained weights and consider freezing</h3>
+<p>Pretrained weights carry general visual features. With very small datasets, freezing early layers keeps those features stable and reduces what can be overfit. See <a href="/vision-field-notes/posts/fine-tuning-yolo-transfer-learning/">Fine-Tuning YOLO: Transfer Learning Explained</a>.</p>
+<h3 id="5-use-a-smaller-model">5. Use a smaller model</h3>
+<p>A smaller model has less capacity to memorise. If a nano model matches a medium model on validation, the smaller one is the safer pick and cheaper to deploy. See <a href="/vision-field-notes/posts/choosing-yolo-model-size/">Nano, Small, Medium: How to Choose a YOLO Model Size</a>.</p>
+<h3 id="6-regularise">6. Regularise</h3>
+<p>Weight decay is applied by default in typical training setups. Increasing it slightly, or using dropout where a framework supports it, can help, but these are weaker tools than more data. Change one at a time and compare.</p>
+<h3 id="7-clean-the-labels">7. Clean the labels</h3>
+<p>Noisy or inconsistent labels make memorisation more attractive to the model, since it cannot find a clean rule. Fixing labels often closes the gap more than any hyperparameter. See <a href="/vision-field-notes/posts/annotation-mistakes-that-hurt-models/">Annotation Mistakes That Quietly Ruin Your Model</a>.</p>
+<h2 id="a-simple-diagnostic-routine">A simple diagnostic routine</h2>
+<p>Run through this after any training run:</p>
+<ol>
+<li>Open <code>results.png</code>. Do validation losses turn upward while training losses keep falling?</li>
+<li>Compare metrics from the best epoch with the last epoch. Is the last clearly worse?</li>
+<li>Evaluate on a training sample and the validation set. How large is the gap?</li>
+<li>Look at predictions on a fresh clip from a camera or time period outside the dataset.</li>
+<li>Check the validation set for leakage with the training set.</li>
+<li>If you suspect overfitting, retrain with one fix applied and compare against the baseline.</li>
+</ol>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li><strong>Trusting the training curve.</strong> It always improves.</li>
+<li><strong>Using the last checkpoint by default.</strong> The best one may be earlier.</li>
+<li><strong>Tuning on the test set.</strong> Every time you adjust settings by looking at a set, it leaks into your decisions. Keep a final set you check once.</li>
+<li><strong>Reading noise as signal.</strong> On a small validation set, small metric changes mean little.</li>
+<li><strong>Fighting overfitting with a bigger model.</strong> That usually makes it worse.</li>
+<li><strong>Declaring victory on the same camera.</strong> Always test generalisation on something new.</li>
+</ul>
+<h2 id="key-points">Key points</h2>
+<ul>
+<li>Overfitting is a gap: training gets better, held-out data does not.</li>
+<li>Read loss and metric curves per epoch, and compare best against last.</li>
+<li>Rule out leakage and underfitting before applying fixes.</li>
+<li>More varied data beats every other fix.</li>
+<li>Keep <code>best.pt</code>, use early stopping, and test on a camera the model has never seen.</li>
+</ul>
+<p>Next steps: learn how to read the metrics themselves in <a href="/vision-field-notes/posts/map-precision-recall-explained/">mAP, Precision and Recall: How to Read Detection Results</a>, and see how to start from pretrained weights in <a href="/vision-field-notes/posts/fine-tuning-yolo-transfer-learning/">Fine-Tuning YOLO: Transfer Learning Explained</a>.</p></article><div class="related"><h2 class="sec">More in Datasets and Training</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/annotation-mistakes-that-hurt-models/"><div class="cat">Datasets and Training</div><h3>Annotation Mistakes That Quietly Ruin Your Model</h3><p>Common object detection annotation mistakes, from loose boxes to missing labels and inconsistent classes, and a practical way to audit and fix your dataset.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/class-imbalance-and-small-objects/"><div class="cat">Datasets and Training</div><h3>Class Imbalance and Small Objects: Practical Fixes</h3><p>Practical fixes for class imbalance and small objects in detection: more data, tiling, higher resolution, sampling and the right metrics to judge progress.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/cvat-vs-label-studio-vs-roboflow/"><div class="cat">Datasets and Training</div><h3>CVAT vs Label Studio vs Roboflow: Choosing an Annotation Tool</h3><p>CVAT vs Label Studio vs Roboflow compared on cost, hosting, export formats, team use and labelling speed, so you can pick an annotation tool for detection.</p><div class="meta">6 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

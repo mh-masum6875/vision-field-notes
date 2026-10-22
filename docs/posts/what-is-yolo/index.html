@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What Is YOLO? Object Detection Explained Without the Math | Vision Field Notes</title>
+<meta name="description" content="What is YOLO? A plain explanation of how this object detection model finds objects in a single pass, what its output means, and where it fits in a project.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/what-is-yolo/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="What Is YOLO? Object Detection Explained Without the Math | Vision Field Notes"><meta property="og:description" content="What is YOLO? A plain explanation of how this object detection model finds objects in a single pass, what its output means, and where it fits in a project.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/what-is-yolo/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "What Is YOLO? Object Detection Explained Without the Math", "description": "What is YOLO? A plain explanation of how this object detection model finds objects in a single pass, what its output means, and where it fits in a project.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/what-is-yolo/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO and Detection Basics</a></div><h1>What Is YOLO? Object Detection Explained Without the Math</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#the-problem-yolo-solves">The problem YOLO solves</a></li><li><a href="#how-a-single-pass-works">How a single pass works</a></li><li><a href="#what-the-output-means">What the output means</a></li><li><a href="#the-classes-a-model-knows">The classes a model knows</a></li><li><a href="#a-minimal-example">A minimal example</a></li><li><a href="#yolo-versions-and-the-name">YOLO versions and the name</a></li><li><a href="#where-yolo-fits-well">Where YOLO fits well</a></li><li><a href="#where-yolo-is-not-the-right-tool">Where YOLO is not the right tool</a></li><li><a href="#how-to-judge-a-detector">How to judge a detector</a></li><li><a href="#key-points">Key points</a></li></ul></nav><p>YOLO stands for "You Only Look Once". It is a family of object detection models that look at an image one time and return a list of objects, each with a box, a class name and a confidence score. If you have seen a video with coloured rectangles and labels drawn around people or cars, there is a good chance a model like YOLO produced them.</p>
+<p>This article explains how it works at a practical level, what the output looks like, and where it fits. There is no maths here. If you can read a spreadsheet, you can follow it.</p>
+<h2 id="the-problem-yolo-solves">The problem YOLO solves</h2>
+<p>Image classification answers one question: what is in this picture? Object detection asks for more. It wants to know what is in the picture, where each thing is, and how many there are. The answer is a set of bounding boxes.</p>
+<p>Older detection approaches worked in two stages. First they proposed regions that might contain an object. Then they looked at each region again and classified it. That works, but it repeats a lot of computation and it is slow.</p>
+<p>YOLO takes a different route. It runs the whole image through one neural network and predicts boxes and classes directly. That is the "once" in the name. The single pass is why YOLO models became popular for video, robots and small devices, where speed matters.</p>
+<h2 id="how-a-single-pass-works">How a single pass works</h2>
+<p>You do not need the details to use the model, but a rough picture helps when something goes wrong.</p>
+<ol>
+<li>The image is resized to a fixed input size, often 640 by 640 pixels for current Ultralytics models. Small or large images are scaled, usually with padding so the shape is not distorted.</li>
+<li>A convolutional network, called the backbone, turns the image into feature maps. Early layers pick up edges and textures. Deeper layers pick up shapes and parts of objects.</li>
+<li>A neck combines feature maps from different depths. This lets the model see both fine detail (good for small objects) and wider context (good for large ones).</li>
+<li>A head makes predictions at several scales. At each location on the feature map, it outputs candidate boxes, a score for "is there an object here", and a score for each class.</li>
+<li>The model produces many overlapping candidates. A clean-up step called non-maximum suppression removes duplicates and keeps the best box for each object.</li>
+</ol>
+<p>The result is a short list. Each row has a box (position and size), a class and a confidence between 0 and 1.</p>
+<h2 id="what-the-output-means">What the output means</h2>
+<p>Say you run a model on a street photo. You might get rows like these:</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Confidence</th>
+<th>Box (x1, y1, x2, y2)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>person</td>
+<td>0.91</td>
+<td>corner coordinates in pixels</td>
+</tr>
+<tr>
+<td>car</td>
+<td>0.84</td>
+<td>corner coordinates in pixels</td>
+</tr>
+<tr>
+<td>car</td>
+<td>0.37</td>
+<td>corner coordinates in pixels</td>
+</tr>
+</tbody>
+</table>
+<p>Three things to keep in mind:</p>
+<ul>
+<li><strong>Confidence is not a probability of being right.</strong> It is a score the model produces. A score of 0.9 usually means the model is quite sure, but it does not mean 90 percent of such detections are correct. You find out how reliable it is by testing on your own data.</li>
+<li><strong>You choose a threshold.</strong> Detections below the confidence threshold are dropped. A low threshold gives you more detections and more false alarms. A high one gives fewer false alarms and more misses. The article on <a href="/vision-field-notes/posts/confidence-threshold-tuning/">confidence thresholds</a> covers how to pick one.</li>
+<li><strong>Boxes are rectangles.</strong> They include background around the object. Two people standing close together may have overlapping boxes. If you need exact outlines, you want segmentation instead.</li>
+</ul>
+<h2 id="the-classes-a-model-knows">The classes a model knows</h2>
+<p>A model only detects what it was trained on. Many pretrained YOLO models are trained on the COCO dataset, which has 80 everyday classes such as person, bicycle, car, dog and chair. If you need hard hats, a specific machine part or a type of waste, the pretrained model will not know it. You collect and label images of those objects and train the model on them, usually starting from pretrained weights. This is called fine-tuning.</p>
+<p>This is the most common point where people get stuck. They expect the pretrained model to detect their special object, it does not, and they conclude the model is bad. The model is fine. It just has not been taught that class.</p>
+<h2 id="a-minimal-example">A minimal example</h2>
+<p>With the Ultralytics package, running a pretrained model takes a few lines:</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+model = YOLO(&quot;yolov8n.pt&quot;)  # a small pretrained model
+results = model.predict(&quot;street.jpg&quot;, conf=0.25)
+
+for r in results:
+    for box, score, cls in zip(r.boxes.xyxy, r.boxes.conf, r.boxes.cls):
+        print(r.names[int(cls)], float(score), box.tolist())
+</code></pre>
+<p>The first run downloads the weights. Each result holds the boxes, scores and class indices for one image. The <code>conf</code> argument is the confidence threshold.</p>
+<h2 id="yolo-versions-and-the-name">YOLO versions and the name</h2>
+<p>The name is used loosely. The original YOLO came from research by Joseph Redmon and colleagues. Since then, many people and companies have released models that use the name or build on the idea, and they differ in design, quality and licence. Ultralytics maintains the YOLOv5, YOLOv8 and YOLO11 line that most people use today through the <code>ultralytics</code> Python package. Other groups released versions such as YOLOv7.</p>
+<p>Do not assume a higher number is always better for your project. Compare them on your own data. The article on <a href="/vision-field-notes/posts/yolov5-vs-yolov8-vs-yolo11/">YOLOv5 vs YOLOv8 vs YOLO11</a> goes through the practical differences.</p>
+<p>One more point: licences differ between versions, and they matter if you build a commercial product. The Ultralytics models are released under AGPL-3.0, with a commercial licence available from Ultralytics. Check the current licence before you ship anything. There is more in <a href="/vision-field-notes/posts/yolo-licenses-explained/">YOLO Licenses Explained</a>.</p>
+<h2 id="where-yolo-fits-well">Where YOLO fits well</h2>
+<p>YOLO is a good fit when:</p>
+<ul>
+<li>You need boxes and counts, not pixel-perfect outlines.</li>
+<li>Speed matters, for example live video or limited hardware.</li>
+<li>The objects are reasonably visible and the camera view is fairly consistent.</li>
+<li>You can collect and label examples of what you want to find.</li>
+</ul>
+<p>Typical uses include counting people or vehicles, checking whether safety equipment is present, spotting objects on a conveyor, and watching a restricted zone. In production video analytics, the detector is only one part of the system. Around it you need stream handling, tracking, rules and alerts. A good detector with poor surrounding logic still produces a poor product.</p>
+<h2 id="where-yolo-is-not-the-right-tool">Where YOLO is not the right tool</h2>
+<ul>
+<li><strong>Whole-image decisions.</strong> If the question is "is this part good or bad" and there is one object per image, plain classification is simpler and often more accurate.</li>
+<li><strong>Exact shapes.</strong> If you need to measure an area or cut out an object, use a segmentation model. The article on <a href="/vision-field-notes/posts/classification-vs-detection-vs-segmentation/">classification, detection and segmentation</a> helps you choose.</li>
+<li><strong>Very tiny objects.</strong> Objects that are only a few pixels wide in the input are hard for any detector. You may need higher resolution or tiling.</li>
+<li><strong>Tasks with no visual signal.</strong> If a human cannot tell the answer from the image, the model usually cannot either.</li>
+</ul>
+<h2 id="how-to-judge-a-detector">How to judge a detector</h2>
+<p>Do not trust a demo video. Judge a detector with numbers on data it has not seen. The common ones are precision (how many detections were correct), recall (how many real objects were found) and mAP, a summary across thresholds. These are explained in <a href="/vision-field-notes/posts/map-precision-recall-explained/">mAP, Precision and Recall</a>. Then look at real failure cases by eye. Numbers tell you how often it fails; images tell you why.</p>
+<h2 id="key-points">Key points</h2>
+<ul>
+<li>YOLO detects objects in one pass and returns boxes, classes and confidence scores.</li>
+<li>The model only knows the classes it was trained on. Custom objects need custom training.</li>
+<li>Confidence is a score, not a guarantee. Pick a threshold using your own test data.</li>
+<li>Boxes are rectangles. Use segmentation if you need outlines.</li>
+<li>Different YOLO versions have different designs and licences. Check the current licence before commercial use.</li>
+<li>Judge a model on unseen data from your real camera, not on a demo.</li>
+</ul>
+<p>Next steps: read <a href="/vision-field-notes/posts/yolov5-vs-yolov8-vs-yolo11/">YOLOv5 vs YOLOv8 vs YOLO11</a> to pick a version, and <a href="/vision-field-notes/posts/iou-and-nms-explained/">IoU and Non-Maximum Suppression</a> to understand the clean-up step.</p></article><div class="related"><h2 class="sec">More in YOLO and Detection Basics</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/"><div class="cat">YOLO and Detection Basics</div><h3>Anchor-Free vs Anchor-Based Object Detectors</h3><p>Anchor-free vs anchor-based object detectors: what anchors are, why newer YOLO versions dropped them, and what the change means for training and deployment.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/choosing-yolo-model-size/"><div class="cat">YOLO and Detection Basics</div><h3>Nano, Small, Medium: How to Choose a YOLO Model Size</h3><p>How to choose a YOLO model size and input resolution: a method that starts from your hardware budget and accuracy needs, not a guess at nano, small or medium.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/classification-vs-detection-vs-segmentation/"><div class="cat">YOLO and Detection Basics</div><h3>Classification vs Detection vs Segmentation: Pick the Right Task</h3><p>Classification vs detection vs segmentation: how to choose the right computer vision task for your project, with a decision guide, cost trade-offs and examples.</p><div class="meta">5 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

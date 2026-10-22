@@ -1,0 +1,21 @@
+{
+  "_help": "For each key: 'name' is the label, 'url' is a plain product page (used when no affiliate link), 'aff_url' is your affiliate link. If 'aff_url' is set it is used and marked as sponsored. If both are empty the text is shown without a link.",
+  "rpi5":            {"name": "Raspberry Pi 5", "url": "https://www.raspberrypi.com/products/raspberry-pi-5/", "aff_url": ""},
+  "rpi_ai_kit":      {"name": "Raspberry Pi AI Kit", "url": "https://www.raspberrypi.com/products/ai-kit/", "aff_url": ""},
+  "rpi_camera":      {"name": "Raspberry Pi camera module", "url": "https://www.raspberrypi.com/products/camera-module-3/", "aff_url": ""},
+  "rpi_cooler":      {"name": "Raspberry Pi Active Cooler", "url": "https://www.raspberrypi.com/products/active-cooler/", "aff_url": ""},
+  "rpi_psu":         {"name": "Raspberry Pi 27W USB-C power supply", "url": "https://www.raspberrypi.com/products/27w-power-supply/", "aff_url": ""},
+  "nvme_hat":        {"name": "NVMe SSD base for Raspberry Pi", "url": "", "aff_url": ""},
+  "sd_card":         {"name": "high-endurance microSD card", "url": "", "aff_url": ""},
+  "jetson_orin":     {"name": "Jetson Orin Nano Developer Kit", "url": "", "aff_url": ""},
+  "usb_webcam":      {"name": "USB webcam", "url": "", "aff_url": ""},
+  "ip_camera":       {"name": "PoE IP camera", "url": "", "aff_url": ""},
+  "poe_switch":      {"name": "PoE switch", "url": "", "aff_url": ""},
+  "oak_camera":      {"name": "OAK-D camera", "url": "", "aff_url": ""},
+  "gpu_rtx":         {"name": "NVIDIA RTX graphics card", "url": "", "aff_url": ""},
+  "cloud_gpu":       {"name": "cloud GPU rental", "url": "", "aff_url": ""},
+  "domain_host":     {"name": "domain and hosting", "url": "", "aff_url": ""},
+  "book_dl":         {"name": "deep learning book", "url": "", "aff_url": ""},
+  "course_cv":       {"name": "online computer vision course", "url": "", "aff_url": ""},
+  "annotation_tool": {"name": "annotation platform", "url": "", "aff_url": ""}
+}

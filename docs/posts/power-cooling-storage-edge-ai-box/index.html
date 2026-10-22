@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Power, Cooling and Storage for a Reliable Edge AI Box | Vision Field Notes</title>
+<meta name="description" content="How to build a reliable edge AI box: power supply quality, thermal throttling and cooling, SD card wear versus SSD storage, and uptime practices.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/power-cooling-storage-edge-ai-box/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Power, Cooling and Storage for a Reliable Edge AI Box | Vision Field Notes"><meta property="og:description" content="How to build a reliable edge AI box: power supply quality, thermal throttling and cooling, SD card wear versus SSD storage, and uptime practices.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/power-cooling-storage-edge-ai-box/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Power, Cooling and Storage for a Reliable Edge AI Box", "description": "How to build a reliable edge AI box: power supply quality, thermal throttling and cooling, SD card wear versus SSD storage, and uptime practices.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/power-cooling-storage-edge-ai-box/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge Hardware and Deployment</a></div><h1>Power, Cooling and Storage for a Reliable Edge AI Box</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#power">Power</a></li><li><a href="#cooling">Cooling</a></li><li><a href="#storage">Storage</a></li><li><a href="#uptime-practices">Uptime practices</a></li><li><a href="#a-burn-in-test">A burn-in test</a></li><li><a href="#key-points">Key points</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav><p>A model that works on your desk can still fail in the field. When an edge AI device goes down, the cause is rarely the neural network. It is usually a weak power supply, heat, a worn-out SD card or a process that nobody restarted. This article covers the basics that make an edge box run for months without a visit.</p>
+<p>The examples use Raspberry Pi hardware because it is common, but the principles apply to any small computer.</p>
+<h2 id="power">Power</h2>
+<h3 id="use-a-proper-supply">Use a proper supply</h3>
+<p>Small boards are sensitive to supply quality. A cheap charger or thin cable can drop voltage under load, especially when the board is busy with inference and USB devices. The result may be random crashes, corrupted files or throttled performance.</p>
+<p>Practical rules:</p>
+<ul>
+<li>Use the manufacturer's recommended supply. For a Raspberry Pi 5, that means the <a href="https://www.raspberrypi.com/products/27w-power-supply/" rel="noopener" target="_blank">official power supply</a> or one that meets the current specification. Check the board's documentation for the required rating.</li>
+<li>Use a short, good-quality cable.</li>
+<li>Count peripherals. USB cameras, SSDs and accelerators all draw from the same supply.</li>
+<li>If the board reports under-voltage, treat it as a real problem and not as a warning to ignore.</li>
+</ul>
+<p>On Raspberry Pi OS you can check throttling and under-voltage flags with <code>vcgencmd get_throttled</code>. Look this up in the current documentation to interpret the bit flags, and log the value over time in your health checks.</p>
+<h3 id="power-loss">Power loss</h3>
+<p>Sudden power loss is the most common cause of file system corruption. Options to reduce risk:</p>
+<ul>
+<li>Use a UPS or a battery-backed supply for important installations.</li>
+<li>Reduce writes so there is less to corrupt (see storage below).</li>
+<li>Use a journaling file system and avoid heavy writes at the moment of failure.</li>
+<li>For appliances, consider a read-only root file system with a separate writable data partition.</li>
+</ul>
+<h3 id="power-over-ethernet">Power over Ethernet</h3>
+<p>For IP cameras, PoE removes the need for a separate power cable at the camera. A PoE switch supplies power and data on one cable. Check the switch's total power budget against the number of cameras, because exceeding it causes cameras to drop out.</p>
+<h2 id="cooling">Cooling</h2>
+<h3 id="why-heat-matters">Why heat matters</h3>
+<p>When a processor gets too hot, it lowers its clock speed to protect itself. This is thermal throttling. Your detection frame rate then falls without any error message. A device may seem fast in a short test and slow after ten minutes.</p>
+<h3 id="how-to-check">How to check</h3>
+<p>On Raspberry Pi OS, <code>vcgencmd measure_temp</code> reports the temperature, and <code>vcgencmd get_throttled</code> shows whether throttling has occurred. On other platforms, look for thermal zone files or vendor tools. Do this:</p>
+<ol>
+<li>Run your real workload, not an idle system.</li>
+<li>Let it run for a long time, at least until the temperature levels off.</li>
+<li>Log temperature and frame rate together.</li>
+<li>If frame rate falls as temperature rises, you have a cooling problem.</li>
+</ol>
+<h3 id="what-to-do">What to do</h3>
+<ul>
+<li>Add a heatsink and fan. An <a href="https://www.raspberrypi.com/products/active-cooler/" rel="noopener" target="_blank">active cooler or fan case</a> is inexpensive for a Pi and removes most throttling problems.</li>
+<li>Mind airflow. A fan inside a sealed box only circulates hot air. The heat has to leave the enclosure.</li>
+<li>Plan for the hottest day. An enclosure in direct sun can be much hotter than your lab.</li>
+<li>Use a lower-power mode or smaller model if you cannot cool well. Reducing input size or analysis rate cuts heat too. See <a href="/vision-field-notes/posts/choosing-yolo-model-size/">choosing a YOLO model size</a>.</li>
+<li>Keep dust in mind. Filters or sealed designs with proper heat sinking last longer in dirty places.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<h3 id="sd-card-wear">SD card wear</h3>
+<p>MicroSD cards are convenient, but they are the weakest part of many small deployments. Flash storage wears with writes, and cheap cards can fail or corrupt data, especially with frequent small writes such as logs and databases.</p>
+<p>Reduce the risk:</p>
+<ul>
+<li>Choose a high-endurance microSD card designed for continuous writing, and buy from a reliable seller to avoid fakes.</li>
+<li>Reduce writes. Send logs to memory or a remote server, limit debug output and avoid saving every frame.</li>
+<li>Keep the operating system on the card and write data elsewhere.</li>
+<li>Make a backup image of a working card so a replacement takes minutes.</li>
+</ul>
+<h3 id="ssd-instead-of-sd">SSD instead of SD</h3>
+<p>For heavier or long-lived use, an SSD is usually more robust and faster. With the Raspberry Pi 5, you can attach an NVMe drive through a HAT or base on the PCIe interface. Benefits: better sustained write performance and typically better endurance for write-heavy work. Costs: extra hardware, more power draw and a bit more setup. Check that the HAT and drive are compatible, and follow the current instructions for booting from NVMe.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Good for</th>
+<th>Watch out for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Standard SD card</td>
+<td>Prototypes, light use</td>
+<td>Wear, corruption, fakes</td>
+</tr>
+<tr>
+<td>High-endurance SD card</td>
+<td>Light logging, appliance-style devices</td>
+<td>Still limited write endurance</td>
+</tr>
+<tr>
+<td>NVMe SSD</td>
+<td>Video clips, databases, heavy logging</td>
+<td>Power, cost, compatibility</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-to-store">What to store</h3>
+<p>Decide what the device keeps and for how long.</p>
+<ul>
+<li><strong>Frames and clips:</strong> only save what you need, such as the seconds around an event, not continuous video, unless that is the product.</li>
+<li><strong>Retention:</strong> delete old files automatically. A full disk is a classic cause of failures at 3 a.m. Set a maximum disk usage and a cleanup job.</li>
+<li><strong>Privacy:</strong> stored footage may contain people. Keep only what is needed and for the shortest time. See <a href="/vision-field-notes/posts/privacy-and-ethics-camera-analytics/">privacy and ethics in camera analytics</a>.</li>
+</ul>
+<h2 id="uptime-practices">Uptime practices</h2>
+<p>Hardware is half the story. Software must also recover by itself.</p>
+<h3 id="run-as-a-service">Run as a service</h3>
+<p>Use a process supervisor such as <code>systemd</code> or a container restart policy, so the application restarts after a crash or reboot. In Docker, a restart policy like <code>unless-stopped</code> does this. See <a href="/vision-field-notes/posts/dockerize-a-computer-vision-app/">Dockerize a computer vision app</a> for container patterns.</p>
+<h3 id="use-a-watchdog">Use a watchdog</h3>
+<p>A hardware or software watchdog reboots the device if it hangs. Many boards have a hardware watchdog. Combine it with an application-level heartbeat: if your main loop stops producing results, restart it.</p>
+<h3 id="health-checks-and-monitoring">Health checks and monitoring</h3>
+<p>Track a few signals and send them somewhere you will see them:</p>
+<ul>
+<li>Frames processed per minute, and time since the last frame.</li>
+<li>Temperature and throttling flags.</li>
+<li>Free disk space.</li>
+<li>Memory use over time, to catch leaks.</li>
+<li>Camera connection state.</li>
+</ul>
+<p>Alert on the absence of data, not just on errors. A device that is silent is often a device that has failed. Camera reconnection logic is covered in <a href="/vision-field-notes/posts/handling-rtsp-dropouts-and-reconnects/">handling RTSP dropouts</a>.</p>
+<h3 id="time-and-logs">Time and logs</h3>
+<p>Keep the clock correct with network time, since wrong timestamps make events hard to trust. Rotate logs and cap their size.</p>
+<h3 id="updates">Updates</h3>
+<p>Automatic updates can break a working system, and no updates can leave security holes. Pick a policy: test updates on a spare device first, pin versions and keep a way to roll back. Remote access should use keys, not default passwords.</p>
+<h2 id="a-burn-in-test">A burn-in test</h2>
+<p>Before you ship a box, run it for several days under realistic load in the enclosure it will live in. Include a power-cut test and a network-cut test. Confirm that it recovers without a person touching it. The <a href="/vision-field-notes/posts/pre-deployment-testing-checklist/">pre-deployment testing checklist</a> lists more checks.</p>
+<h2 id="key-points">Key points</h2>
+<ul>
+<li>A good power supply and cable prevent many mysterious faults.</li>
+<li>Test cooling under real, sustained load and log temperature next to frame rate.</li>
+<li>Reduce SD card writes; use high-endurance cards or an SSD for heavy use.</li>
+<li>Set retention rules so the disk never fills.</li>
+<li>Run the app as a service with a watchdog and health checks.</li>
+<li>Alert when data stops, not only when errors appear.</li>
+<li>Do a multi-day burn-in in the real enclosure.</li>
+</ul>
+<h2 id="next-steps">Next steps</h2>
+<p>Continue with <a href="/vision-field-notes/posts/dockerize-a-computer-vision-app/">Dockerize a Computer Vision App for Edge and Cloud</a>, then <a href="/vision-field-notes/posts/pre-deployment-testing-checklist/">A Pre-Deployment Testing Checklist for Vision Models</a>.</p></article><div class="related"><h2 class="sec">More in Edge Hardware and Deployment</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/best-cameras-for-computer-vision/"><div class="cat">Edge Hardware and Deployment</div><h3>Choosing a Camera for Computer Vision Projects</h3><p>How to choose a camera for computer vision: USB, CSI, IP/RTSP and depth cameras compared, with advice on shutter, lens, lighting and what really matters.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/dockerize-a-computer-vision-app/"><div class="cat">Edge Hardware and Deployment</div><h3>Dockerize a Computer Vision App for Edge and Cloud</h3><p>Dockerize a computer vision app: Dockerfile patterns for OpenCV and ONNX Runtime, GPU access, smaller images, pinned versions and reproducible builds.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/export-yolo-to-onnx/"><div class="cat">Edge Hardware and Deployment</div><h3>Export YOLO to ONNX and Run It with ONNX Runtime</h3><p>Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences.</p><div class="meta">5 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

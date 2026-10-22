@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Raspberry Pi vs Jetson Orin Nano for Object Detection | Vision Field Notes</title>
+<meta name="description" content="Raspberry Pi vs Jetson Orin Nano for object detection: how GPU, software stack, power, price and ecosystem should decide which board fits your project.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/raspberry-pi-vs-jetson-orin-nano/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Raspberry Pi vs Jetson Orin Nano for Object Detection | Vision Field Notes"><meta property="og:description" content="Raspberry Pi vs Jetson Orin Nano for object detection: how GPU, software stack, power, price and ecosystem should decide which board fits your project.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/raspberry-pi-vs-jetson-orin-nano/"><meta property="og:site_name" content="Vision Field Notes">
+<meta name="twitter:card" content="summary">
+<link rel="alternate" type="application/rss+xml" title="Vision Field Notes" href="/vision-field-notes/feed.xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Raspberry Pi vs Jetson Orin Nano for Object Detection", "description": "Raspberry Pi vs Jetson Orin Nano for object detection: how GPU, software stack, power, price and ecosystem should decide which board fits your project.", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/raspberry-pi-vs-jetson-orin-nano/"}</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge Hardware and Deployment</a></div><h1>Raspberry Pi vs Jetson Orin Nano for Object Detection</h1><div class="byline">By Maidul Hasan Masum · 2026-10-22 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#the-core-difference">The core difference</a></li><li><a href="#comparison-at-a-glance">Comparison at a glance</a></li><li><a href="#when-a-raspberry-pi-is-enough">When a Raspberry Pi is enough</a></li><li><a href="#when-a-jetson-orin-nano-is-the-better-choice">When a Jetson Orin Nano is the better choice</a></li><li><a href="#the-hidden-costs">The hidden costs</a></li><li><a href="#how-to-decide-in-four-steps">How to decide in four steps</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#a-simple-rule-of-thumb">A simple rule of thumb</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav><p>People often ask which board is "better" for object detection. That question has no single answer. A Raspberry Pi and a Jetson Orin Nano are built around different ideas, and the right pick depends on what you need to run, how many cameras you have and how much engineering time you can spend.</p>
+<p>This article gives you a way to decide. It avoids benchmark numbers on purpose. Speed depends on the model, input size, export format, cooling and software versions, and numbers copied from someone else's setup rarely match yours. Where it matters, I will tell you how to measure it yourself.</p>
+<h2 id="the-core-difference">The core difference</h2>
+<p>A Raspberry Pi 5 is a general-purpose Arm computer. Detection on a stock Pi runs on the CPU unless you add an accelerator. The CPU is capable for small models at modest input sizes, but it has no CUDA support.</p>
+<p>A Jetson Orin Nano developer kit is an Arm computer with an NVIDIA GPU on the same module. That GPU runs CUDA, and the NVIDIA stack (TensorRT, cuDNN, DeepStream) is designed for it. For neural networks, this is a different class of hardware from a CPU.</p>
+<p>So the real question is: do you need GPU-class throughput and the CUDA ecosystem, or is a cheap, simple CPU board enough?</p>
+<h2 id="comparison-at-a-glance">Comparison at a glance</h2>
+<table>
+<thead>
+<tr>
+<th>Factor</th>
+<th>Raspberry Pi 5</th>
+<th>Jetson Orin Nano dev kit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Inference engine</td>
+<td>CPU (optional accelerator add-on)</td>
+<td>Built-in NVIDIA GPU</td>
+</tr>
+<tr>
+<td>Main software path</td>
+<td>ONNX Runtime or other CPU runtimes, vendor SDK for add-ons</td>
+<td>CUDA, TensorRT, DeepStream via JetPack</td>
+</tr>
+<tr>
+<td>Setup effort</td>
+<td>Low, standard Raspberry Pi OS</td>
+<td>Higher, you manage JetPack versions</td>
+</tr>
+<tr>
+<td>Power draw</td>
+<td>Lower</td>
+<td>Higher, with selectable power modes</td>
+</tr>
+<tr>
+<td>Price</td>
+<td>Lower, check the current price</td>
+<td>Higher, check the current price</td>
+</tr>
+<tr>
+<td>Community and docs</td>
+<td>Very large, general purpose</td>
+<td>Large, focused on AI and robotics</td>
+</tr>
+<tr>
+<td>Multi-stream capacity</td>
+<td>Limited</td>
+<td>Much better suited</td>
+</tr>
+</tbody>
+</table>
+<p>Treat the table as direction, not as a promise. Check current specs and prices on the vendor pages before you buy.</p>
+<h2 id="when-a-raspberry-pi-is-enough">When a Raspberry Pi is enough</h2>
+<p>A <a href="https://www.raspberrypi.com/products/raspberry-pi-5/" rel="noopener" target="_blank">Raspberry Pi 5</a> is a good fit when:</p>
+<ul>
+<li>You have one camera, or a small number of cameras at low frame rates.</li>
+<li>The scene changes slowly. Think door counting, parking spot occupancy or checking whether a machine light is on.</li>
+<li>You can process a few frames per second and still meet the real requirement.</li>
+<li>You want low cost, low power and a simple operating system.</li>
+<li>You are prototyping and want to see results quickly.</li>
+</ul>
+<p>The key idea is that most real projects do not need every frame. A person walking through a door is visible for many frames. If your logic needs a detection every 200 to 500 ms, a small model on a CPU may be plenty. Define the required detection rate from the business need first, then see if the board meets it.</p>
+<p>For a Pi, choose the smallest model that works, use a modest input size and export to a CPU-friendly format such as ONNX. The article on <a href="/vision-field-notes/posts/yolo-on-raspberry-pi-5/">running YOLO on a Raspberry Pi 5</a> covers that workflow in detail.</p>
+<p>If you want more speed without leaving the Pi, an accelerator add-on is an option. The <a href="https://www.raspberrypi.com/products/ai-kit/" rel="noopener" target="_blank">Raspberry Pi AI Kit</a> adds a Hailo accelerator. That changes the picture, but it also changes the toolchain, because models must be compiled for the accelerator. See <a href="/vision-field-notes/posts/raspberry-pi-ai-kit-hailo/">Raspberry Pi AI Kit and Hailo accelerators</a> for the trade-offs.</p>
+<h2 id="when-a-jetson-orin-nano-is-the-better-choice">When a Jetson Orin Nano is the better choice</h2>
+<p>A Jetson Orin Nano developer kit makes sense when:</p>
+<ul>
+<li>You need to process several camera streams on one device.</li>
+<li>You need higher input resolution, for example to find small objects.</li>
+<li>You want larger models or more than one model running together, such as a detector plus a classifier.</li>
+<li>Your team already uses CUDA, TensorRT or DeepStream.</li>
+<li>You expect to scale the same code to bigger NVIDIA GPUs or servers.</li>
+</ul>
+<p>The strongest argument for Jetson is the shared software path. A model trained in PyTorch can be exported to ONNX, built into a TensorRT engine and run on the GPU, and the same pattern works on a desktop RTX card or a cloud instance. That makes development and testing easier. The TensorRT workflow is covered in <a href="/vision-field-notes/posts/tensorrt-speedup-guide/">TensorRT for YOLO</a>.</p>
+<h2 id="the-hidden-costs">The hidden costs</h2>
+<p>Hardware price is only part of the cost.</p>
+<h3 id="software-maintenance-on-jetson">Software maintenance on Jetson</h3>
+<p>JetPack bundles the OS image, CUDA, cuDNN and TensorRT. These versions move together. If you install a PyTorch build or a Python wheel that does not match your JetPack release, things break in confusing ways. Plan to pin versions, document the exact image you use and test upgrades on a spare board. Containers help a lot here, and they are discussed in <a href="/vision-field-notes/posts/dockerize-a-computer-vision-app/">Dockerize a computer vision app</a>.</p>
+<h3 id="portability-of-tensorrt-engines">Portability of TensorRT engines</h3>
+<p>A TensorRT engine is built for a specific GPU and TensorRT version. You cannot build it on a laptop and copy it to a Jetson. Build on the target device, or in a matching environment, as part of your deployment process.</p>
+<h3 id="power-and-cooling">Power and cooling</h3>
+<p>A Jetson draws more power than a Pi and produces more heat under load. The developer kit supports power modes, so you can trade speed for power, but you still need adequate cooling and a proper power supply. A Pi is easier on a battery or a small solar setup. Either way, a reliable edge box needs a good supply, cooling and storage; see <a href="/vision-field-notes/posts/power-cooling-storage-edge-ai-box/">power, cooling and storage for an edge AI box</a>.</p>
+<h3 id="accelerator-toolchains-on-pi">Accelerator toolchains on Pi</h3>
+<p>The Pi path looks simple until you add an accelerator. Then you must convert models for the vendor runtime, and some operations or custom heads may not be supported. Budget time for this and test accuracy after conversion.</p>
+<h2 id="how-to-decide-in-four-steps">How to decide in four steps</h2>
+<ol>
+<li><strong>Write down the requirement.</strong> How many cameras, what resolution, how many detections per second, which objects, what latency is acceptable. Be specific.</li>
+<li><strong>Pick the smallest model that meets accuracy.</strong> Train and validate on your own data first. Hardware cannot rescue a model that does not work.</li>
+<li><strong>Test on the cheaper board first.</strong> Export your model, run it on a Pi, and measure end-to-end throughput, including decoding and post-processing, not only model time. The article on <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">measuring FPS and latency correctly</a> explains how.</li>
+<li><strong>Move up only if the measurement fails.</strong> If the Pi cannot meet the requirement even with a smaller model, lower input size or frame skipping, try an accelerator or a Jetson.</li>
+</ol>
+<p>This order saves money. Many teams buy the bigger board first and later find that their bottleneck was video decoding or a slow Python loop.</p>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li><strong>Comparing peak accelerator numbers.</strong> Marketing figures for operations per second do not translate directly into your model's frame rate. Measure your own model.</li>
+<li><strong>Ignoring the video pipeline.</strong> Decoding several 1080p streams costs real CPU or hardware decoder capacity on either board. Check how your streams are decoded.</li>
+<li><strong>Testing without cooling.</strong> A bare board may run fast for a minute and then throttle. Test for at least several minutes under sustained load.</li>
+<li><strong>Using different pre-processing on each board.</strong> If your resize or colour conversion differs, results will differ and your comparison is unfair.</li>
+<li><strong>Forgetting the licence.</strong> Ultralytics YOLO models are AGPL-3.0, with a commercial licence available from Ultralytics. Hardware choice does not change this, so check the current licence before shipping a product.</li>
+</ul>
+<h2 id="a-simple-rule-of-thumb">A simple rule of thumb</h2>
+<p>Choose the Pi when the job is small, the budget is tight and you value simplicity. Choose the Jetson when the job involves multiple streams, higher resolution or a team that already depends on NVIDIA tools. If you are unsure, start with the Pi, measure honestly and let the results decide.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Requirement written down: cameras, resolution, detections per second, latency.</li>
+<li>Model trained and validated on your own footage before choosing hardware.</li>
+<li>End-to-end throughput measured, not just model inference time.</li>
+<li>Cooling and power supply tested under sustained load.</li>
+<li>Software versions pinned and documented.</li>
+<li>Model conversion (ONNX, TensorRT or accelerator format) re-validated for accuracy.</li>
+<li>Licence for the model and tools checked for your use.</li>
+</ul>
+<h2 id="next-steps">Next steps</h2>
+<p>Read <a href="/vision-field-notes/posts/yolo-on-raspberry-pi-5/">Running YOLO on a Raspberry Pi 5</a>, then <a href="/vision-field-notes/posts/tensorrt-speedup-guide/">TensorRT for YOLO</a>, and finish with <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">Measuring FPS and Latency Correctly</a>.</p></article><div class="related"><h2 class="sec">More in Edge Hardware and Deployment</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/best-cameras-for-computer-vision/"><div class="cat">Edge Hardware and Deployment</div><h3>Choosing a Camera for Computer Vision Projects</h3><p>How to choose a camera for computer vision: USB, CSI, IP/RTSP and depth cameras compared, with advice on shutter, lens, lighting and what really matters.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/dockerize-a-computer-vision-app/"><div class="cat">Edge Hardware and Deployment</div><h3>Dockerize a Computer Vision App for Edge and Cloud</h3><p>Dockerize a computer vision app: Dockerfile patterns for OpenCV and ONNX Runtime, GPU access, smaller images, pinned versions and reproducible builds.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/export-yolo-to-onnx/"><div class="cat">Edge Hardware and Deployment</div><h3>Export YOLO to ONNX and Run It with ONNX Runtime</h3><p>Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences.</p><div class="meta">5 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a> · <a href="/vision-field-notes/feed.xml">RSS</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+</body></html>

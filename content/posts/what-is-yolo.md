@@ -30,6 +30,8 @@ You do not need the details to use the model, but a rough picture helps when som
 
 The result is a short list. Each row has a box (position and size), a class and a confidence between 0 and 1.
 
+![Diagram of the YOLO pipeline: a store-aisle video frame goes through four boxes labelled Resize, Backbone, Neck and Head; the output is the same frame covered in 32 overlapping orange candidate boxes, which pass through an NMS box to become a frame with 5 labelled detections: three people and two bowls.](img:what-is-yolo-single-pass.jpg "The network runs once over the whole frame and proposes many overlapping boxes; non-maximum suppression then keeps one box per object. Here 32 raw candidates became 5 final detections. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 ## What the output means
 
 Say you run a model on a street photo. You might get rows like these:
@@ -45,6 +47,8 @@ Three things to keep in mind:
 - **Confidence is not a probability of being right.** It is a score the model produces. A score of 0.9 usually means the model is quite sure, but it does not mean 90 percent of such detections are correct. You find out how reliable it is by testing on your own data.
 - **You choose a threshold.** Detections below the confidence threshold are dropped. A low threshold gives you more detections and more false alarms. A high one gives fewer false alarms and more misses. The article on [confidence thresholds](post:confidence-threshold-tuning) covers how to pick one.
 - **Boxes are rectangles.** They include background around the object. Two people standing close together may have overlapping boxes. If you need exact outlines, you want segmentation instead.
+
+![Two real detector outputs side by side. Left: a store aisle with three people boxed at scores 0.79 to 0.82 and two shelf bowls at 0.36 and 0.42. Right: a hallway where a person walking is boxed and labelled dog with score 0.35.](img:what-is-yolo-real-output.jpg "Each detection is a box, a class and a score. Lower scores are less trustworthy: on the right a person was labelled dog at 0.35, which a threshold of 0.4 would have removed. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 ## The classes a model knows
 

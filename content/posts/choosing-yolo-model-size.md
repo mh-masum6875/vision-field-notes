@@ -33,6 +33,8 @@ Look at the smallest object you must detect, and ask how many pixels it will occ
 3. Work out the scale factor from the camera frame to the model input. If a 1920-pixel-wide frame is resized to 640, everything shrinks by a factor of three.
 4. Check the object after resizing. If it is only a few pixels across, the detector will struggle, whatever the size letter says.
 
+![Four versions of the same store-aisle frame with detector boxes. Original, people about 181 pixels tall: all 3 people found, scores 0.79 to 0.82, plus two bowls. Shrunk 3 times, people about 60 pixels tall: 3 of 3 found. Shrunk 4 times, about 45 pixels tall: 2 of 3 found. Shrunk 6 times, about 30 pixels tall and visibly blocky: none found.](img:choosing-yolo-model-size-object-pixels.jpg "The frame was shrunk and enlarged back to simulate a smaller image, then passed to the same model. Detections hold up to about 60 pixels per person here and disappear by 30. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 If objects are too small, options are a higher input size, cropping to the region of interest, tiling the frame, or moving the camera or changing the lens. Often the cheapest fix is a better camera position. See [Class Imbalance and Small Objects](post:class-imbalance-and-small-objects) for tiling.
 
 ## A method for choosing
@@ -90,6 +92,8 @@ Fill in a simple comparison and decide.
 | Nano at higher resolution | measured | measured | measured | measured | yes or no |
 
 Pick the cheapest row that meets both the accuracy target and the time budget. If none does, change something else: reduce the frame rate, crop the region, improve the data, or upgrade the hardware.
+
+![Flow diagram of six steps in two rows: 1 set the budget, 2 accuracy target, 3 shortlist 2 or 3 sizes, 4 train identically, 5 measure on the device, 6 pick the cheapest that meets accuracy and time with headroom. A note below says if none passes, lower the frame rate, crop the region, improve the data or change the hardware.](img:choosing-yolo-model-size-method.png "The six steps on one page. Steps 1 and 2 are written down before any training, so the final choice in step 6 is a lookup rather than a judgement call.")
 
 ## Rules of thumb that help
 

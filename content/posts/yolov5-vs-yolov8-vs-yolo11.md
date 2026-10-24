@@ -51,6 +51,8 @@ YOLO11 continues the same package and API. Ultralytics describes it as an update
 
 Because the interface is shared, trying YOLO11 on a project that already uses YOLOv8 is cheap. That is the best argument for not agonising over the choice.
 
+![Three cards in a row. YOLOv5, released 2020: anchor-based head, repo scripts train.py and detect.py, many older tutorials online. An arrow labelled big switch, new API, new output layout, retrain, leads to YOLOv8, released 2023: anchor-free head, ultralytics package, one YOLO class for train, val, predict and export. An arrow labelled small switch, same code, new weights file name, retrain, leads to YOLO11, released 2024: anchor-free head, same package and API as YOLOv8.](img:yolov5-vs-yolov8-vs-yolo11-generations.png "The expensive step is YOLOv5 to YOLOv8, where the API and the output layout both change. YOLOv8 to YOLO11 keeps the same code, so trying it costs a retrain and a comparison.")
+
 ## Workflow and ecosystem
 
 If you are starting today, the `ultralytics` package is the easiest path. It gives you:
@@ -93,6 +95,8 @@ Use this simple order of questions:
 3. **Do you need pose, oriented boxes or segmentation?** Use the `ultralytics` package, which covers these tasks in one API.
 4. **Is your target hardware unusual?** Test export and runtime on that device first, before training anything large.
 5. **Is the result close between two versions?** Pick the one with better documentation and fewer deployment problems. Reliability beats a small metric gain.
+
+![Flow chart of five yes or no questions down the left, each with a yes arrow to an action on the right: working YOLOv5 pipeline in production, keep it and migrate at the next retrain; new project, newest Ultralytics generation in a small size; need pose, oriented boxes or segmentation, use the ultralytics package; unusual target hardware, test export and runtime on that device before training; two versions score about the same, pick better docs and fewer deployment problems.](img:yolov5-vs-yolov8-vs-yolo11-decision-flow.png "The same five questions as a flow chart. Work down the left column: a yes points to the action for that situation, and the questions below it still apply.")
 
 ## A fair comparison checklist
 

@@ -22,6 +22,8 @@ During training, each labelled box has to be matched to some anchors. A common r
 
 This matching step is where anchor-based design affects results. If your objects have shapes far from every anchor, few anchors match well and learning is poorer.
 
+![Illustrative scatter plot of box width against box height on log scales. Clusters of points for tall people, wide vehicles and square signs sit near black X markers for anchor shapes. A cluster of very thin poles, about 10 pixels wide and 150 pixels tall, sits far from every anchor, with a note saying no anchor is close to these thin shapes.](img:anchor-free-vs-anchor-based-detectors-anchor-fit.png "Illustrative data, not a real dataset. When a class of objects has shapes far from every anchor, few anchors match it during training, which is the weakness that anchor fitting and anchor-free designs address.")
+
 That is why YOLOv5 includes an automatic step that analyses your labels and adjusts the anchors to fit them, using a clustering approach. It was a practical fix for the main weakness of anchors: they are a hyperparameter tied to your data.
 
 ## The problems with anchors
@@ -41,6 +43,8 @@ An anchor-free detector skips the predefined boxes. Instead of adjusting an anch
 Many anchor-free designs also change how training matches predictions to labels. Rather than a fixed shape-similarity rule, they may use a dynamic assignment that picks the best-fitting predictions for each object based on how well the model is currently doing. The details vary by model, so read the documentation of the version you use rather than assuming.
 
 Ultralytics describes YOLOv8 and later as anchor-free, with a decoupled head that predicts class and box in separate branches. YOLOv5 is anchor-based.
+
+![Two grid diagrams of the same tall object. Left, anchor-based: one grid cell holds three dashed preset anchor shapes, wide, square and tall; the tall one, highlighted in orange, is shifted and stretched to become the green predicted box. Right, anchor-free: the same grid cell has a single point with four orange arrows labelled left, right, top and bottom reaching to the sides of the green predicted box.](img:anchor-free-vs-anchor-based-detectors-how-boxes-are-predicted.png "Both designs end with the same kind of box. The anchor-based model starts from a preset shape and corrects it; the anchor-free model predicts the four distances from a location to the box edges.")
 
 ## Side by side
 

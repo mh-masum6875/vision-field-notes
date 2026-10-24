@@ -46,6 +46,8 @@ The model finds each object and also gives its exact outline as a mask. Two peop
 
 Pose estimation and oriented boxes are related tasks. The Ultralytics package supports several of these, which makes it easy to try neighbouring tasks.
 
+![Schematic of one scene, three round fruits on a belt with two of them touching, shown four ways. Classification: a single label, fruit 0.97, for the whole image. Detection: a box around each fruit, with the boxes of the two touching fruits overlapping. Semantic segmentation: all fruit pixels in one orange colour, so the two touching fruits form one region. Instance segmentation: each fruit filled with its own colour.](img:classification-vs-detection-vs-segmentation-four-tasks.png "A schematic, not model output. Note the two touching fruits: detection and instance segmentation keep them apart, while semantic segmentation merges them into one region.")
+
 ## Compare them
 
 | Task | Answers | Label effort | Typical compute | Failure style |
@@ -66,6 +68,8 @@ Ask these questions in order.
 3. **Do you need area, outline or shape?** Use segmentation. Examples: measuring the size of a spill, finding the extent of damage, estimating the covered fraction of a surface.
 4. **Do touching objects of the same type need to be separated?** Use instance segmentation. Semantic segmentation will merge them.
 5. **Do you only need coarse location?** A box is probably enough. Do not pay for masks you will never use.
+
+![Flow chart of four questions on the left, each with a yes arrow to a task on the right. Is the decision about the whole image: classification. If not, do you need where objects are or how many: detection. If not, do you need area, outline or shape: segmentation. If yes, must touching objects of the same type be told apart: instance segmentation. A note says semantic segmentation is enough when touching objects do not matter.](img:classification-vs-detection-vs-segmentation-decision-flow.png "The first four questions as a flow chart. Stop at the first task that answers the business question; each step down costs more labelling and compute.")
 
 If you are unsure between two, start with the cheaper one and see whether it answers the business question. You can often upgrade later, and the data you labelled may still help. A dataset with masks can be converted into boxes, but boxes cannot be turned into masks.
 

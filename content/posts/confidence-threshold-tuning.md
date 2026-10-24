@@ -21,6 +21,8 @@ There is no setting that gives you both. The task is to find the point on that t
 
 One caution: the score is not a calibrated probability. A score of 0.6 does not mean a 60 percent chance of being right. Scores are only meaningful as a ranking: higher is more likely correct, on your data. That is why you must tune on your own footage and not copy a number from a tutorial.
 
+![The same store-shelf frame with a man in a hat shown at three thresholds. At 0.10: six boxes, a refrigerator label at 0.62 covering the whole shelf unit, four bowls from 0.13 to 0.45 and the man as person 0.37. At 0.30: three boxes, refrigerator 0.62, bowl 0.45 and person 0.37. At 0.50: one box, the refrigerator label at 0.62, and the man is no longer detected.](img:confidence-threshold-tuning-three-thresholds.jpg "Raising the threshold removed the real person at 0.37 but kept the wrong refrigerator label on a shelf unit at 0.62. A single global threshold cannot fix a confident mistake; that needs data or rules. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 ## Start with the cost of errors
 
 Before touching numbers, write down what each kind of error costs.
@@ -41,6 +43,8 @@ Validation with Ultralytics saves plots, including a precision-recall curve and 
 - The **F1 versus confidence** curve balances the two and peaks at one threshold. This is a convenient starting point when you have no stronger priority, but F1 treats both errors as equally bad, which is rarely true in a real project.
 
 Your operating threshold is the point where both precision and recall are acceptable. Sometimes no such point exists. Then the threshold is not the fix: the model, the data or the setup needs work.
+
+![Illustrative chart of precision, recall and F1 against confidence threshold. Precision rises from about 0.45 to 0.98 as the threshold rises; recall falls from about 0.97 to near zero; the dashed F1 curve peaks at 0.44. Dotted lines mark a needed precision of 0.85 and a needed recall of 0.75, and a shaded band marks the acceptable thresholds from 0.40 to 0.52.](img:confidence-threshold-tuning-pr-vs-threshold.png "Illustrative curves, not measurements. Any threshold inside the shaded band meets both targets; in this example the F1 peak happens to fall inside it, but with stricter targets the band can shrink to nothing.")
 
 ## A practical tuning procedure
 

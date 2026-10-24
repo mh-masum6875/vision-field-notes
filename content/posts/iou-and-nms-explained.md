@@ -31,6 +31,8 @@ The overlap is the square from (5, 5) to (10, 10). Its area is 5 x 5 = 25. The u
 
 Subtracting the overlap once matters. If you add the two areas without subtracting it, you count the overlap twice.
 
+![Three pairs of equal-sized square boxes, blue A and orange B, with the overlap hatched. Left, the worked example offset diagonally by half: IoU 25 over 175 equals 0.14. Middle, shifted sideways by a quarter: IoU 75 over 125 equals 0.60. Right, shifted sideways by a tenth: IoU 90 over 110 equals 0.82.](img:iou-and-nms-explained-iou-examples.png "The union grows as the overlap shrinks, so IoU falls faster than the overlap alone suggests. A sideways shift of a quarter of the box width already drops IoU to 0.60.")
+
 ### IoU in code
 
 ```python
@@ -65,6 +67,8 @@ A detector produces many candidate boxes. Several nearby locations in the featur
 
 NMS keeps the best box and removes the others that overlap it heavily.
 
+![Two copies of a store-aisle frame. Left, before NMS: 32 orange boxes above score 0.25, stacked on top of each other around three shoppers and two shelf bowls. Right, after NMS at IoU 0.45: five labelled boxes, three people scoring 0.79 to 0.82 and two bowls.](img:iou-and-nms-explained-nms-before-after.jpg "Before NMS, each shopper is covered by several near-identical boxes. NMS keeps the highest-scoring box for each object, leaving one box per shopper. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 ## NMS step by step
 
 For one class at a time:
@@ -95,6 +99,8 @@ The NMS IoU threshold answers: how much overlap do I accept before calling two b
 
 - **Lower value (strict).** Removes boxes even with small overlap. Fewer duplicates, but real neighbouring objects that overlap can be wrongly merged. In a crowd this hurts recall.
 - **Higher value (lenient).** Keeps more overlapping boxes. Crowded scenes are handled better, but you may see duplicate boxes on single objects.
+
+![The same hallway crop with two people walking, processed twice. Left, NMS IoU threshold 0.45: two person boxes, scores 0.84 and 0.67. Right, NMS IoU threshold 0.9: four person boxes, because the second person also keeps two extra overlapping boxes scoring 0.35 and 0.26.](img:iou-and-nms-explained-nms-threshold.jpg "Same frame, same detections, only the NMS threshold changed. At 0.9 the overlapping lower-score boxes on the second person survive as duplicates. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 Values in the range of about 0.45 to 0.7 are common starting points, and Ultralytics exposes the setting as `iou` in prediction and validation. Check the current documentation for the default in the version you use, because it can differ between prediction and validation and between releases.
 

@@ -34,11 +34,15 @@ Convolution is a linear operation. Adding the outputs of several linear operatio
 
 The result is one 3x3 convolution that gives the same output as the three-branch block. Same function, fewer operations, simpler graph.
 
+![Four 3 by 3 grids of numbers joined by plus and equals signs. A 3x3 branch kernel with small weights and 0.5 in the centre, plus a 1x1 branch padded to 3x3 that is all zeros except 0.4 in the centre, plus an identity kernel that is all zeros except 1 in the centre, equals a merged kernel identical to the first except for 1.9 in the centre.](img:yolov7-reparameterization-kernel-merge.png "Illustrative weights for one input and one output channel, with batch normalisation already folded in. Only the centre value changes; the script that draws this checks that the three-branch block and the merged kernel give the same output.")
+
 ## Batch normalisation gets folded in
 
 Real blocks have batch normalisation (BN) after each convolution. BN is also a fixed linear operation at inference: it scales and shifts each channel using statistics learned during training. Because it is linear, you can fold it into the preceding convolution by adjusting that convolution's weights and bias.
 
 So the conversion has two stages: fold BN into each branch, then merge the branches into one kernel. After that the inference graph contains plain convolutions, and activations in between.
+
+![Block diagram. Left, training time: an input splits into three branches, 3x3 conv plus BN, 1x1 conv plus BN, and identity plus BN, which are added and passed to an activation. An arrow labelled convert once, after training, fold BN into each conv then add the kernels and biases, leads to the right side, inference: input, one 3x3 conv with merged weights, activation, noted as same output with fewer operations.](img:yolov7-reparameterization-train-vs-inference.png "The multi-branch block exists only while training. After a one-off conversion, the deployed model runs a single convolution per block, which is the version to export and benchmark.")
 
 An important detail: this works at inference because BN uses its stored running statistics. During training, BN uses batch statistics, so the fusion is only valid for the trained, frozen model. You do not merge before training ends.
 

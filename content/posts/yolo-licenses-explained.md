@@ -39,6 +39,8 @@ AGPL-3.0 was written to close that gap. It adds a rule about network use: if use
 
 What counts as "modified", what counts as a "work based on" the code, and how far the obligation reaches into the rest of your system are exactly the questions where legal advice is worth paying for. Do not guess.
 
+![Table diagram with three situations as rows and GPL-3.0 (for example YOLOv7) and AGPL-3.0 (for example Ultralytics YOLO) as columns. Running it only on your own machines with no outside users: usually not triggered under either. Shipping a copy such as a device, installer or bundled library: offer source under GPL, and offer source under AGPL. Users reaching a modified version over a network: usually not triggered under GPL, offer source to those users under AGPL.](img:yolo-licenses-explained-obligation-triggers.png "The only row where the two licences differ is network use of a modified version. This is a simplified summary of the sections above, not legal advice.")
+
 ## Why this matters for YOLO
 
 When you use the Ultralytics package in your application, you are using AGPL-licensed code. Typical situations:
@@ -60,6 +62,8 @@ Broadly, you have four paths. Each has costs.
 4. **Train your own model architecture** with permissively licensed components. This gives the most control and takes the most effort.
 
 None of these is always best. It depends on whether your code can be open, your budget, and your customers' requirements.
+
+![Four cards in a two by two grid. 1, comply with the open licence: release your application source under the same licence; fits open projects. 2, buy a commercial licence: fee, scope and terms set by the vendor; fits closed products that keep the Ultralytics models. 3, use a permissive detector: check code, pretrained weights and pretraining data; fits closed products that can switch model family. 4, build your own architecture: most control and most effort; fits teams that need full ownership.](img:yolo-licenses-explained-commercial-routes.png "Each route trades something: openness of your code, money, model choice or engineering time. Route 3 is only as permissive as the least permissive of code, weights and data.")
 
 ## Common mistakes
 

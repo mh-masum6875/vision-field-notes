@@ -20,6 +20,8 @@ For every prediction, a detector is either right or wrong, and for every real ob
 
 "Matches" needs a rule. The usual rule is that the predicted box overlaps the true box enough, measured by Intersection over Union (IoU), and the class is correct. If IoU is new to you, read [IoU and Non-Maximum Suppression](post:iou-and-nms-explained) first.
 
+![Four schematic panels with a dashed true box around a grey object and solid blue predicted boxes with scores. True positive: a prediction scoring 0.91 overlaps the true box with IoU 0.75. False positive: a prediction scoring 0.48 on empty background. False positive duplicate: a 0.88 box matches the object and a second 0.41 box on the same object counts as a false positive. False negative: an object with a true box and no prediction.](img:map-precision-recall-explained-tp-fp-fn.png "The three outcomes in pictures. A second box on an already-matched object is a false positive, which is why duplicates lower precision.")
+
 ## Precision
 
 Precision = TP / (TP + FP).
@@ -42,6 +44,8 @@ So a single precision number is meaningless unless you know the threshold it was
 
 If you sweep the threshold from high to low and plot precision against recall, you get a precision-recall curve for one class. The area under that curve is the **average precision (AP)** for that class. A model that keeps high precision even as recall rises has a large area. A model whose precision collapses quickly has a small one.
 
+![Illustrative precision-recall chart with recall on the horizontal axis and precision on the vertical axis. Model A, in blue, stays near 0.9 precision until about 0.8 recall and then drops; the area under it is shaded and labelled AP about 0.88. Model B, in orange, slopes down steadily from 0.95 to about 0.5. Arrows mark the high-threshold end at the top left and the low-threshold end at the bottom right.](img:map-precision-recall-explained-pr-curve.png "Illustrative curves, not measurements. Each point is one confidence threshold; the shaded area under model A's curve is its average precision, and model B's earlier drop gives it a smaller area.")
+
 **mAP** is the mean of AP over all classes. If you have three classes, mAP is the average of the three AP values. Two things follow:
 
 - A rare class counts as much as a common one. One weak class pulls mAP down even if the others are excellent.
@@ -55,6 +59,8 @@ The "50" and "50-95" refer to the IoU threshold used to decide whether a box cou
 - **mAP50-95:** the average of mAP computed at IoU thresholds from 0.5 to 0.95 in steps of 0.05. This rewards tight, accurate boxes, because high thresholds only accept boxes that fit well.
 
 This is why mAP50-95 is always lower than mAP50. They are not competing measures of the same thing. A big gap between them tells you the model finds objects but its boxes are loose. That might be a labelling problem, a resolution problem or a model-size problem.
+
+![Left: a schematic prediction offset from its true box, with IoU 0.65. Right: a row of ten cells for IoU thresholds 0.50 to 0.95; the first four, up to 0.65, are marked match in green and the remaining six are marked miss.](img:map-precision-recall-explained-map50-vs-map50-95.png "A box with IoU 0.65 counts fully toward mAP50 but passes only 4 of the 10 thresholds behind mAP50-95. Loose boxes are what open the gap between the two numbers.")
 
 ## Which metric should you use?
 

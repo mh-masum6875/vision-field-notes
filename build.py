@@ -333,6 +333,8 @@ urls = [("/", today)] + [(f"/category/{c['slug']}/", today) for c in catlist] + 
        [(f"/posts/{p['slug']}/", str(p.get("updated", p["date"]))) for p in posts] + [(f"/{k}/", today) for k in pages]
 (OUT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     "".join(f"<url><loc>{BASE}{u}</loc><lastmod>{m}</lastmod></url>\n" for u, m in urls) + "</urlset>\n")
+if S.get("indexnow_key"):
+    (OUT / f"{S['indexnow_key']}.txt").write_text(S["indexnow_key"])
 (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")
 (OUT / ".nojekyll").write_text("")
 if S["adsense_publisher_id"]:

@@ -1,0 +1,38 @@
+name: Tell search engines about new pages
+
+# Submits the site's URLs to IndexNow, which Bing, Yandex, Seznam and DuckDuckGo
+# use. Google does not take IndexNow; it is covered by Search Console.
+
+on:
+  workflow_run:
+    workflows: ["Publish scheduled posts"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Submit the sitemap's URLs
+        run: |
+          python3 - <<'PY'
+          import json, re, urllib.request
+          site = json.load(open("site.json"))
+          key = site.get("indexnow_key")
+          if not key:
+              print("No IndexNow key set; nothing to do.")
+              raise SystemExit
+          base = site["base_url"].rstrip("/")
+          host = base.split("/")[2]
+          urls = re.findall(r"<loc>(.*?)</loc>", open("docs/sitemap.xml").read())
+          body = json.dumps({"host": host, "key": key,
+                             "keyLocation": f"{base}/{key}.txt", "urlList": urls}).encode()
+          req = urllib.request.Request("https://api.indexnow.org/IndexNow", data=body,
+                                       headers={"Content-Type": "application/json; charset=utf-8"})
+          try:
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  print(f"Submitted {len(urls)} URLs, response {r.status}")
+          except Exception as e:
+              print(f"IndexNow submission failed: {e}")
+          PY

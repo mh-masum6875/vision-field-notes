@@ -214,6 +214,7 @@ LAYOUT = """<!doctype html>
 <link rel="alternate" type="application/rss+xml" title="{{ s.name }}" href="{{ bp }}/feed.xml">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
 {% if s.adsense_publisher_id %}<meta name="google-adsense-account" content="ca-pub-{{ s.adsense_publisher_id }}">{% endif %}
+{% if s.google_site_verification %}<meta name="google-site-verification" content="{{ s.google_site_verification }}">{% endif %}
 <style>{{ css|safe }}</style>
 {% if jsonld %}<script type="application/ld+json">{{ jsonld|safe }}</script>{% endif %}
 </head><body>
@@ -230,6 +231,9 @@ LAYOUT = """<!doctype html>
 {% if s.adsense_client %}<div class="cookie" id="cookie" role="dialog" aria-label="Cookie notice"><p style="margin:0 0 10px">This site uses cookies for advertising. You can accept or decline. <a href="{{ bp }}/privacy/">Privacy policy</a></p><button class="p">Accept</button><button class="n">Decline</button></div>
 <script>window.ADS="{{ s.adsense_client }}";{{ js_consent|safe }}</script>{% endif %}
 <script>window.BP="{{ bp }}";{{ js_search|safe }}</script>
+{% if s.goatcounter_code %}<script data-goatcounter="https://{{ s.goatcounter_code }}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>{% endif %}
+{% if s.ga_measurement_id %}<script async src="https://www.googletagmanager.com/gtag/js?id={{ s.ga_measurement_id }}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','{{ s.ga_measurement_id }}');</script>{% endif %}
 </body></html>"""
 
 env = Environment(loader=BaseLoader(), autoescape=True)
@@ -243,7 +247,8 @@ catlist = [{"name": c, "slug": slugify(c), "short": SHORT.get(c, c)} for c in
             "Video Analytics", "Tools and Workflow", "Career and Freelancing"] if c in cats]
 
 def page(path, title, desc, content, canon_path, is_post=False, jsonld=None, og_image=None):
-    full_title = title if title.startswith(S["name"]) else f"{title} | {S['name']}"
+    # keep the browser/search title under ~60 characters: drop the site suffix on long titles
+    full_title = title if title.startswith(S["name"]) or len(title) > 44 else f"{title} | {S['name']}"
     out = layout.render(s=S, bp=BP, cats=catlist, css=CSS, js_search=JS_SEARCH, js_consent=JS_CONSENT,
                         title=full_title, desc=desc, canon=BASE + canon_path, content=content,
                         is_post=is_post, jsonld=jsonld, og_image=og_image, year=date.today().year)
@@ -301,11 +306,18 @@ for p in posts:
                f'<h1>{html.escape(p["title"])}</h1><div class="byline">By {html.escape(S["author"])} · {p["date"]} · {p["minutes"]} min read</div>'
                f'{note}{toc}{p["html"]}{ad}{AUTHOR_BOX}</article>'
                f'<div class="related"><h2 class="sec">More in {html.escape(p["category"])}</h2><div class="grid">{"".join(card(q) for q in rel)}</div></div>')
+    crumb = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": BASE + "/"},
+        {"@type": "ListItem", "position": 2, "name": p["category"], "item": f'{BASE}/category/{slugify(p["category"])}/'},
+        {"@type": "ListItem", "position": 3, "name": p["title"]}]}
     ld = json.dumps({"@context": "https://schema.org", "@type": "Article", "headline": p["title"],
                      "description": p["description"], "datePublished": p["date"], "dateModified": p.get("updated", p["date"]),
                      "author": {"@type": "Person", "name": S["author"], "url": S["author_url"]},
                      "publisher": {"@type": "Organization", "name": S["name"]},
-                     "mainEntityOfPage": f'{BASE}/posts/{p["slug"]}/'})
+                     "mainEntityOfPage": f'{BASE}/posts/{p["slug"]}/',
+                     "image": f"{BASE}/images/{p['images'][0]}" if p["images"] else None,
+                     "articleSection": p["category"], "keywords": ", ".join(map(str, p.get("tags", [])))})
+    ld = ld[:-1] + ',"@graph":[]}' if False else json.dumps([json.loads(ld), crumb])
     og = f"{BASE}/images/{p['images'][0]}" if p["images"] else None
     page(f"posts/{p['slug']}/index.html", p["title"], p["description"], content, f"/posts/{p['slug']}/", True, ld, og)
 

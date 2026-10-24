@@ -1,5 +1,5 @@
 ---
-title: "Computer Vision Engineer Roadmap: What to Learn and in What Order"
+title: "Computer Vision Engineer Roadmap: What to Learn First"
 description: "A realistic computer vision engineer roadmap from Python and OpenCV to training detectors, edge deployment and video analytics, with projects for each stage."
 category: "Career and Freelancing"
 date: 2026-10-24

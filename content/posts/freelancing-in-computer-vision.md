@@ -1,5 +1,5 @@
 ---
-title: "Freelancing in Computer Vision: Finding and Winning the First Jobs"
+title: "Freelancing in Computer Vision: Winning Your First Jobs"
 description: "How to start freelancing in computer vision: positioning, scoping projects, choosing a pricing model, writing proposals and avoiding low-value work."
 category: "Career and Freelancing"
 date: 2026-10-24

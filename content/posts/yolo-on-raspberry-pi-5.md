@@ -94,6 +94,10 @@ Which one wins depends on your model and software versions. Benchmark each on yo
 - **Avoid unnecessary work.** Draw boxes only when you need to display. Skip saving images unless an event fires.
 - **Batch of one.** On a CPU, large batches rarely help a live camera.
 
+![Two rows of small squares over a time arrow. The top row, frames read from the camera, is a continuous run of blue squares. The bottom row, frames sent to the model with N equal to 3, has a green square under every third blue square, with arrows down to it, and empty outlines in between.](img:yolo-on-raspberry-pi-5-frame-skipping.png "Frame skipping with N = 3. Every frame is still read so the buffer never goes stale, but only every third one costs a model call.")
+
+![Diagram of five boxes in a row: camera (USB, CSI or RTSP), a capture thread that reads every frame, a latest-frame-only slot where old frames are dropped, an inference thread that runs every Nth frame, and post-processing with NMS, tracking and alerts. An orange bracket under the inference thread is labelled model call alone. A longer blue bracket from the capture thread to post-processing is labelled full loop, what your users experience.](img:yolo-on-raspberry-pi-5-pipeline.png "Capture and inference run in separate threads joined by a one-frame slot, so the model always works on a recent frame. When you benchmark, time both the model call and the full loop, because the full loop is what users feel.")
+
 ## Measure it yourself
 
 Do not trust numbers from other setups. A simple, honest method:

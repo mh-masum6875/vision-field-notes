@@ -81,6 +81,8 @@ Weaknesses:
 
 Roboflow fits best for small projects, quick prototypes and people who want to avoid running infrastructure. If you prefer a hosted option, you could also try a [hosted annotation platform](aff:annotation_tool) and compare it with the others on a small pilot batch.
 
+![Diagram. A dashed boundary labelled Your network contains cameras and image storage, CVAT self-hosted, Label Studio self-hosted and a training machine, with arrows between them that stay inside. An orange line leaves the boundary from the image storage to Roboflow, a hosted service outside, labelled images are uploaded to a third party.](img:cvat-vs-label-studio-vs-roboflow-data-location.png "With a self-hosted tool the footage, the labels and the training all stay inside your network. A hosted tool needs the images uploaded first, so check the plan terms before sending private footage.")
+
 ## Side-by-side summary
 
 | Factor | CVAT | Label Studio | Roboflow |
@@ -102,6 +104,8 @@ Ask these questions in order:
 3. **Do you need more than boxes on images?** If yes, look at Label Studio.
 4. **Do you have no one to run servers?** A hosted tool saves you that work.
 5. **How many labellers?** For one person, almost any tool works. For a team, test the review and assignment workflow before choosing.
+
+![Flowchart of four questions in a column. 1: can the images leave your network? No leads to self-host CVAT or Label Studio. Yes leads to 2: is the data mostly video? Yes leads to pilot CVAT first. No leads to 3: do you need more than boxes on images? Yes leads to Label Studio. No leads to 4: is there no one to run servers? Yes leads to a hosted tool such as Roboflow. No leads to: any of the three can work, pilot two on 100 images.](img:cvat-vs-label-studio-vs-roboflow-decision-flow.png "Work down the questions in order. Privacy comes first because it rules tools out outright; the later questions only change which tool to pilot first.")
 
 The best test is a pilot. Take 100 images, label them in two tools, and record how long each takes and how easy export is. Then do a trial training run on the exported data to confirm the format loads without conversion bugs.
 

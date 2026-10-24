@@ -48,6 +48,8 @@ Better habits:
 - Deliberately include hard cases: partial occlusion, objects at the edge of the frame, crowded scenes, blur.
 - Include images with no target objects at all. These background images teach the model what not to detect and help reduce false alarms.
 
+![Two rows of three frames from a store aisle camera with detection boxes. The top row shows three consecutive frames at 16.7, 16.8 and 16.9 seconds that look identical, each with 5 boxes. The bottom row shows frames at 1.2, 10.8 and 19.2 seconds with different shoppers and 4, 3 and 6 boxes.](img:how-many-images-do-you-need-frame-sampling.jpg "Consecutive frames show the same people in the same places, so they add count but not information. Frames taken seconds apart change who is in the scene and where. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 In production video analytics, a common problem is a model that works well on the footage it was trained on and degrades on a new camera. The fix is almost always more varied data from the new setting, not more of the old data.
 
 ## How to decide when to stop: learning curves by data size
@@ -64,6 +66,8 @@ Read the curve:
 - **Still rising steeply at 100 percent.** You need more data. The model is limited by examples.
 - **Flattening.** More of the same data will help little. Look at the errors instead.
 - **Flat, with a big gap between training and validation results.** This is overfitting, and more varied data or stronger regularisation helps. See [How to Spot Overfitting in Object Detection](post:spotting-overfitting-in-detection).
+
+![Line chart of a validation metric against the share of training images used, at 25, 50, 75 and 100 percent. Project A's line climbs steeply all the way to 100 percent. Project B's line rises early and then levels off between 75 and 100 percent.](img:how-many-images-do-you-need-learning-curve.png "Illustrative curves, not measurements. A line still climbing at 100 percent says more data will help; a line that has levelled off says to study the errors instead.")
 
 This costs a few extra training runs, but it replaces guessing with a measurement. For how to interpret the metric itself, read [mAP, Precision and Recall: How to Read Detection Results](post:map-precision-recall-explained).
 

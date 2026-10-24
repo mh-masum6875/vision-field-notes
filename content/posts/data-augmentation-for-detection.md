@@ -31,11 +31,15 @@ Good libraries handle this for you, and Ultralytics applies box-aware augmentati
 - **Brightness, contrast, saturation and hue changes.** Helpful for lighting variation across the day. Hue shifts are risky when colour is the class signal, for example distinguishing a red object from a green one, or colour-coded safety gear.
 - **Blur and noise.** Useful if your footage is compressed, low light or has motion blur. Do not add noise your camera never produces.
 
+![Six versions of a frame showing three water bottles on a table, each bottle boxed. Original; horizontal flip, scaled down and shifted onto a grey border, and darker with stronger colour are tagged plausible. Vertical flip with upside-down bottles and a 35 degree rotation are tagged unrealistic for this camera; in the rotated panel the boxes are much wider than the tilted bottles, which are traced with dashed outlines.](img:data-augmentation-for-detection-transforms.jpg "The boxes move with the image in every case. A fixed tabletop camera could plausibly see the top-row and darker versions, but never upside-down bottles; and after a large rotation the axis-aligned box must grow well beyond the object. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 ### Compositional
 
 - **Mosaic.** Combines four training images into one. It exposes the model to more objects, more backgrounds and more scales per step, and objects appear in unusual positions. It is a default in many YOLO training pipelines and is generally helpful, but see the note on turning it off near the end of training below.
 - **Mixup.** Blends two images. Occasionally helpful on larger datasets, often unnecessary on small ones.
 - **Copy-paste.** Cuts objects and pastes them into other images. Helpful for rare classes, but only if pasted objects look natural in scale, lighting and context.
+
+![A square training image split by dashed lines into four unequal quadrants, each taken from a different video: a store aisle with three boxed shoppers, a single boxed bottle, two boxed people walking in a hallway, and a boxed worker in a hard hat and vest on a warehouse floor.](img:data-augmentation-for-detection-mosaic.jpg "One mosaic image gives the model four backgrounds and seven objects in a single step. Boxes are cropped along with each piece, which is why the shopper at the bottom edge is cut off. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 ## Which settings to use in Ultralytics
 

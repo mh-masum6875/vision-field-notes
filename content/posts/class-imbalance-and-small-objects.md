@@ -24,6 +24,8 @@ Count instances per class in the training and validation sets, not just images. 
 
 Then look at per-class precision and recall after training. A class with low recall and few examples is a candidate for the fixes below.
 
+![Horizontal bar chart of labelled boxes per class: person 4,200, hard hat 3,100, safety vest 2,700, forklift 900, and no hard hat 140, highlighted in orange with a note saying it is the class the alert depends on and under 2 percent of all boxes.](img:class-imbalance-and-small-objects-class-counts.png "Illustrative counts for a typical site-safety dataset, not a real one. The class that triggers the alert is the smallest bar, so it contributes little to the training loss unless you act on it.")
+
 ### Step 2: collect targeted data
 
 The most reliable fix is more real examples of the rare class, especially in varied conditions. Search your footage for the rare event, take frames from different cameras and times, and label them. If events are rare in live footage, consider running a rough model to find candidate clips, then review by hand.
@@ -77,6 +79,8 @@ Key points for tiling:
 - **Train on tiles too** if you will infer on tiles, so the model sees the same scale in both phases.
 - **Merge carefully.** Duplicate detections from overlapping tiles must be removed, or you will double count. If you count objects, this matters.
 - **Mind the cost.** More tiles means more inference per frame. On a multi-stream system this can multiply your compute needs.
+
+![Two copies of a store aisle full of white crockery. Left, the whole frame run once: 4 boxes, three bowls on the top-right shelf and one large refrigerator box. Right, the frame cut into four overlapping tiles shown as dashed coloured rectangles: 11 boxes, including several more bowls and a cup, but also a false toilet detection on the crockery table and two refrigerator boxes split at a tile edge.](img:class-imbalance-and-small-objects-tiling.jpg "The same frame and model, run whole and as four overlapping tiles. Tiling found more of the small bowls, but also produced a false toilet and an object split into two boxes at a tile seam, so tiles need their own threshold check and careful merging. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 Tiling is powerful for high-resolution frames with small targets, such as aerial or wide-area cameras. For a camera where objects are already large, it is wasted work.
 

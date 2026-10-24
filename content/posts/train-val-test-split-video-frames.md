@@ -16,6 +16,8 @@ Video frames that are close in time are nearly identical. The same people stand 
 
 At validation time, the model is shown an image that is almost a copy of something it trained on. It scores well because it has effectively seen the answer. That is data leakage: information from the evaluation set influences training.
 
+![Three panels from a hallway camera. Left: a training frame at 16.7 seconds with two people boxed. Middle: a validation frame at 17.7 seconds showing the same two people a step further along, also boxed. Right: a difference image that is almost entirely white, with dark areas only where the two people moved.](img:train-val-test-split-video-frames-near-copies.jpg "Two frames one second apart from the same clip. Only about 9 percent of the pixels changed noticeably, so a model that trained on the left frame has nearly seen the middle one. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 The result is a validation score that tells you how well the model recognises its own training scenes, not how well it will do on a new day, a new camera or a new site. In production video analytics, this is one of the most common reasons a model that looked excellent fails on deployment.
 
 ## What the unit of splitting should be
@@ -40,6 +42,8 @@ Choose the level that matches your deployment. Ask: what will be new when this m
 | One long recording only | By time block, with a gap between blocks |
 
 For a single long recording, take a block from the end for validation and leave a gap of unused frames between training and validation blocks, so edge frames are not near-copies.
+
+![Diagram of three rows of frame strips coloured blue for training and orange for validation. Random frame split: videos A, B and C each have orange frames scattered among blue ones. Split by video: videos A and B are all blue, video C is all orange. One long recording: a long blue block for earlier weeks, a few grey unused frames as a gap, then an orange block for later weeks.](img:train-val-test-split-video-frames-split-strategies.png "In a random frame split every validation frame has a near-identical neighbour in training. Splitting by video, or by time with a gap, keeps whole groups of similar frames on one side.")
 
 ## Other leaks to watch for
 

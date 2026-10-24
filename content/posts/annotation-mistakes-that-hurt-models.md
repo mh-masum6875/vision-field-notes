@@ -44,6 +44,8 @@ The box is right, the class is wrong. Often caused by similar-looking classes or
 
 Two boxes on one object, usually from a slip while drawing or from merging datasets. The model is taught that one object can be two, which hurts duplicate suppression behaviour.
 
+![Four copies of the same store-aisle crop with three shoppers. Top left: each shopper has one tight green box. Top right: the left shopper has only a dashed red outline marked no label. Bottom left: the left shopper has a red box much larger than the person, marked loose. Bottom right: the left shopper has a green box and a second, slightly shifted red box, marked 2 boxes.](img:annotation-mistakes-that-hurt-models-label-mistakes.jpg "Three common mistakes made on the same person: a skipped box, a loose box and a duplicate. The starting boxes are YOLOv8n detections used as labels; the mistakes are simulated to show what to look for. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 ### Format and conversion bugs
 
 Not an annotation error as such, but common: swapped width and height, boxes in pixels where normalised values are expected, class ids shifted by one after merging datasets, or image resizing that was not applied to the labels. Everything looks plausible and everything is wrong. Always draw the converted labels on a handful of images before training.
@@ -63,6 +65,8 @@ Run this audit before any serious training, and again whenever you add a large b
 5. **Use the model to find errors.** Train a first model, run it on the training set, and list places where it confidently disagrees with the label. High-confidence predictions with no matching label point to missing labels. High-confidence predictions with a different class point to wrong labels. Review each by hand and do not auto-correct, because the model may be the one that is wrong.
 6. **Review the confusion matrix.** Ultralytics saves a confusion matrix after training. Large off-diagonal cells between two classes usually mean the classes are ill-defined or mislabelled, not that the model is weak.
 7. **Measure agreement.** Have two people label the same 50 images independently. Compare. Disagreement shows you which rules are unclear.
+
+![Scatter plot of box width against box height, both as fractions of the image. Most boxes form a dense diagonal cluster of narrow, taller-than-wide boxes. Red circles mark outliers: a few near-zero boxes at the origin, a few wide but very short boxes below the cluster, and a few boxes covering the whole image in the top right corner.](img:annotation-mistakes-that-hurt-models-box-sizes.png "Illustrative data, not a real dataset. When you plot every box's width against its height, slips, swapped coordinates and whole-image boxes stand apart from the main cluster; open those images first.")
 
 ## How to fix them
 

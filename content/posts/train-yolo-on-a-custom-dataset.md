@@ -10,6 +10,8 @@ Training a YOLO model on your own data is a short sequence of steps: prepare ima
 
 This guide uses the Ultralytics Python package. Check the current licence before using the models commercially. Ultralytics models are released under AGPL-3.0, with a commercial licence available from Ultralytics. See [YOLO Licenses Explained: AGPL, GPL and Commercial Use](post:yolo-licenses-explained).
 
+![Flow diagram of nine steps in two rows. Top row, left to right: 1 Environment, 2-3 Images plus labels, 4 Split, 5 data.yaml. An arrow goes down to the bottom row, which runs right to left: 6 Train, 7 Read results, 8 Validate plus predict, 9 Improve. A red arrow from Improve loops back up to Images plus labels.](img:train-yolo-on-a-custom-dataset-workflow.png "The steps in this guide. Training is a single step; most of the work, and the improvement loop, goes back to the images and labels.")
+
 ## Step 1: Set up the environment
 
 Create a clean virtual environment and install the package:
@@ -40,6 +42,8 @@ Ultralytics finds the label for an image by replacing `images` with `labels` in 
 
 An image with no objects can have an empty label file, or no file at all. Including such background images is useful, because they teach the model what to ignore.
 
+![Diagram with image files img001.jpg, img002.jpg and img003.jpg in dataset/images/train on the left, each with an arrow to a text file of the same name in dataset/labels/train on the right. Under the text files: a one-line label, two lines meaning two objects, and an empty file meaning a background image. A red note says a missing or misnamed text file silently means no objects in this image.](img:train-yolo-on-a-custom-dataset-folder-pairing.png "Each image is matched to its label file by name alone. If a label file is missing or misnamed, training does not fail; the image is simply treated as having no objects.")
+
 ## Step 3: Understand the label format
 
 Each line in a label file describes one object:
@@ -49,6 +53,8 @@ class_id x_center y_center width height
 ```
 
 All four box values are normalised to the range 0 to 1, relative to the image width and height. The class id is an integer starting at 0. For example, `0 0.5 0.5 0.2 0.3` is a class-0 box centred in the image, 20 percent of the width and 30 percent of the height.
+
+![A warehouse frame with axes running from 0 to 1 in both directions. A worker in a hard hat and orange vest is boxed. Annotations mark the box centre at 0.257, 0.491, the width as 0.136 and the height as 0.591. Below the image the label line reads 0 0.257 0.491 0.136 0.591, with each number named: class_id, x_center, y_center, width, height.](img:train-yolo-on-a-custom-dataset-label-format.jpg "The same box written as a YOLO label. Every value is a fraction of the image size, measured from the top-left corner, so the numbers stay the same if the image is resized. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 If your annotation tool can export in YOLO format, use that. If you convert from another format, draw a few converted boxes on images and look at them. Swapped width and height or pixel values in place of normalised ones are common conversion bugs.
 

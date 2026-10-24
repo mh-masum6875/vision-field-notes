@@ -16,11 +16,15 @@ A detector has two broad jobs. The first is to extract visual features: edges, t
 
 The feature-extraction part is largely general. Edges and textures are similar whether you detect cats or hard hats. A model trained on a large, varied dataset has already learned good general features. When you fine-tune, you keep that knowledge and mainly teach the model your specific classes and your specific look.
 
+![Diagram of a detector as four boxes in a row: your image, backbone (edges, textures, object parts), neck (combines scales) and head (boxes plus your class names). A blue line over the backbone and neck says reused from the COCO checkpoint, yolo11n.pt. An orange line over the head says re-created for your class count. A dashed outline around the backbone is labelled freeze: keep these early layers fixed, worth testing on small datasets.](img:fine-tuning-yolo-transfer-learning-what-is-reused.png "The backbone and neck carry over from the pretrained checkpoint; only the head is rebuilt for your classes. Freezing keeps the early layers fixed while the rest adapts.")
+
 Starting from scratch needs far more data and training time, and with a small dataset it usually gives worse results.
 
 ## The pretrained checkpoint and its classes
 
 Ultralytics checkpoints such as `yolo11n.pt` are trained on the COCO dataset, which has 80 common classes. When you train on your own data with different classes, the final prediction layers are re-created to match your class count, while the earlier layers are reused. You do not need to do anything special for this; the library handles it.
+
+![A warehouse frame where a worker in a yellow hard hat and orange safety vest is boxed as person with score 0.89. Arrows point to the hard hat and the vest with notes saying each is not a COCO class.](img:fine-tuning-yolo-transfer-learning-coco-out-of-box.jpg "A pretrained COCO model already finds the person reliably, which is the general knowledge fine-tuning reuses. It cannot report the hard hat or vest until you fine-tune it on labelled examples of those classes. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 Check the current licence of any pretrained weights before commercial use. Ultralytics models are AGPL-3.0 with a commercial licence available. See [YOLO Licenses Explained: AGPL, GPL and Commercial Use](post:yolo-licenses-explained).
 

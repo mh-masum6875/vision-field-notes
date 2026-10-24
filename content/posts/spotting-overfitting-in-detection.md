@@ -32,6 +32,8 @@ Overfitting: training loss keeps falling, validation loss flattens and then rise
 
 Check each loss term separately. Sometimes the classification loss overfits first while box loss is still fine.
 
+![Two loss charts over 100 epochs. Left, labelled healthy: training and validation loss both fall and level off with a small, steady gap. Right, labelled overfitting: training loss keeps falling, while validation loss bottoms out around epoch 35, marked with a dashed line, and then climbs, so the gap between the two lines widens to the end.](img:spotting-overfitting-in-detection-loss-curves.png "Simulated curves for illustration, not a real run. The sign to look for is on the right: the validation loss turns upward while the training loss keeps improving.")
+
 ### Validation metrics
 
 Plot precision, recall, mAP50 and mAP50-95 per epoch. In a healthy run these rise and settle. In an overfit run they peak and then drift downward or become noisy while training loss keeps improving.
@@ -78,6 +80,8 @@ This is almost always the best remedy. Add examples from different times, weathe
 ### 2. Stop at the right time
 
 Keep the checkpoint with the best validation result rather than the last epoch. Ultralytics saves `best.pt` for this. It also supports an early-stopping option called `patience`, which ends training when validation stops improving. Check the documentation for your version for the exact behaviour.
+
+![Line chart of a validation metric over 100 epochs. It rises steeply, peaks at epoch 56, marked best.pt, then drifts slowly down to a lower value at epoch 100, marked last.pt if run to epoch 100. A shaded band covers the 30 epochs after the peak and ends at a dashed line labelled patience equals 30, early stopping ends the run here.](img:spotting-overfitting-in-detection-best-vs-last.png "A simulated run for illustration. The best checkpoint came well before the end; early stopping would have ended the run at the dashed line, and best.pt keeps the peak either way.")
 
 ### 3. Use realistic augmentation
 

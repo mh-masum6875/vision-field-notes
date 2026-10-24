@@ -22,6 +22,8 @@ The accelerator runs neural network inference. It does not replace the Pi's CPU.
 
 On a CPU, a detector competes with everything else on the board. With an accelerator, inference moves to dedicated hardware, which frees the CPU for decoding, tracking and logic. For projects with several streams or higher resolution, this can be the difference between working and not working. For projects with one low-rate stream, it may make no practical difference.
 
+![Two rows of six pipeline stages: video decode, pre-process, inference, post-process with NMS, tracking and rules, and alerts and storage. In the CPU-only row all six are blue (Pi CPU). In the accelerator row only inference is yellow (accelerator), the other five remain on the CPU.](img:raspberry-pi-ai-kit-hailo-pipeline-split.png "The accelerator takes over inference only. Decoding, pre- and post-processing, tracking and alerts still run on the Pi CPU, so measure the whole pipeline.")
+
 ### Power and heat
 
 Dedicated accelerators are designed to deliver inference efficiently, often better per watt than a general CPU. That helps in enclosed or battery-powered setups. But the module still adds power draw and heat, so check your power supply and cooling. The [official power supply](aff:rpi_psu) is a sensible baseline, and the broader advice in [power, cooling and storage for an edge AI box](post:power-cooling-storage-edge-ai-box) applies.
@@ -38,6 +40,8 @@ In practice, you typically:
 4. Run it using the vendor's runtime and, on Raspberry Pi OS, the integration provided for the camera pipeline.
 
 Quantization is part of step 3, and that means calibration data and accuracy checks. See [INT8 quantization for detectors](post:int8-quantization-explained). The compiler may be designed for a different operating environment than your Pi, so check what the vendor currently recommends for the build step.
+
+![Two toolchain lanes. CPU only: train and validate, export to ONNX, run with ONNX Runtime on the Pi CPU. With accelerator: train and validate, export to ONNX, then a highlighted vendor compiler step that parses, optimises, quantizes to INT8 and compiles using calibration images, then the vendor runtime on the accelerator.](img:raspberry-pi-ai-kit-hailo-toolchain.png "The accelerator path adds one step, the vendor compiler. That step only accepts supported layers and quantizes the model, so accuracy has to be checked again.")
 
 ## Trade-offs
 

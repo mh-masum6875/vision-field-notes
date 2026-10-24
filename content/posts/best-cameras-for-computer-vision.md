@@ -20,6 +20,8 @@ Ask three questions first:
 
 Then work backwards. A useful rule: the object you care about should cover enough pixels for a human to recognise it in the image you feed the model. If you cannot tell what it is by eye, the model will struggle too. Remember that models usually receive a resized image, so a 4K frame shrunk to a small input loses detail. Think in terms of pixels on target after resizing.
 
+![The same worker in a hard hat and orange vest shown four times, resampled to 262, 60, 30 and 15 pixels tall. At 15 pixels the helmet is a few yellow blocks.](img:best-cameras-for-computer-vision-pixels-on-target.jpg "The same person at fewer and fewer pixels, enlarged for display. At 15 pixels tall you can no longer confirm a helmet by eye, and a model will struggle too. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 ## The main camera types
 
 ### USB webcams
@@ -69,6 +71,8 @@ Match frame rate to the motion. Counting people at a door rarely needs more than
 This is often overlooked. A rolling shutter reads the image line by line, so fast motion can look skewed. A global shutter captures the whole frame at once and is better for fast-moving objects. For slow scenes, rolling shutter is fine.
 
 More important for most projects is exposure time. Long exposure in low light causes motion blur, and a blurred object is hard to detect. If you can, set a short fixed exposure and add light rather than letting the camera lengthen exposure at night.
+
+![Four versions of a warehouse frame with increasing horizontal blur. Sharp: person 0.87. 17 pixel blur: person 0.83. 25 pixel blur: the worker is labelled fire hydrant 0.75. 41 pixel blur: no detection.](img:best-cameras-for-computer-vision-motion-blur.jpg "Horizontal motion blur was added to one real frame to mimic a long exposure. Mild blur only lowers the score, but heavier blur turns the worker into a wrong class and then into nothing. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 ### Lens and field of view
 

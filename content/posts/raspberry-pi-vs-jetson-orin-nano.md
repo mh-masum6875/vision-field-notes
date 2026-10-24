@@ -44,6 +44,8 @@ A [Raspberry Pi 5](aff:rpi5) is a good fit when:
 
 The key idea is that most real projects do not need every frame. A person walking through a door is visible for many frames. If your logic needs a detection every 200 to 500 ms, a small model on a CPU may be plenty. Define the required detection rate from the business need first, then see if the board meets it.
 
+![Six frames from a warehouse clip, one second apart, each showing a worker in a hard hat and orange vest with a detection box labelled person and a score between 0.63 and 0.87.](img:raspberry-pi-vs-jetson-orin-nano-one-frame-per-second.jpg "Sampling only one frame per second still catches the worker in every sampled frame for about six seconds, so a door or zone check rarely needs full frame rate. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 For a Pi, choose the smallest model that works, use a modest input size and export to a CPU-friendly format such as ONNX. The article on [running YOLO on a Raspberry Pi 5](post:yolo-on-raspberry-pi-5) covers that workflow in detail.
 
 If you want more speed without leaving the Pi, an accelerator add-on is an option. The [Raspberry Pi AI Kit](aff:rpi_ai_kit) adds a Hailo accelerator. That changes the picture, but it also changes the toolchain, because models must be compiled for the accelerator. See [Raspberry Pi AI Kit and Hailo accelerators](post:raspberry-pi-ai-kit-hailo) for the trade-offs.
@@ -88,6 +90,8 @@ The Pi path looks simple until you add an accelerator. Then you must convert mod
 4. **Move up only if the measurement fails.** If the Pi cannot meet the requirement even with a smaller model, lower input size or frame skipping, try an accelerator or a Jetson.
 
 This order saves money. Many teams buy the bigger board first and later find that their bottleneck was video decoding or a slow Python loop.
+
+![Flowchart: write down the requirement, pick the smallest model that meets accuracy, run it on the Pi and measure. If it meets the requirement, ship the Pi. If not, try smaller input or frame skipping and re-measure, and only if it is still short add an accelerator or move to Jetson.](img:raspberry-pi-vs-jetson-orin-nano-decision-flow.png "The four steps as a loop. Cheaper fixes such as a smaller input or frame skipping come before buying more hardware.")
 
 ## Common mistakes
 

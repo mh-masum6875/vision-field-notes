@@ -18,6 +18,8 @@ A floating-point number can represent a huge range with fine precision. An 8-bit
 
 If the scale is chosen well, most values map with small error. If it is chosen badly, for example because one outlier stretches the range, many values collapse to the same integer and information is lost.
 
+![Two histograms of the same activation values clustered between minus 2 and 2, with orange vertical lines marking INT8 levels. Top: scale set by the largest value of 38 gives a step of 0.30 and only 27 levels across the bulk of the data. Bottom: scale set by calibration clipping at 5.3 gives a step of 0.042 and 189 levels.](img:int8-quantization-explained-outlier-range.png "Illustrative synthetic data. When a single outlier sets the range, only a few dozen of the 256 integer levels cover the values that matter. Choosing the range from calibration data uses the levels far better.")
+
 For weights, the ranges are known from the trained model. For activations, the values depend on the input data, so the ranges must be estimated by running sample images through the network. That step is called calibration.
 
 ## Why bother
@@ -48,6 +50,8 @@ Pros: usually recovers more accuracy than PTQ.
 Cons: needs a training setup, support in your framework, more time, and the training must match what the deployment toolchain does.
 
 A sensible plan: try PTQ first. If accuracy is acceptable, stop. If not, look at which layers or classes suffer, and consider mixed precision (keeping sensitive layers at higher precision) or QAT.
+
+![Flowchart: from the FP32 model, check whether FP16 or a smaller model meets the target; if yes, stop. If not, run post-training quantization with representative calibration images, validate against FP32 on mAP50-95, per-class, small-object and false-alarm results, and ship INT8 with re-tuned thresholds if it passes your rule. If it fails, try mixed precision or quantization-aware training and validate again.](img:int8-quantization-explained-decision-flow.png "INT8 is the last step, not the first. Every quantized model goes through the same validation as a new model before it ships.")
 
 ## Calibration data
 

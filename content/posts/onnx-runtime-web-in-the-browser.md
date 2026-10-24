@@ -20,6 +20,8 @@ ONNX Runtime Web (the `onnxruntime-web` package) is a JavaScript build of ONNX R
 
 You choose providers in order of preference, and the runtime falls back if one is unavailable. Which one wins depends on the browser, device and model, so test on the devices your users have.
 
+![Flowchart starting from executionProviders webgpu then wasm. If WebGPU is available, the GPU path is used. If not, WASM runs on the CPU: if the page is cross-origin isolated it is multi-threaded, otherwise single-threaded and slowest. A note says cross-origin isolation needs COOP and COEP headers that some static hosts cannot set.](img:onnx-runtime-web-in-the-browser-provider-fallback.png "The same page can run on the GPU, multi-threaded WASM or single-threaded WASM depending on the visitor's browser and the headers your host sends.")
+
 ## The pipeline
 
 The steps are the same as in any ONNX deployment:
@@ -31,6 +33,8 @@ The steps are the same as in any ONNX deployment:
 5. Draw boxes on a canvas.
 
 The model export and decoding details are the same as in [exporting YOLO to ONNX and running it with ONNX Runtime](post:export-yolo-to-onnx). The big difference is that you now write pre- and post-processing in JavaScript, with no NumPy or OpenCV. Canvas APIs handle resizing and pixel access, and you write NMS yourself or use a small library.
+
+![Diagram: a static web host with HTML, JavaScript, the WASM runtime and model.onnx sends files down once to the visitor's browser. Inside the browser, camera or image file, pre-process on a canvas, ONNX Runtime Web, decode and NMS in JavaScript, and draw boxes on a canvas all run on the visitor's device.](img:onnx-runtime-web-in-the-browser-data-flow.png "Only static files travel, and only from the host to the browser. The whole detection pipeline runs on the visitor's device, so the image does not need to be uploaded.")
 
 A skeleton for loading and running a model:
 

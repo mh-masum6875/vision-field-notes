@@ -54,6 +54,8 @@ for out in sess.get_outputs():
 
 For a standard Ultralytics detection model at 640 input, you typically see an input shaped like `[1, 3, 640, 640]` and a single output shaped like `[1, 4 + number_of_classes, 8400]`. The 8400 comes from the three detection scales at 640 input: 80x80, 40x40 and 20x20 grids add up to 8400 candidate predictions. If you change `imgsz`, this count changes.
 
+![Diagram of the output tensor as a wide rectangle: 4 box rows (cx, cy, w, h) on top of 80 class score rows, with 8400 columns split into 6400 columns from the 80 by 80 grid, 1600 from the 40 by 40 grid and 400 from the 20 by 20 grid.](img:export-yolo-to-onnx-output-layout.png "Each of the 8400 columns is one candidate box with a score for every class. Most candidates come from the finest 80 by 80 grid. Box rows are drawn taller than scale so they stay readable.")
+
 Note that this layout applies to the recent anchor-free Ultralytics detection models. Older YOLOv5 exports differ: they include an objectness value per prediction. Always print your own model's output shape and do not assume.
 
 ## Step 3: pre-processing
@@ -86,6 +88,8 @@ def preprocess(img_bgr, size=640):
 ```
 
 The grey padding value of 114 matches the Ultralytics letterbox convention. You must return `scale`, `left` and `top` because you need them to map boxes back to the original image.
+
+![A 640 by 360 store aisle frame shown three ways: the original, stretched to 640 by 640 so people look tall and thin, and letterboxed to 640 by 640 with grey bars above and below, labelled top equals 140, scale equals 1.00, left equals 0.](img:export-yolo-to-onnx-letterbox.jpg "Stretching distorts shapes the model never saw in training. Letterboxing keeps the aspect ratio, and the scale and padding offsets are what you use to map boxes back.")
 
 ## Step 4: run inference
 
@@ -139,6 +143,8 @@ If your ONNX output does not match Ultralytics, check these in order:
 - **Different input size.** The export `imgsz` must match what you feed.
 
 A good test: run the same single image through both paths, print the top few detections from each and compare. Small differences in scores are normal; large differences mean a bug.
+
+![Two copies of the same store aisle frame with detections. With RGB input: three people and two bowls. With BGR input: the same three people with slightly different scores, two bowls, and an extra large red box labelled boat 0.63.](img:export-yolo-to-onnx-bgr-vs-rgb.jpg "Real output of the same model on the same frame. With swapped colour channels most boxes survive, which is why the bug is easy to miss, but a confident false boat appears and scores shift. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 ## Validate after export
 

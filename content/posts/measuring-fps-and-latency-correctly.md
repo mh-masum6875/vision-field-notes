@@ -29,6 +29,8 @@ The first inferences are slow. Libraries load kernels, allocate memory, build ca
 
 Fix: run a number of dummy inferences first (ten to fifty is typical), then start timing.
 
+![Line chart of latency per iteration on a log scale. The first run is about 420 milliseconds and the next runs fall quickly, levelling off near 21 milliseconds after about ten iterations. The first 20 iterations are shaded as warm-up to discard.](img:measuring-fps-and-latency-correctly-warmup.png "Simulated, illustrative data. Timing the first runs would report start-up cost, not the steady-state speed you will actually get.")
+
 ### Asynchronous GPU execution
 
 GPU calls are often asynchronous. Your Python code returns before the GPU finishes. If you time with a simple timer around the call, you may measure only the time to queue the work.
@@ -42,6 +44,8 @@ Use `time.perf_counter()` in Python. It is a monotonic, high-resolution clock me
 ### Averaging hides problems
 
 A mean can look fine while the system stutters. Report the median and a high percentile, such as the 95th or 99th, and the worst case. For alerting systems, the slow tail often matters more than the average.
+
+![Histogram of per-frame latency on a log count scale. Most frames sit near 25 milliseconds, a smaller group sits between 40 and 60, and a few reach up to 109. Dashed lines mark median 25, p95 31, p99 56 and max 109 milliseconds; the mean is 26.](img:measuring-fps-and-latency-correctly-latency-distribution.png "Simulated, illustrative data. Mean and median are almost the same, but the p99 is more than twice the median, and those slow frames are what a live system feels.")
 
 ### Cold hardware
 
@@ -95,6 +99,8 @@ With stage timings, you often find surprises. A common one: the model takes a fe
 ## Batch size effects
 
 Batching groups several frames into one forward pass. On GPUs it usually raises throughput because the hardware is used more fully. But it also raises latency: the first frame waits until the batch fills, and the whole batch finishes together.
+
+![Timeline of twelve frame arrivals. With batch 1, each frame is processed right after it arrives. With batch 4, frames wait in a yellow band until four have arrived, then one orange inference block runs, so the first frame of each batch gets its result about four frame intervals later.](img:measuring-fps-and-latency-correctly-batching.png "Schematic, not a measurement. A batch can process more frames per second, but each frame waits for the batch to fill, so latency rises.")
 
 So report batch size with every number. A result of "X FPS at batch 8" and one at batch 1 answer different questions. For a single live camera where fast alerts matter, batch 1 reflects reality. For processing many streams on one GPU, a larger batch may be right. Scaling decisions are discussed in [scaling video analytics to hundreds of camera streams](post:scaling-to-hundreds-of-camera-streams).
 

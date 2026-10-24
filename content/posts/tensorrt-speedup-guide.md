@@ -19,6 +19,8 @@ TensorRT takes a network graph and applies several optimisations:
 
 None of this changes your training. It is a deployment step. The result is a binary engine file that is fast but tied to its environment.
 
+![Diagram: before fusion, a convolution kernel, a bias add kernel and an activation kernel run one after another with a write and read of memory between each. After TensorRT fusion, a single kernel does convolution, bias and activation.](img:tensorrt-speedup-guide-layer-fusion.png "Fusing small consecutive operations into one kernel removes the memory round-trips between them, which is one of the main sources of TensorRT speed-ups.")
+
 ## When it is worth it
 
 TensorRT is a good idea when:
@@ -86,6 +88,8 @@ This is the part that surprises people. A TensorRT engine is not a portable mode
 - Often the CUDA and driver environment as well.
 
 So keep the ONNX file as your portable source of truth, and treat the engine as a build artefact. Rebuild it on each target device type, ideally as part of your deployment script or container build. Store the ONNX, record the TensorRT version and note the build options. If you deploy with containers, see [Dockerize a computer vision app](post:dockerize-a-computer-vision-app) for how to keep the environment reproducible.
+
+![Diagram: PyTorch best.pt exports to best.onnx, the portable source of truth. From it, three arrows lead to separate builds on a Jetson device, a desktop RTX GPU and a cloud GPU, each producing its own engine file that is marked not portable and must be validated and benchmarked.](img:tensorrt-speedup-guide-onnx-to-engines.png "One ONNX file, one engine per target. Each engine is tied to its GPU type and TensorRT version, so rebuild and re-validate it on every target.")
 
 ## Input shape and batch size
 

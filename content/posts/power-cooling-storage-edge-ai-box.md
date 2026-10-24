@@ -53,6 +53,8 @@ On Raspberry Pi OS, `vcgencmd measure_temp` reports the temperature, and `vcgenc
 3. Log temperature and frame rate together.
 4. If frame rate falls as temperature rises, you have a cooling problem.
 
+![Two stacked line charts over 30 minutes of load. Top: temperature of a bare board climbs to a dashed throttle line at 80 degrees and stays there, while a board with heatsink and fan levels off near 60 degrees. Bottom: frame rate of the cooled board stays at 100 percent, while the bare board drops from about minute 12 to around 63 percent.](img:power-cooling-storage-edge-ai-box-throttling.png "Simulated, illustrative data. A one-minute test looks identical for both boards; only a long run with temperature and frame rate logged together shows the throttling.")
+
 ### What to do
 
 - Add a heatsink and fan. An [active cooler or fan case](aff:rpi_cooler) is inexpensive for a Pi and removes most throttling problems.
@@ -115,6 +117,8 @@ Track a few signals and send them somewhere you will see them:
 - Camera connection state.
 
 Alert on the absence of data, not just on errors. A device that is silent is often a device that has failed. Camera reconnection logic is covered in [handling RTSP dropouts](post:handling-rtsp-dropouts-and-reconnects).
+
+![Two-column diagram. Left, what goes wrong: app crashes, main loop hangs while the process is alive, whole device hangs, power cut, silent for any reason. Right, what recovers it: process supervisor such as systemd or a Docker restart policy, an app heartbeat check, a hardware watchdog, a UPS with few writes and a read-only root, and remote monitoring that alerts when data stops.](img:power-cooling-storage-edge-ai-box-recovery-layers.png "Each failure needs its own recovery layer. The last layer, alerting when data stops arriving, catches whatever the others miss.")
 
 ### Time and logs
 

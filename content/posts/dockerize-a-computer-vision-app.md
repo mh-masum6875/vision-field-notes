@@ -55,6 +55,8 @@ The standard `opencv-python` wheel expects GUI libraries that a slim image does 
 
 Docker caches layers. Copy `requirements.txt` and install dependencies before copying your source code. Then a code change does not trigger a slow reinstall. This single habit saves a lot of time.
 
+![Two Dockerfile layer stacks. Left, dependencies first: FROM, COPY requirements.txt and RUN pip install are reused from cache, and only COPY src and COPY model rebuild after a code change. Right, code copied first: COPY . . and RUN pip install both rebuild after a code change.](img:dockerize-a-computer-vision-app-layer-cache.png "Docker rebuilds every layer above the first one that changed. Copying code before installing dependencies makes every small edit re-run pip install.")
+
 ## Video input inside a container
 
 How the container gets frames depends on the source:
@@ -88,6 +90,8 @@ For the image, choose a base that matches your needs:
 - **ONNX Runtime GPU** needs the `onnxruntime-gpu` package, and its version must match the CUDA and cuDNN versions it was built for. Check the compatibility table in the current ONNX Runtime documentation instead of guessing.
 
 The usual failure is a version mismatch between the host driver, the CUDA version in the image and the library you installed. When the GPU is not used, check this first. You can confirm in code: ONNX Runtime's `ort.get_available_providers()` lists providers, and `torch.cuda.is_available()` tells you about PyTorch.
+
+![Diagram of two stacked boxes. The container image holds your app with headless OpenCV, NumPy and the model, plus onnxruntime-gpu and CUDA and cuDNN libraries. The host holds the Linux kernel, the NVIDIA driver and the NVIDIA Container Toolkit. A red double arrow links the CUDA libraries in the image to the host driver, noting the versions must be compatible.](img:dockerize-a-computer-vision-app-gpu-stack.png "The image brings CUDA libraries, but the GPU driver lives on the host. The driver, the CUDA version in the image and the onnxruntime-gpu build must all be compatible.")
 
 ### Jetson devices
 

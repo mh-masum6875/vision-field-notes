@@ -211,7 +211,6 @@ LAYOUT = """<!doctype html>
 <meta property="og:title" content="{{ title }}"><meta property="og:description" content="{{ desc }}">
 <meta property="og:url" content="{{ canon }}"><meta property="og:site_name" content="{{ s.name }}">
 {% if og_image %}<meta property="og:image" content="{{ og_image }}"><meta name="twitter:card" content="summary_large_image">{% else %}<meta name="twitter:card" content="summary">{% endif %}
-<link rel="alternate" type="application/rss+xml" title="{{ s.name }}" href="{{ bp }}/feed.xml">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
 {% if s.adsense_publisher_id %}<meta name="google-adsense-account" content="ca-pub-{{ s.adsense_publisher_id }}">{% endif %}
 {% if s.google_site_verification %}<meta name="google-site-verification" content="{{ s.google_site_verification }}">{% endif %}
@@ -226,7 +225,7 @@ LAYOUT = """<!doctype html>
 <main>{{ content|safe }}</main>
 <footer class="site"><div class="wrap">
 <div>© {{ year }} {{ s.author }}. <a href="{{ bp }}/about/">About</a> · <a href="{{ bp }}/contact/">Contact</a> · <a href="{{ bp }}/privacy/">Privacy</a> · <a href="{{ bp }}/disclosure/">Affiliate disclosure</a></div>
-<div><a href="{{ s.author_url }}">Portfolio</a> · <a href="{{ s.github }}">GitHub</a> · <a href="{{ bp }}/feed.xml">RSS</a></div>
+<div><a href="{{ s.author_url }}">Portfolio</a> · <a href="{{ s.github }}">GitHub</a></div>
 </div></footer>
 {% if s.adsense_client %}<div class="cookie" id="cookie" role="dialog" aria-label="Cookie notice"><p style="margin:0 0 10px">This site uses cookies for advertising. You can accept or decline. <a href="{{ bp }}/privacy/">Privacy policy</a></p><button class="p">Accept</button><button class="n">Decline</button></div>
 <script>window.ADS="{{ s.adsense_client }}";{{ js_consent|safe }}</script>{% endif %}
@@ -337,6 +336,4 @@ urls = ["/"] + [f"/category/{c['slug']}/" for c in catlist] + [f"/posts/{p['slug
 if S["adsense_publisher_id"]:
     (OUT / "ads.txt").write_text(f"google.com, pub-{S['adsense_publisher_id']}, DIRECT, f08c47fec0942fa0\n")
 (OUT / "search.json").write_text(json.dumps([{"s": p["slug"], "t": p["title"], "d": p["description"], "c": p["category"], "g": " ".join(map(str, p.get("tags", [])))} for p in posts]))
-items = "".join(f'<item><title>{html.escape(p["title"])}</title><link>{BASE}/posts/{p["slug"]}/</link><guid>{BASE}/posts/{p["slug"]}/</guid><pubDate>{date.fromisoformat(p["date"]).strftime("%a, %d %b %Y 00:00:00 +0000")}</pubDate><description>{html.escape(p["description"])}</description></item>' for p in posts[:30])
-(OUT / "feed.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>{S["name"]}</title><link>{BASE}/</link><description>{html.escape(S["tagline"])}</description>{items}</channel></rss>')
 print(f"built {len(posts)} posts, {len(pages)} pages -> {OUT}")

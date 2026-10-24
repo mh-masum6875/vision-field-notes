@@ -35,6 +35,6 @@ New to the site? Pick the path that matches what you are doing right now.
 1. [Computer Vision Engineer Roadmap: What to Learn First](post:computer-vision-engineer-roadmap)
 2. [Freelancing in Computer Vision: Winning Your First Jobs](post:freelancing-in-computer-vision)
 
-New articles are published every Monday, Wednesday and Friday. Follow along with the [RSS feed](page:feed.xml).
+New articles are published every Monday, Wednesday and Friday.
 
 Want to try detection without installing anything? Open the [CV Test Bench](https://mh-masum6875.github.io/cv-test-bench/) in your browser.

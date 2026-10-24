@@ -72,13 +72,37 @@ cats = {}
 for p in posts: cats.setdefault(p["category"], []).append(p)
 posts.sort(key=lambda p: (p["date"], p["title"]), reverse=True)
 
+def contact_form():
+    if not S.get("contact_form_key"):
+        return ('<p class="note">The contact form is not set up yet. Until then, please reach me through '
+                '<a href="https://github.com/mh-masum6875">GitHub</a>.</p>')
+    return f"""<form class="contact" id="contact-form">
+<input type="hidden" name="access_key" value="{html.escape(S['contact_form_key'])}">
+<input type="hidden" name="subject" value="New message from {html.escape(S['name'])}">
+<input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off">
+<label>Your name<input name="name" required maxlength="100"></label>
+<label>Your email (so I can reply)<input name="email" type="email" required maxlength="200"></label>
+<label>Topic<select name="topic"><option>Question about an article</option><option>Correction</option><option>Project or consulting</option><option>Other</option></select></label>
+<label>Message<textarea name="message" rows="7" required maxlength="5000"></textarea></label>
+<button type="submit">Send message</button>
+<p class="form-status" role="status"></p>
+</form>
+<script>
+(function(){{var f=document.getElementById('contact-form'),s=f.querySelector('.form-status'),b=f.querySelector('button');
+f.addEventListener('submit',function(e){{e.preventDefault();b.disabled=true;s.textContent='Sending...';
+fetch('https://api.web3forms.com/submit',{{method:'POST',headers:{{'Accept':'application/json'}},body:new FormData(f)}})
+.then(function(r){{return r.json()}}).then(function(j){{if(j.success){{f.reset();s.textContent='Thank you. Your message was sent, and I will reply by email.'}}else{{s.textContent='Sorry, the message could not be sent. Please try again later.'}}}})
+.catch(function(){{s.textContent='Sorry, the message could not be sent. Please check your connection and try again.'}})
+.finally(function(){{b.disabled=false}})}})}})();
+</script>"""
+
 pages = {}
 for f in (ROOT / "content/pages").glob("*.md"):
     fm, body = split_fm(f.read_text())
     body = re.sub(r"\]\(page:([a-z0-9.-]+)\)", lambda m: f"]({BP}/{m.group(1)}" + ("" if "." in m.group(1) else "/") + ")", body)
     body = re.sub(r"\[([^\]]+)\]\(post:([a-z0-9-]+)\)",
                   lambda m: f"[{m.group(1)}]({BP}/posts/{m.group(2)}/)" if m.group(2) in slugs else m.group(1), body)
-    fm["html"] = markdown.markdown(body, extensions=["extra"])
+    fm["html"] = markdown.markdown(body, extensions=["extra"]).replace("<p>{{CONTACT_FORM}}</p>", contact_form())
     pages[f.stem] = fm
 
 CSS = """
@@ -139,6 +163,11 @@ footer.site a{color:var(--mut)}
 .cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
 .author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
 .author p{margin:6px 0 0}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
 .pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
 @media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
 .search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}

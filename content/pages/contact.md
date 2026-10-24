@@ -3,9 +3,10 @@ title: "Contact"
 description: "How to contact the author of Vision Field Notes."
 ---
 
-For corrections, questions about an article, or project enquiries, you can reach me in these ways:
+Questions about an article, a correction, or a computer vision project you would like help with? Send a message below and I will reply by email.
 
-- Open an issue or discussion on [GitHub](https://github.com/mh-masum6875)
-- Visit my [portfolio](https://mh-masum6875.github.io) for current contact details
+{{CONTACT_FORM}}
 
-I read every message, but I cannot always reply quickly. Please do not send confidential data or private video footage.
+You can also find me on [GitHub](https://github.com/mh-masum6875) and see my work on my [portfolio](https://mh-masum6875.github.io).
+
+Please do not send confidential data or private video footage through this form.

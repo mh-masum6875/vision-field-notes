@@ -97,7 +97,7 @@ fetch('https://api.web3forms.com/submit',{{method:'POST',headers:{{'Accept':'app
 </script>"""
 
 pages = {}
-for f in (ROOT / "content/pages").glob("*.md"):
+for f in sorted((ROOT / "content/pages").glob("*.md")):
     fm, body = split_fm(f.read_text())
     body = re.sub(r"\]\(page:([a-z0-9.-]+)\)", lambda m: f"]({BP}/{m.group(1)}" + ("" if "." in m.group(1) else "/") + ")", body)
     body = re.sub(r"\[([^\]]+)\]\(post:([a-z0-9-]+)\)",

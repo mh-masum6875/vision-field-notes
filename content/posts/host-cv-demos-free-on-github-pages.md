@@ -14,6 +14,8 @@ GitHub Pages serves static files: HTML, CSS, JavaScript, images, and data files 
 
 That sounds limiting, but computer vision has a good answer: run the model **in the visitor's browser**. The page loads a model file, and JavaScript runs inference locally using WebAssembly or WebGPU. Nothing is sent to a server. The technique is covered in [running object detection in the browser with ONNX Runtime Web](post:onnx-runtime-web-in-the-browser).
 
+![Diagram. A GitHub repository box lists index.html, app.js, style.css and model/best.onnx, with an arrow to a GitHub Pages box marked static files only, no Python. A downward arrow, labelled files downloaded once, use relative paths, leads into a large box labelled Visitor's browser, with the note the image never leaves the device. Inside it, five steps run left to right: image or webcam frame; preprocess by resizing, converting to RGB and scaling to 0-1; ONNX Runtime Web using WASM or WebGPU; decode, threshold and NMS; and draw boxes on a canvas.](img:host-cv-demos-free-on-github-pages-architecture.png "Caption: Pages only hands out files. Every step from preprocessing to drawing boxes runs in the visitor's browser, which is why no server code is needed and why uploaded images stay on the device.")
+
 For a model that needs a real server, such as a large model or a live camera feed, you need a different host. A static page can still act as the front end and call an API that you host elsewhere.
 
 Check GitHub's current documentation for the size limits on repositories and published sites, and the usage rules for Pages. They change, and a very large model file may not fit comfortably.
@@ -97,6 +99,8 @@ A demo that shows a portfolio-worthy result has a few extras:
 - An honest note on known failure cases.
 - A link to the code repository and to a write-up.
 - A confidence slider, which lets visitors see the trade-off for themselves.
+
+![The same shop aisle frame shown twice with detection boxes. On the left, with the confidence threshold at 0.25, there are six boxes: three people at 0.79, 0.80 and 0.87, two bowls on the top shelf at 0.44 and 0.47, and a refrigerator at 0.29 covering the shelving. On the right, at 0.60, only the three people remain.](img:host-cv-demos-free-on-github-pages-confidence-slider.jpg "Caption: Moving the threshold from 0.25 to 0.60 removes the low-confidence bowls and the doubtful refrigerator and keeps the three people. A slider lets visitors see this trade-off for themselves. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 Be careful not to claim accuracy you have not measured on real held-out data. A demo on a few chosen images can make any model look good. How to present results honestly is covered in [building a computer vision portfolio that gets clients](post:computer-vision-portfolio-that-gets-clients).
 

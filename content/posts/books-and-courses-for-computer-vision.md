@@ -23,6 +23,8 @@ Pick the row that matches you.
 
 Your goal also matters. If you want a job or freelance clients, favour practical resources that end with built projects. If you want research, you need more mathematics and paper reading. For a broader path, see [the computer vision engineer roadmap](post:computer-vision-engineer-roadmap).
 
+![Staircase of four rows, each shifted a little to the right of the one below. Bottom row, Beginner: you can already write basic Python; look for resources on NumPy, image basics, OpenCV and simple machine learning. Next, Early: you can train a classifier from a tutorial; look for why it works and a detector on your own data. Next, Intermediate: you can train and evaluate detectors; look for deployment, video, edge hardware and debugging data. Top row, Advanced: you can ship a system; look for specialised topics, papers, scaling and monitoring.](img:books-and-courses-for-computer-vision-levels.png "Caption: Find the row that describes what you can already do, then judge each book or course by whether it covers the right-hand column for that row.")
+
 ## What books do well
 
 Books are good for depth and for reference.
@@ -84,6 +86,8 @@ The most common failure is consuming without producing. Try a weekly pattern lik
 2. **Apply** it the same week in code on your own data, however small.
 3. **Write** a short note in your own words, including what confused you.
 4. **Revisit** the topic a week later, and test yourself without looking.
+
+![Cycle diagram of four boxes joined by clockwise arrows: 1 Learn, one small topic from a chapter or lesson; 2 Apply, code it that week on your own data; 3 Write, a short note in your own words; 4 Revisit, a week later, test without looking; then back to Learn. In the centre: every few topics, a small project that combines them, which becomes a portfolio item.](img:books-and-courses-for-computer-vision-study-loop.png "Caption: Reading is only one of the four steps. The loop keeps every topic tied to code you wrote, and the small projects in the middle become evidence you can show.")
 
 After every few topics, complete a small project that combines them. For example: after OpenCV basics and a detection tutorial, build a script that counts objects in a video. See [people counting with line crossing](post:people-counting-line-crossing) for one such project.
 

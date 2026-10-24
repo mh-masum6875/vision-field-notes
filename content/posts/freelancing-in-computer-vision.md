@@ -64,6 +64,8 @@ A common structure that protects both sides:
 
 If the feasibility check fails, you and the client both learn that early, which is a good outcome for them and for your reputation.
 
+![Schematic bar diagram of four project phases on a baseline. Discovery, a short box, covers looking at data and defining success. A yellow go/no-go diamond follows. Prototype, a taller box, covers a first model and honest metrics. A second go/no-go diamond follows. Build, the tallest box, covers the full pipeline, alerts and testing. Handover and support, a medium box, covers docs, deployment and monitoring. A note says box height shows relative client spend and is schematic.](img:freelancing-in-computer-vision-phases.png "Caption: The cheap phases come first and each ends in a decision, so the client only commits to the expensive build once the data and a prototype have been seen. Heights are schematic, not real costs.")
+
 ## Pricing models
 
 Each model has strengths and risks.
@@ -72,6 +74,8 @@ Each model has strengths and risks.
 - **Hourly or daily rate.** Safer for uncertain work, but some clients dislike open-ended cost. Provide estimates and regular updates.
 - **Retainer.** Suits ongoing monitoring and improvement.
 - **Value-based.** Price relates to the value delivered. It works for clients with clear savings, but needs trust and a clear definition of the result.
+
+![Conceptual map with two axes. The horizontal axis is how clear the scope is, from unclear to clear; the vertical axis is how long the work is, from one project to ongoing. Bottom left: hourly or daily rate, safer while unknowns remain, send estimates and updates. Bottom right: fixed price per phase, only with written scope, exclusions and a change process. Middle right: value-based, needs clear, measurable savings and trust. Top centre: retainer, ongoing monitoring and improvement.](img:freelancing-in-computer-vision-pricing-map.png "Caption: A rough guide rather than a rule. The less you know about the data and the scope, the further left you are, and the more an hourly rate or a small fixed discovery phase protects both sides.")
 
 I will not quote rates here, since they vary widely by region, experience and client. Look at current listings and ask peers. Do not price so low that you cannot afford to do careful work, because that leads to rushed, unreliable systems.
 

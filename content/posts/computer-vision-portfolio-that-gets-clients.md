@@ -50,6 +50,8 @@ Use the same structure every time, so readers know where to look.
 8. **Deployment.** How it runs, on what hardware, and what you measured. Use real measurements only. See [measuring FPS and latency correctly](post:measuring-fps-and-latency-correctly).
 9. **Links.** Code, a live demo, and a write-up.
 
+![Wireframe of a project page with nine stacked sections: 1 problem in one or two plain sentences; 2 visual, a short video or GIF on real footage, shown as a larger block with a placeholder for output on real footage; 3 your role and the scope; 4 data: source, size, labelling, split; 5 method: model, key settings, why; 6 results on held-out data, per class; 7 failures and what you learned; 8 deployment: hardware, measured speed; 9 links: code, live demo, write-up. A blue bracket beside sections 1 to 3 is labelled business reader, understands the problem and sees it working in seconds. An orange bracket beside sections 4 to 9 is labelled technical reader, checks the split, the metrics, the failures and the hardware.](img:computer-vision-portfolio-that-gets-clients-project-page.png "Caption: The top three sections serve the person deciding whether to keep reading; everything below serves the person checking your method. Using the same order on every project page makes both jobs easier.")
+
 ## Present results honestly
 
 Clients with experience have seen inflated claims. Honest reporting sets you apart.
@@ -61,6 +63,8 @@ Clients with experience have seen inflated claims. Honest reporting sets you apa
 - **Do not hide limitations.** Night footage, small objects, crowds and unusual camera angles are common weak spots. If your project does not cover them, say so.
 - **Do not claim speed from a different machine.** State the hardware, input size and what was timed.
 - **Credit sources.** Name the datasets, pretrained models and libraries you used, and respect their licences. Several popular detectors are AGPL-3.0 or GPL-3.0, so check the current licence and see [YOLO licences explained](post:yolo-licenses-explained) before you present a project as a product.
+
+![Two frames side by side with detection boxes. On the left, titled works, a worker in a hard hat and orange high-visibility vest in a warehouse is boxed and labelled person 0.89. On the right, titled fails, a woman walking across a room seen from a high wide-angle camera is boxed but labelled dog 0.48.](img:computer-vision-portfolio-that-gets-clients-success-and-failure.jpg "Caption: The same model, shown honestly: a clean detection next to a wrong label from an unusual high, wide-angle view. A pair like this tells a client more than a page of perfect examples. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 Never invent a client, a case study or a result. If a client was involved but their name is confidential, say that the work was for a client in a certain sector and that details are private, and only if it is true.
 

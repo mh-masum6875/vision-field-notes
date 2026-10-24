@@ -31,6 +31,8 @@ Two facts cause most beginner bugs:
 1. **`imread` returns `None` on failure.** It does not raise an error. A wrong path gives `None`, and the next line fails with a confusing message. Always check.
 2. **`shape` is (height, width, channels).** But many functions, such as `cv2.resize`, take sizes as (width, height). Mixing these up produces stretched or transposed images.
 
+![Diagram of an image as a grid with the origin (0, 0) at the top-left corner. A blue arrow along the top is labelled x, columns, width w, and an orange arrow down the left side is labelled y, rows, height h. A shaded box inside the grid has its top-left corner marked (x1, y1) and its bottom-right corner marked (x2, y2). A list on the right reads: img.shape is (h, w, c), rows first; cv2.resize takes size as (w, h); cv2.VideoWriter takes size as (w, h); crop = img[y1:y2, x1:x2], rows first; cv2.rectangle takes points as (x, y), integers.](img:opencv-essentials-for-cv-engineers-coordinates.png "Caption: The origin is the top-left corner and y grows downwards. Array shapes and slices put rows (y) first, while OpenCV sizes and points put x first.")
+
 An image is a NumPy array. An 8-bit colour image has values from 0 to 255 and dtype `uint8`. Be careful with arithmetic on `uint8`: values wrap around instead of going below zero or above 255. Convert to `float32` before doing maths, and convert back at the end.
 
 ## Colour order: BGR, not RGB
@@ -42,6 +44,8 @@ rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 ```
 
 If an image looks oddly blue or orange, the channel order is wrong. For detection models, check what your model expects. Feeding BGR into a model trained on RGB does not crash. It quietly lowers accuracy, which is worse. The same issue shows up when you move a model from Ultralytics to a hand-written ONNX pipeline, as covered in [exporting YOLO to ONNX](post:export-yolo-to-onnx).
+
+![Two copies of the same shop aisle frame side by side, each with detection boxes. On the left, in correct colours, the model finds two people (0.89 and 0.66) and two bowls on a shelf. On the right, the same frame with red and blue channels swapped looks blue-tinted; the model still finds the two people and the bowls, but also adds a large box labelled boat 0.73, highlighted in red, covering most of the right-hand shelves.](img:opencv-essentials-for-cv-engineers-bgr-rgb.jpg "Caption: Swapping the channel order did not crash anything or remove the people, but it changed the confidences and added a confident boat on the shelves. Nothing warns you; only checking the conversion does. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 ## Reading video and cameras
 
@@ -87,6 +91,8 @@ Cropping uses NumPy slicing, with the **row (y) range first**. A crop is a view 
 For interpolation, `cv2.INTER_AREA` is a common choice when shrinking and `cv2.INTER_LINEAR` is the default and fine for most other cases.
 
 Resizing without keeping the aspect ratio distorts objects. Detection pipelines usually resize with padding (often called letterboxing) to keep proportions. If you write your own preprocessing, copy the exact method the model was trained with.
+
+![Two square 416 by 416 model inputs made from the same wide shop frame. On the left, letterboxed: the frame keeps its proportions and grey padding fills the bottom; the model finds three people at 0.79, 0.80 and 0.87, plus two bowls and a refrigerator. On the right, stretched: the frame is squashed into the square so people look tall and thin; the model finds the same three people at only 0.44, 0.66 and 0.34, and nothing else.](img:opencv-essentials-for-cv-engineers-letterbox.jpg "Caption: The same frame and the same model: letterboxing keeps people at their normal shape, while stretching distorts them and the person confidences drop sharply. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 ## Drawing results
 

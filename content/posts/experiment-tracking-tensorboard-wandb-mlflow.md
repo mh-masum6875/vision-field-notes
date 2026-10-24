@@ -34,6 +34,8 @@ A tracker is only useful if you log the right things. For a detection project, w
 
 Most of the value comes from the input list. Metrics are easy to keep, because training tools print them. Settings are the part people forget.
 
+![Diagram with three parts. A blue box on the left, Inputs: what you changed, lists model and starting weights, dataset version or hash, image size, epochs, batch and learning rate, augmentation settings, random seed, git commit and library versions. An arrow leads to a small central box for a run named n-640-relabel. A second arrow leads to an orange box on the right, Outputs: what happened, listing train and validation loss per epoch, precision, recall and mAP per epoch, per-class metrics at the end, the weights file and its location, sample predictions, and training time and hardware.](img:experiment-tracking-tensorboard-wandb-mlflow-what-to-log.png "Caption: A useful record ties every output of a run to the inputs that produced it. Metrics get logged automatically; the left-hand list is what you have to remember to write down.")
+
 ## The three tools
 
 ### TensorBoard
@@ -120,6 +122,8 @@ This costs a few minutes per run and saves hours later.
 - **Not logging dataset changes.** Relabelling, adding images or removing bad frames all change results. Give each dataset version a name.
 - **Trusting one run.** Training has randomness. If two runs differ by a small amount, it may be noise. Repeat important comparisons, or treat small differences with caution.
 - **No link between weights and settings.** A `best.pt` file with no record of how it was made is hard to trust and hard to reproduce.
+
+![Line chart of validation mAP50 against epoch for two runs over 100 epochs. Run A, in blue, rises quickly, peaks near epoch 38 at about 0.59, then declines steadily to below 0.5 by epoch 100. Run B, in orange, rises more slowly and reaches a similar best value near epoch 98 without falling. The best point of each run is marked, and an annotation notes that run A falls after its peak, a sign of overfitting.](img:experiment-tracking-tensorboard-wandb-mlflow-full-curve.png "Caption: Both runs report almost the same best score, but only the full curve shows that run A peaked early and then got worse. The curves are illustrative, not measured.")
 
 ## Checklist
 

@@ -63,6 +63,8 @@ Ultralytics writes `last.pt` and `best.pt` into the `weights` folder of the run.
 
 Writing many small files to Drive during training can be slow. A common compromise is to train on the local disk and copy the run folder to Drive at the end, or periodically from a second cell. If you do that, you must remember to copy before the session ends, so the Drive-first approach is safer for long runs.
 
+![Diagram with two areas. On the left, a dashed red box labelled Colab runtime local disk, deleted when the session ends, holds the unzipped dataset folder and the training process. On the right, a green box labelled Google Drive, persists between sessions, holds dataset.zip and the runs/exp1/weights folder with last.pt and best.pt. Arrows show the zip being copied and unzipped into the runtime at the start, and the training process saving checkpoints to Drive.](img:train-on-google-colab-storage.png "Caption: Keep the dataset zip and the checkpoints on Drive, and treat everything in the runtime as disposable. The images are read from the fast local copy, while the weights go straight to Drive.")
+
 ## Habit 2: keep the dataset as one archive
 
 Copying thousands of small image files from Drive into the runtime is slow. Copying one zip file and unzipping it locally is much faster.
@@ -85,6 +87,8 @@ model.train(resume=True)
 ```
 
 This only works if `last.pt` exists, which is why saving to Drive matters. Also plan your epoch count with the session cap in mind. If one epoch takes a known time on your GPU, you can estimate how many fit in a session. Measure it from a short run instead of guessing.
+
+![Timeline with two rows. The top row, saving to Drive with resume=True, shows three sessions covering epochs 1 to 37, 38 to 74 and 75 to 100, with arrows carrying the run from one session to the next. The bottom row, local disk only, shows two sessions that both cover epochs 1 to 37, followed by the note weights lost, start over. Dotted red lines mark where each session ends.](img:train-on-google-colab-resume.png "Caption: With checkpoints on Drive, each new session continues where the last one stopped; without them, every disconnect sends you back to epoch 1. Session lengths and epoch counts are illustrative.")
 
 ## Habit 4: write the setup as code
 

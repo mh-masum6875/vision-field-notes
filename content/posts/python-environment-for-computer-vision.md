@@ -53,6 +53,8 @@ If `torch.cuda.is_available()` prints `False` on a machine with an NVIDIA GPU, t
 
 Fix the first by reinstalling with the correct command. Check the second with `nvidia-smi`, which shows the driver and the highest CUDA version it supports. Note that the PyTorch wheels bundle their own CUDA runtime, so you usually do not need to install a full CUDA toolkit just to run PyTorch. You do need a recent enough driver.
 
+![Diagram of four stacked layers, from bottom to top: NVIDIA GPU, the hardware; NVIDIA driver, checked with nvidia-smi which shows the driver and maximum CUDA version; PyTorch wheel, which bundles its own CUDA runtime, checked with torch.cuda.is_available(); and your libraries such as ultralytics and opencv, installed after PyTorch. On the right, three red boxes under the heading Usual reasons it prints False point at layers: container started without GPU passthrough points at the GPU, driver missing or too old for the wheel's CUDA version points at the driver, and CPU-only build installed or replaced by a later install points at the PyTorch wheel.](img:python-environment-for-computer-vision-gpu-stack.png "Caption: A GPU is only visible to PyTorch when the hardware, the driver and the PyTorch build all match. Each common cause of a False result breaks one specific layer, so check them from the bottom up.")
+
 On edge devices, such as NVIDIA Jetson boards, the rules are different. Those devices have their own vendor-supplied PyTorch builds matched to the system image, and installing a generic wheel from the normal index may not work. Follow the vendor's instructions for your exact software release. The same goes for Raspberry Pi, where you often run an exported model with ONNX Runtime and skip PyTorch entirely. See [running YOLO on a Raspberry Pi 5](post:yolo-on-raspberry-pi-5).
 
 ## Record exactly what you installed
@@ -85,6 +87,8 @@ As covered in [OpenCV essentials](post:opencv-essentials-for-cv-engineers), inst
 Training needs large packages: PyTorch, experiment tools, plotting libraries, a CUDA-enabled build. A deployed edge or server app often needs much less: OpenCV, ONNX Runtime, NumPy and your own code.
 
 Use two requirement files, for example `requirements-train.txt` and `requirements-runtime.txt`. A smaller runtime environment installs faster, uses less disk, has fewer things that can break, and gives a smaller container image. This is also easier to secure and update. The patterns for packaging are in [how to dockerize a computer vision app](post:dockerize-a-computer-vision-app).
+
+![Diagram with two boxes. The left box, requirements-train.txt, for a GPU workstation or cloud, lists torch CUDA build, ultralytics, experiment tracking, plotting and notebooks, plus everything in runtime. An arrow labelled model.onnx leads to the right box, requirements-runtime.txt, for an edge device, server or container, which lists only opencv-python-headless, onnxruntime, numpy and your app code. A note under it reads: smaller install, fewer things to break, smaller container image.](img:python-environment-for-computer-vision-train-vs-runtime.png "Caption: The training environment carries the heavy tools; the deployed app only needs the exported model and a few runtime libraries. Keeping two requirement files makes that split explicit.")
 
 ## Make results reproducible
 

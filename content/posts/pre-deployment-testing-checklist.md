@@ -20,6 +20,8 @@ The most valuable test is footage from the actual camera, at the actual angle, i
 
 Review the output by eye. Watch the video with the boxes drawn. Ten minutes of watching will tell you things a metric will not.
 
+![Two overhead frames of a car park, looking straight down at the cars, with detection boxes from a pretrained model. On the left, a white car seen from above is boxed and labelled cell phone 0.94. On the right, a red car at the top is labelled bus 0.54, while a silver car at the bottom is correctly labelled car 0.74.](img:pre-deployment-testing-checklist-overhead-camera.jpg "Caption: A general-purpose model watching from an unusual angle: cars seen from directly above come out as a confident cell phone and a bus. Only footage from the real camera position reveals this kind of error. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 ## 2. Measure what matters for the task
 
 Choose metrics that match the real cost of errors.
@@ -91,6 +93,10 @@ Launch is the start of testing, not the end.
 - **Version everything.** Know which model, threshold and code are running on each device.
 - **Have a rollback plan.** Keep the previous model and configuration ready, and test that you can switch back quickly. A rollback you have never tried is not a plan.
 - **Roll out in steps.** Start with one camera or site, in a shadow mode if possible (running and logging without sending real alerts), then widen.
+
+![Line chart of detections per hour for one camera over seven days. For the first four days the count follows a clear daily cycle, rising to peaks of about 25 to 33 around midday and falling to a few per hour at night. A dashed red line on day 5 is labelled camera knocked out of position; after it the counts stay low, mostly under 10, and the daily peaks disappear.](img:pre-deployment-testing-checklist-monitoring.png "Caption: A moved camera rarely raises an error. It shows up as a change in the counts, which is why per-camera detection counts are worth tracking. The data is illustrative.")
+
+![Diagram of four stages in a row joined by arrows: offline tests on held-out footage, edge cases, soak runs and failure drills; shadow mode, which runs and logs without real alerts; one camera live, with real alerts and close monitoring; and wider rollout to more cameras and sites. A monitoring band runs under the last three stages, listing counts per camera, confidence, uptime and frame rate. A red rollback line runs from the end back to the first stage, labelled previous model and config, tested before launch.](img:pre-deployment-testing-checklist-rollout.png "Caption: Each step widens the audience only after the previous one has run cleanly, and monitoring covers every live stage. The rollback path is part of the plan, and it should be tested before launch.")
 
 ## 9. Get sign-off with clear limits
 

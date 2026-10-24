@@ -10,6 +10,8 @@ There is no shortage of things to learn in computer vision. The risk is learning
 
 This roadmap is based on what the job tends to require in production: getting a model to work on real cameras, reliably, on real hardware. The author has more than three years of production computer vision experience, so the order below reflects that kind of work. It is one view, not the only valid path. Adjust it to your goals.
 
+![Diagram of eight numbered stages in two columns, connected by arrows in order. Left column: 1 Python and data basics, build: resize a folder of images; 2 Classic OpenCV, build: label frames, write a video; 3 Core machine learning ideas, build: classifier and train/val curves; 4 A deep learning framework, build: fine-tune a pretrained model. An arrow leads from stage 4 to the top of the right column: 5 Object detection, end to end, build: detector on your own data; 6 Deployment and edge hardware, build: time it on a small device; 7 Video analytics, build: people counter or zone alert; 8 Engineering habits, build: tests, logging, licences.](img:computer-vision-engineer-roadmap-stages.png "Caption: The whole roadmap on one page. Each stage ends with a small project, and finishing it without copying a tutorial is the signal to move on.")
+
 ## Stage 1: Python and the basics of working with data
 
 You need to be comfortable with Python before anything else. Focus on:
@@ -87,6 +89,8 @@ Most commercial work involves video, not single images. Learn:
 - Reducing false alarms and monitoring a running system.
 
 **Build:** a people counter or zone alert on a recorded video, then on a live stream. Test it as described in [a pre-deployment testing checklist for vision models](post:pre-deployment-testing-checklist).
+
+![Pipeline diagram of a production camera system with six boxes in a row: camera stream (stage 7), decode and resize (stage 2), detector model (stages 4, 5 and 6, highlighted), tracking (stage 7), events such as counts and zones (stage 7), and alerts and monitoring (stages 7 and 8). Below the detector, a box labelled data loop, stages 3 to 5, lists collect, label, split, train and evaluate, with an arrow feeding into the detector.](img:computer-vision-engineer-roadmap-pipeline.png "Caption: The model is one box among six in a real system. Most of the later stages are about the parts around it, which is why video, deployment and engineering habits sit on the roadmap at all.")
 
 ## Stage 8: engineering habits that make you employable
 

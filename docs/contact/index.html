@@ -87,7 +87,25 @@ nav.main a{white-space:nowrap}}
 <div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
 </div></header>
 <main><article><h1>Contact</h1><p>Questions about an article, a correction, or a computer vision project you would like help with? Send a message below and I will reply by email.</p>
-<p class="note">The contact form is not set up yet. Until then, please reach me through <a href="https://github.com/mh-masum6875">GitHub</a>.</p>
+<form class="contact" id="contact-form">
+<input type="hidden" name="access_key" value="b1c71eeb-0ddb-4743-ae2c-554d4c6f93f4">
+<input type="hidden" name="subject" value="New message from Vision Field Notes">
+<input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off">
+<label>Your name<input name="name" required maxlength="100"></label>
+<label>Your email (so I can reply)<input name="email" type="email" required maxlength="200"></label>
+<label>Topic<select name="topic"><option>Question about an article</option><option>Correction</option><option>Project or consulting</option><option>Other</option></select></label>
+<label>Message<textarea name="message" rows="7" required maxlength="5000"></textarea></label>
+<button type="submit">Send message</button>
+<p class="form-status" role="status"></p>
+</form>
+<script>
+(function(){var f=document.getElementById('contact-form'),s=f.querySelector('.form-status'),b=f.querySelector('button');
+f.addEventListener('submit',function(e){e.preventDefault();b.disabled=true;s.textContent='Sending...';
+fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Accept':'application/json'},body:new FormData(f)})
+.then(function(r){return r.json()}).then(function(j){if(j.success){f.reset();s.textContent='Thank you. Your message was sent, and I will reply by email.'}else{s.textContent='Sorry, the message could not be sent. Please try again later.'}})
+.catch(function(){s.textContent='Sorry, the message could not be sent. Please check your connection and try again.'})
+.finally(function(){b.disabled=false})})})();
+</script>
 <p>You can also find me on <a href="https://github.com/mh-masum6875">GitHub</a> and see my work on my <a href="https://mh-masum6875.github.io">portfolio</a>.</p>
 <p>Please do not send confidential data or private video footage through this form.</p></article></main>
 <footer class="site"><div class="wrap">

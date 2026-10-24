@@ -56,9 +56,15 @@ def render_body(p):
             return text
         return f"[{text}]({BP}/posts/{slug}/)"
     body = re.sub(r"\[([^\]]+)\]\(post:([a-z0-9-]+)\)", link, body)
+    p["images"] = re.findall(r"\]\(img:([A-Za-z0-9_.-]+)", body)
+    body = re.sub(r"\]\(img:([A-Za-z0-9_.-]+)", lambda m: f"]({BP}/images/{m.group(1)}", body)
     md = markdown.Markdown(extensions=["extra", "toc", "attr_list", "sane_lists"],
                            extension_configs={"toc": {"toc_depth": "2-3", "permalink": False}})
     h = md.convert(body)
+    # an image alone in a paragraph becomes a figure; its title text is the caption
+    h = re.sub(r'<p><img alt="([^"]*)" src="([^"]+)" title="([^"]*)" /></p>',
+               r'<figure><img alt="\1" src="\2" loading="lazy"><figcaption>\3</figcaption></figure>', h)
+    h = re.sub(r'<p><img alt="([^"]*)" src="([^"]+)" /></p>', r'<figure><img alt="\1" src="\2" loading="lazy"></figure>', h)
     return h, md.toc_tokens, used_aff[0]
 
 def words(t): return len(re.findall(r"\w+", re.sub(r"```.*?```", "", t, flags=re.S)))
@@ -163,6 +169,8 @@ footer.site a{color:var(--mut)}
 .cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
 .author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
 .author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
 form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
 form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
 form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
@@ -202,7 +210,7 @@ LAYOUT = """<!doctype html>
 <meta property="og:type" content="{{ 'article' if is_post else 'website' }}">
 <meta property="og:title" content="{{ title }}"><meta property="og:description" content="{{ desc }}">
 <meta property="og:url" content="{{ canon }}"><meta property="og:site_name" content="{{ s.name }}">
-<meta name="twitter:card" content="summary">
+{% if og_image %}<meta property="og:image" content="{{ og_image }}"><meta name="twitter:card" content="summary_large_image">{% else %}<meta name="twitter:card" content="summary">{% endif %}
 <link rel="alternate" type="application/rss+xml" title="{{ s.name }}" href="{{ bp }}/feed.xml">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
 {% if s.adsense_publisher_id %}<meta name="google-adsense-account" content="ca-pub-{{ s.adsense_publisher_id }}">{% endif %}
@@ -234,11 +242,11 @@ catlist = [{"name": c, "slug": slugify(c), "short": SHORT.get(c, c)} for c in
            ["YOLO and Detection Basics", "Datasets and Training", "Edge Hardware and Deployment",
             "Video Analytics", "Tools and Workflow", "Career and Freelancing"] if c in cats]
 
-def page(path, title, desc, content, canon_path, is_post=False, jsonld=None):
+def page(path, title, desc, content, canon_path, is_post=False, jsonld=None, og_image=None):
     full_title = title if title.startswith(S["name"]) else f"{title} | {S['name']}"
     out = layout.render(s=S, bp=BP, cats=catlist, css=CSS, js_search=JS_SEARCH, js_consent=JS_CONSENT,
                         title=full_title, desc=desc, canon=BASE + canon_path, content=content,
-                        is_post=is_post, jsonld=jsonld, year=date.today().year)
+                        is_post=is_post, jsonld=jsonld, og_image=og_image, year=date.today().year)
     f = OUT / path
     f.parent.mkdir(parents=True, exist_ok=True)
     f.write_text(out)
@@ -254,6 +262,8 @@ def card(p):
 
 if OUT.exists(): shutil.rmtree(OUT)
 OUT.mkdir()
+if (ROOT / "content/images").exists():
+    shutil.copytree(ROOT / "content/images", OUT / "images")
 
 # home
 chips = "".join(f'<a href="{BP}/category/{c["slug"]}/">{html.escape(c["name"])}</a>' for c in catlist)
@@ -296,7 +306,8 @@ for p in posts:
                      "author": {"@type": "Person", "name": S["author"], "url": S["author_url"]},
                      "publisher": {"@type": "Organization", "name": S["name"]},
                      "mainEntityOfPage": f'{BASE}/posts/{p["slug"]}/'})
-    page(f"posts/{p['slug']}/index.html", p["title"], p["description"], content, f"/posts/{p['slug']}/", True, ld)
+    og = f"{BASE}/images/{p['images'][0]}" if p["images"] else None
+    page(f"posts/{p['slug']}/index.html", p["title"], p["description"], content, f"/posts/{p['slug']}/", True, ld, og)
 
 # static pages
 for k, v in pages.items():

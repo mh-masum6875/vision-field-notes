@@ -85,7 +85,7 @@ nav.main a{white-space:nowrap}}
 </head><body>
 <header class="site"><div class="wrap">
 <a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
-<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
 <div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
 </div></header>
 <main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/career-and-freelancing/">Career and Freelancing</a></div><h1>Computer Vision Engineer Roadmap: What to Learn First</h1><div class="byline">By Maidul Hasan Masum · 2026-10-24 · 7 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#stage-1-python-and-the-basics-of-working-with-data">Stage 1: Python and the basics of working with data</a></li><li><a href="#stage-2-classic-image-handling-with-opencv">Stage 2: classic image handling with OpenCV</a></li><li><a href="#stage-3-core-machine-learning-ideas">Stage 3: core machine learning ideas</a></li><li><a href="#stage-4-a-deep-learning-framework">Stage 4: a deep learning framework</a></li><li><a href="#stage-5-object-detection-end-to-end">Stage 5: object detection, end to end</a></li><li><a href="#stage-6-deployment-and-edge-hardware">Stage 6: deployment and edge hardware</a></li><li><a href="#stage-7-video-analytics">Stage 7: video analytics</a></li><li><a href="#stage-8-engineering-habits-that-make-you-employable">Stage 8: engineering habits that make you employable</a></li><li><a href="#what-to-skip-at-first">What to skip at first</a></li><li><a href="#how-long-does-it-take">How long does it take?</a></li><li><a href="#learning-resources">Learning resources</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>There is no shortage of things to learn in computer vision. The risk is learning them in the wrong order, spending months on theory with nothing built, or the opposite: copying notebooks without understanding why they work.</p>
@@ -100,10 +100,10 @@ nav.main a{white-space:nowrap}}
 <li>Git for version control.</li>
 <li>The command line.</li>
 </ul>
-<p><strong>Build:</strong> a script that loads a folder of images, prints their sizes, and saves resized copies. Set up a clean environment as described in setting up a clean Python environment for computer vision.</p>
+<p><strong>Build:</strong> a script that loads a folder of images, prints their sizes, and saves resized copies. Set up a clean environment as described in <a href="/vision-field-notes/posts/python-environment-for-computer-vision/">setting up a clean Python environment for computer vision</a>.</p>
 <h2 id="stage-2-classic-image-handling-with-opencv">Stage 2: classic image handling with OpenCV</h2>
 <p>Learn how images and video are represented and manipulated: colour spaces, resizing, cropping, drawing, thresholding, contours and geometric transforms. This is not glamorous, but you will use it in every project, and it teaches you what a pixel array actually is.</p>
-<p><strong>Build:</strong> a script that reads a video, draws a rectangle and a text label on each frame, and writes a new video. The functions you need are listed in OpenCV essentials every computer vision engineer needs.</p>
+<p><strong>Build:</strong> a script that reads a video, draws a rectangle and a text label on each frame, and writes a new video. The functions you need are listed in <a href="/vision-field-notes/posts/opencv-essentials-for-cv-engineers/">OpenCV essentials every computer vision engineer needs</a>.</p>
 <h2 id="stage-3-core-machine-learning-ideas">Stage 3: core machine learning ideas</h2>
 <p>You do not need a full degree's worth of mathematics to start, but you do need the ideas:</p>
 <ul>
@@ -117,11 +117,11 @@ nav.main a{white-space:nowrap}}
 <p><strong>Build:</strong> train a small image classifier on a public dataset, and plot training and validation curves. Explain to yourself why the two curves differ.</p>
 <h2 id="stage-4-a-deep-learning-framework">Stage 4: a deep learning framework</h2>
 <p>Pick PyTorch, which is widely used in research and industry. Learn tensors, datasets and data loaders, models, the training loop, saving and loading weights, and moving work to a GPU. Write a training loop by hand at least once. You will understand later tools much better.</p>
-<p><strong>Build:</strong> fine-tune a pretrained classification model on your own small dataset. The concept is covered in fine-tuning YOLO and transfer learning, and the same idea applies to classifiers.</p>
+<p><strong>Build:</strong> fine-tune a pretrained classification model on your own small dataset. The concept is covered in <a href="/vision-field-notes/posts/fine-tuning-yolo-transfer-learning/">fine-tuning YOLO and transfer learning</a>, and the same idea applies to classifiers.</p>
 <h2 id="stage-5-object-detection-end-to-end">Stage 5: object detection, end to end</h2>
 <p>Now do what most real projects need: detect objects. Learn the pieces in this order:</p>
 <ol>
-<li>What the task is and how it differs from classification and segmentation. See classification vs detection vs segmentation.</li>
+<li>What the task is and how it differs from classification and segmentation. See <a href="/vision-field-notes/posts/classification-vs-detection-vs-segmentation/">classification vs detection vs segmentation</a>.</li>
 <li>How detectors work at a high level. See <a href="/vision-field-notes/posts/what-is-yolo/">what is YOLO</a>.</li>
 <li>IoU, non-maximum suppression and how to read mAP. See <a href="/vision-field-notes/posts/iou-and-nms-explained/">IoU and NMS</a> and <a href="/vision-field-notes/posts/map-precision-recall-explained/">mAP, precision and recall</a>.</li>
 <li>Collecting and labelling data, and the mistakes that ruin it. See <a href="/vision-field-notes/posts/annotation-mistakes-that-hurt-models/">annotation mistakes that quietly ruin your model</a>.</li>
@@ -134,7 +134,7 @@ nav.main a{white-space:nowrap}}
 <p>A model in a notebook is not a product. Learn to:</p>
 <ul>
 <li>Export models, for example to ONNX, and run them with ONNX Runtime. See <a href="/vision-field-notes/posts/export-yolo-to-onnx/">export YOLO to ONNX</a>.</li>
-<li>Measure speed correctly. See measuring FPS and latency correctly.</li>
+<li>Measure speed correctly. See <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">measuring FPS and latency correctly</a>.</li>
 <li>Understand what runs well on a small board, a GPU box or the cloud. See <a href="/vision-field-notes/posts/yolo-on-raspberry-pi-5/">running YOLO on a Raspberry Pi 5</a>.</li>
 <li>Use containers for repeatable deployment.</li>
 <li>Know the basics of optimisation such as TensorRT and quantisation.</li>
@@ -145,11 +145,11 @@ nav.main a{white-space:nowrap}}
 <p>Most commercial work involves video, not single images. Learn:</p>
 <ul>
 <li>Reading camera streams and handling failures. See <a href="/vision-field-notes/posts/read-rtsp-streams-with-opencv/">reading RTSP streams with OpenCV and FFmpeg</a>.</li>
-<li>Tracking objects across frames. See object tracking explained.</li>
+<li>Tracking objects across frames. See <a href="/vision-field-notes/posts/object-tracking-bytetrack-explained/">object tracking explained</a>.</li>
 <li>Turning detections into events: counting, zones, dwell time and alerts.</li>
 <li>Reducing false alarms and monitoring a running system.</li>
 </ul>
-<p><strong>Build:</strong> a people counter or zone alert on a recorded video, then on a live stream. Test it as described in a pre-deployment testing checklist for vision models.</p>
+<p><strong>Build:</strong> a people counter or zone alert on a recorded video, then on a live stream. Test it as described in <a href="/vision-field-notes/posts/pre-deployment-testing-checklist/">a pre-deployment testing checklist for vision models</a>.</p>
 <figure><img alt="Pipeline diagram of a production camera system with six boxes in a row: camera stream (stage 7), decode and resize (stage 2), detector model (stages 4, 5 and 6, highlighted), tracking (stage 7), events such as counts and zones (stage 7), and alerts and monitoring (stages 7 and 8). Below the detector, a box labelled data loop, stages 3 to 5, lists collect, label, split, train and evaluate, with an arrow feeding into the detector." src="/vision-field-notes/images/computer-vision-engineer-roadmap-pipeline.png" loading="lazy"><figcaption>Caption: The model is one box among six in a real system. Most of the later stages are about the parts around it, which is why video, deployment and engineering habits sit on the roadmap at all.</figcaption></figure>
 <h2 id="stage-8-engineering-habits-that-make-you-employable">Stage 8: engineering habits that make you employable</h2>
 <p>These are less exciting and make a large difference to how useful you are:</p>
@@ -157,7 +157,7 @@ nav.main a{white-space:nowrap}}
 <li>Write tests for the logic around the model, not just the model.</li>
 <li>Log clearly. Handle errors, so one bad frame does not stop a service.</li>
 <li>Track experiments so results can be reproduced.</li>
-<li>Read licences. Many popular detectors have licence conditions that matter for commercial use. See YOLO licences explained.</li>
+<li>Read licences. Many popular detectors have licence conditions that matter for commercial use. See <a href="/vision-field-notes/posts/yolo-licenses-explained/">YOLO licences explained</a>.</li>
 <li>Think about privacy and ethics from the start.</li>
 <li>Write short, clear documentation.</li>
 </ul>
@@ -171,7 +171,7 @@ nav.main a{white-space:nowrap}}
 <h2 id="how-long-does-it-take">How long does it take?</h2>
 <p>It depends on your background, how many hours you can give each week, and how much you build. Do not trust anyone who gives you an exact number of months. A better measure is whether you can complete each "Build" step above without copying a tutorial.</p>
 <h2 id="learning-resources">Learning resources</h2>
-<p>A good book or course can give structure, but they do not replace projects. See best books and courses for learning computer vision for how to choose.</p>
+<p>A good book or course can give structure, but they do not replace projects. See <a href="/vision-field-notes/posts/books-and-courses-for-computer-vision/">best books and courses for learning computer vision</a> for how to choose.</p>
 <h2 id="checklist">Checklist</h2>
 <ul>
 <li>Python, NumPy and Git first.</li>
@@ -184,7 +184,7 @@ nav.main a{white-space:nowrap}}
 <li>Engineering habits: testing, logging, tracking, licences, privacy.</li>
 <li>One finished project per stage.</li>
 </ul>
-<p>Next steps: best books and courses for learning computer vision, building a portfolio that gets clients.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Career and Freelancing</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/freelancing-in-computer-vision/"><div class="cat">Career and Freelancing</div><h3>Freelancing in Computer Vision: Winning Your First Jobs</h3><p>How to start freelancing in computer vision: positioning, scoping projects, choosing a pricing model, writing proposals and avoiding low-value work.</p><div class="meta">7 min read</div></a></div></div></main>
+<p>Next steps: <a href="/vision-field-notes/posts/books-and-courses-for-computer-vision/">best books and courses for learning computer vision</a>, <a href="/vision-field-notes/posts/computer-vision-portfolio-that-gets-clients/">building a portfolio that gets clients</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Career and Freelancing</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/books-and-courses-for-computer-vision/"><div class="cat">Career and Freelancing</div><h3>Best Books and Courses for Learning Computer Vision</h3><p>How to choose books and courses for learning computer vision by level, with honest pros and cons of each format and a plan that mixes study with projects.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/computer-vision-portfolio-that-gets-clients/"><div class="cat">Career and Freelancing</div><h3>Build a Computer Vision Portfolio That Gets Clients</h3><p>How to build a computer vision portfolio that gets clients: which projects to show, how to report results honestly, how to demo, and what to leave out.</p><div class="meta">8 min read</div></a><a class="card" href="/vision-field-notes/posts/freelancing-in-computer-vision/"><div class="cat">Career and Freelancing</div><h3>Freelancing in Computer Vision: Winning Your First Jobs</h3><p>How to start freelancing in computer vision: positioning, scoping projects, choosing a pricing model, writing proposals and avoiding low-value work.</p><div class="meta">7 min read</div></a></div></div></main>
 <footer class="site"><div class="wrap">
 <div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
 <div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>

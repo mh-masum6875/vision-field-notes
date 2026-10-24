@@ -2,7 +2,7 @@
 title: "Data Augmentation for Object Detection: What Helps and What Hurts"
 description: "Data augmentation for object detection explained: which transforms help, how mosaic and flips work, and how to avoid unrealistic ones that hurt."
 category: "Datasets and Training"
-date: 2026-11-30
+date: 2026-10-24
 tags: [augmentation, training, yolo, dataset]
 ---
 

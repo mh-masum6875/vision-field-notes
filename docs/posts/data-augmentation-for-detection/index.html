@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Augmentation for Object Detection: What Helps and What Hurts</title>
+<meta name="description" content="Data augmentation for object detection explained: which transforms help, how mosaic and flips work, and how to avoid unrealistic ones that hurt.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/data-augmentation-for-detection/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Data Augmentation for Object Detection: What Helps and What Hurts"><meta property="og:description" content="Data augmentation for object detection explained: which transforms help, how mosaic and flips work, and how to avoid unrealistic ones that hurt.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/data-augmentation-for-detection/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/data-augmentation-for-detection-transforms.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Data Augmentation for Object Detection: What Helps and What Hurts", "description": "Data augmentation for object detection explained: which transforms help, how mosaic and flips work, and how to avoid unrealistic ones that hurt.", "datePublished": "2026-10-24", "dateModified": "2026-10-24", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/data-augmentation-for-detection/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/data-augmentation-for-detection-transforms.jpg", "articleSection": "Datasets and Training", "keywords": "augmentation, training, yolo, dataset"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Datasets and Training", "item": "https://mh-masum6875.github.io/vision-field-notes/category/datasets-and-training/"}, {"@type": "ListItem", "position": 3, "name": "Data Augmentation for Object Detection: What Helps and What Hurts"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/datasets-and-training/">Datasets and Training</a></div><h1>Data Augmentation for Object Detection: What Helps and What Hurts</h1><div class="byline">By Maidul Hasan Masum · 2026-10-24 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#why-detection-is-different-from-classification">Why detection is different from classification</a></li><li><a href="#the-main-families">The main families</a></li><li><a href="#which-settings-to-use-in-ultralytics">Which settings to use in Ultralytics</a></li><li><a href="#a-decision-approach">A decision approach</a></li><li><a href="#how-to-test-whether-an-augmentation-helps">How to test whether an augmentation helps</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>Augmentation creates new training examples by changing existing ones: flipping, scaling, shifting colour, and so on. Done well, it makes a model more robust and stretches a small dataset. Done badly, it teaches the model things that are never true in your deployment.</p>
+<p>The key idea is simple. Every augmentation should produce an image that could plausibly come from your real camera. If it could not, it is probably hurting you.</p>
+<h2 id="why-detection-is-different-from-classification">Why detection is different from classification</h2>
+<p>In classification, an augmentation changes the image and the label stays the same. In detection, the boxes must change along with the image. A horizontal flip must flip the box coordinates. A crop must clip or drop boxes. A rotation must recompute the box, and a rotated box becomes larger than the object because the new box must still be axis-aligned.</p>
+<p>Good libraries handle this for you, and Ultralytics applies box-aware augmentation during training by default. Your job is to choose which transforms and how strong they are.</p>
+<h2 id="the-main-families">The main families</h2>
+<h3 id="geometric">Geometric</h3>
+<ul>
+<li><strong>Horizontal flip.</strong> Usually safe and useful. Unsafe when left and right carry meaning: text, a traffic direction that is always the same, or a layout where the object only appears on one side and you want the model to learn that.</li>
+<li><strong>Vertical flip.</strong> Rarely correct. Most cameras do not see the world upside down. Leave it off unless your data is genuinely overhead or orientation-free, such as aerial or microscope images.</li>
+<li><strong>Scale and translate.</strong> Useful, because objects appear at different distances and positions. Very strong scaling can shrink objects below the size the model can detect, which adds noise instead of signal.</li>
+<li><strong>Rotation.</strong> Small angles may help if your camera mount can tilt. Large rotations rarely match reality and enlarge the boxes. Use gently, or not at all.</li>
+<li><strong>Perspective and shear.</strong> Useful only if your cameras vary in angle. Keep small.</li>
+</ul>
+<h3 id="photometric">Photometric</h3>
+<ul>
+<li><strong>Brightness, contrast, saturation and hue changes.</strong> Helpful for lighting variation across the day. Hue shifts are risky when colour is the class signal, for example distinguishing a red object from a green one, or colour-coded safety gear.</li>
+<li><strong>Blur and noise.</strong> Useful if your footage is compressed, low light or has motion blur. Do not add noise your camera never produces.</li>
+</ul>
+<figure><img alt="Six versions of a frame showing three water bottles on a table, each bottle boxed. Original; horizontal flip, scaled down and shifted onto a grey border, and darker with stronger colour are tagged plausible. Vertical flip with upside-down bottles and a 35 degree rotation are tagged unrealistic for this camera; in the rotated panel the boxes are much wider than the tilted bottles, which are traced with dashed outlines." src="/vision-field-notes/images/data-augmentation-for-detection-transforms.jpg" loading="lazy"><figcaption>The boxes move with the image in every case. A fixed tabletop camera could plausibly see the top-row and darker versions, but never upside-down bottles; and after a large rotation the axis-aligned box must grow well beyond the object. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.</figcaption></figure>
+<h3 id="compositional">Compositional</h3>
+<ul>
+<li><strong>Mosaic.</strong> Combines four training images into one. It exposes the model to more objects, more backgrounds and more scales per step, and objects appear in unusual positions. It is a default in many YOLO training pipelines and is generally helpful, but see the note on turning it off near the end of training below.</li>
+<li><strong>Mixup.</strong> Blends two images. Occasionally helpful on larger datasets, often unnecessary on small ones.</li>
+<li><strong>Copy-paste.</strong> Cuts objects and pastes them into other images. Helpful for rare classes, but only if pasted objects look natural in scale, lighting and context.</li>
+</ul>
+<figure><img alt="A square training image split by dashed lines into four unequal quadrants, each taken from a different video: a store aisle with three boxed shoppers, a single boxed bottle, two boxed people walking in a hallway, and a boxed worker in a hard hat and vest on a warehouse floor." src="/vision-field-notes/images/data-augmentation-for-detection-mosaic.jpg" loading="lazy"><figcaption>One mosaic image gives the model four backgrounds and seven objects in a single step. Boxes are cropped along with each piece, which is why the shopper at the bottom edge is cut off. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.</figcaption></figure>
+<h2 id="which-settings-to-use-in-ultralytics">Which settings to use in Ultralytics</h2>
+<p>Ultralytics exposes augmentation as training arguments. You can pass them to <code>train</code>:</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+model = YOLO(&quot;yolo11n.pt&quot;)
+model.train(
+    data=&quot;data.yaml&quot;,
+    epochs=100,
+    imgsz=640,
+    fliplr=0.5,     # horizontal flip probability
+    flipud=0.0,     # vertical flip off
+    mosaic=1.0,     # mosaic probability
+    degrees=0.0,    # no rotation
+    hsv_h=0.015,    # small hue shift
+    hsv_s=0.7,
+    hsv_v=0.4,
+    close_mosaic=10 # turn mosaic off for the final epochs
+)
+</code></pre>
+<p>The values above are examples. Check the current Ultralytics documentation for the defaults and the full list of arguments in your installed version, since defaults can change between releases.</p>
+<p>About <code>close_mosaic</code>: mosaic images look unlike real frames. Turning mosaic off for the last few epochs lets the model finish training on images that look like your actual data. This is a commonly used setting in Ultralytics training; check that it exists in your version.</p>
+<h2 id="a-decision-approach">A decision approach</h2>
+<p>Instead of copying a recipe, reason from your deployment:</p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>If yes</th>
+<th>If no</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Does the camera ever see mirrored scenes?</td>
+<td>Keep horizontal flip</td>
+<td>Turn it off if direction matters</td>
+</tr>
+<tr>
+<td>Is the scene ever upside down?</td>
+<td>Consider vertical flip</td>
+<td>Leave it at zero</td>
+</tr>
+<tr>
+<td>Does lighting change a lot?</td>
+<td>Keep brightness changes</td>
+<td>Reduce them</td>
+</tr>
+<tr>
+<td>Is colour the class signal?</td>
+<td>Reduce hue shift to near zero</td>
+<td>Small hue shift is fine</td>
+</tr>
+<tr>
+<td>Are objects at varying distances?</td>
+<td>Keep scale augmentation</td>
+<td>Reduce it</td>
+</tr>
+<tr>
+<td>Is the camera fixed and the scene constant?</td>
+<td>Use lighter geometric augmentation</td>
+<td>Use more</td>
+</tr>
+</tbody>
+</table>
+<p>For a fixed camera with a stable view, heavy geometric augmentation can even hurt: you are teaching invariances the deployment never needs, which uses up model capacity. For a model that must generalise across many cameras, stronger augmentation is more valuable.</p>
+<h2 id="how-to-test-whether-an-augmentation-helps">How to test whether an augmentation helps</h2>
+<p>Do not guess. Run a controlled comparison:</p>
+<ol>
+<li>Pick a fixed training set and a fixed validation set that is split properly. See <a href="/vision-field-notes/posts/train-val-test-split-video-frames/">Train/Validation Split for Video Frames: Avoid Data Leakage</a>.</li>
+<li>Train a baseline with your current settings.</li>
+<li>Change exactly one augmentation, such as turning off flips, and train again with the same seed and epochs.</li>
+<li>Compare validation metrics, and also look at predictions on real footage from the target camera.</li>
+</ol>
+<p>Differences between runs can be small and noisy. If two settings are within the run-to-run variation, prefer the simpler one. Repeat with a different seed if the decision matters.</p>
+<p>Always inspect the augmented images themselves. Ultralytics saves sample training batches as images at the start of training, in the run folder. Open them and ask: could my camera produce this? If boxes are misplaced or objects look impossible, fix the settings before spending hours training.</p>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li><strong>Augmenting the validation set.</strong> Validation should reflect real data. Augmentation applies to training only.</li>
+<li><strong>Augmenting before splitting.</strong> If you save augmented copies of an image and then split randomly, copies of the same source land in both train and validation. Split first, then augment the training side only.</li>
+<li><strong>Unrealistic transforms.</strong> Upside-down people, extreme colour shifts, heavy rotation for a fixed camera.</li>
+<li><strong>Stacking everything at maximum strength.</strong> Strong settings combine multiplicatively. Many strong transforms at once can create images where objects are unrecognisable.</li>
+<li><strong>Using augmentation to compensate for bad labels or too little variety.</strong> Augmentation helps with variation you can imagine. It cannot invent a night scene you never collected. See <a href="/vision-field-notes/posts/how-many-images-do-you-need/">How Many Images Do You Need to Train an Object Detector?</a>.</li>
+<li><strong>Destroying small objects.</strong> Aggressive scale-down and blur can erase tiny targets entirely. Check <a href="/vision-field-notes/posts/class-imbalance-and-small-objects/">Class Imbalance and Small Objects: Practical Fixes</a>.</li>
+<li><strong>Forgetting the box.</strong> In custom pipelines, make sure every geometric transform updates the boxes. Draw boxes on augmented samples to verify.</li>
+</ul>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Ask of every transform: could my real camera produce this?</li>
+<li>Keep horizontal flip only if left-right orientation carries no meaning.</li>
+<li>Leave vertical flip and large rotation off unless the data demands them.</li>
+<li>Avoid hue shifts when colour defines the class.</li>
+<li>Keep mosaic for training, and consider closing it for the final epochs.</li>
+<li>Augment training data only, and split before augmenting.</li>
+<li>Look at the saved training batch images before a long run.</li>
+<li>Compare one change at a time against a baseline.</li>
+</ul>
+<p>Next steps: put these settings into a full run with <a href="/vision-field-notes/posts/train-yolo-on-a-custom-dataset/">Train YOLO on a Custom Dataset: A Step-by-Step Guide</a>, then check for overfitting with <a href="/vision-field-notes/posts/spotting-overfitting-in-detection/">How to Spot Overfitting in Object Detection</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Datasets and Training</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/annotation-mistakes-that-hurt-models/"><div class="cat">Datasets and Training</div><h3>Annotation Mistakes That Quietly Ruin Your Model</h3><p>Common object detection annotation mistakes, from loose boxes to missing labels and inconsistent classes, and a practical way to audit and fix your dataset.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/class-imbalance-and-small-objects/"><div class="cat">Datasets and Training</div><h3>Class Imbalance and Small Objects: Practical Fixes</h3><p>Practical fixes for class imbalance and small objects in detection: more data, tiling, higher resolution, sampling and the right metrics to judge progress.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/cvat-vs-label-studio-vs-roboflow/"><div class="cat">Datasets and Training</div><h3>CVAT vs Label Studio vs Roboflow: Choosing an Annotation Tool</h3><p>CVAT vs Label Studio vs Roboflow compared on cost, hosting, export formats, team use and labelling speed, so you can pick an annotation tool for detection.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

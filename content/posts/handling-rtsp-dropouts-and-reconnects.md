@@ -2,7 +2,7 @@
 title: "Handling RTSP Dropouts: Reconnects and Health Checks"
 description: "Design an RTSP reader that survives camera and network failures: detect stalls, reconnect with backoff, report health, and avoid the common silent-freeze bugs."
 category: "Video Analytics"
-date: 2026-11-23
+date: 2026-10-24
 tags: [rtsp, reliability, opencv, video-analytics, monitoring]
 ---
 
@@ -66,6 +66,8 @@ The loop reconnects forever, and the delay doubles after each failed attempt up 
 
 Add some random jitter to the delay in a multi-camera system. If a switch reboots and fifty readers all retry at the same instants, you create a thundering herd.
 
+![Two dot plots of reconnect attempts by 20 readers during a 40 second outage. Without jitter, all readers retry at the same instants and reconnect together at 61 seconds. With jitter, attempts and reconnects are spread out.](img:handling-rtsp-dropouts-and-reconnects-backoff-jitter.png "Caption: Without jitter, every reader hits the camera at the same moments and all reconnect in one burst; with jitter the load spreads out. Illustrative simulation with a 1 s starting delay doubling to a 30 s cap.")
+
 ## The watchdog for stalls
 
 The code above does not detect a stall, because `read()` never returns. You need something outside the reading thread that checks `last_frame_time`.
@@ -90,6 +92,8 @@ If the encoder hangs and repeats one frame, no transport-level check will catch 
 - If the difference stays at essentially zero for longer than a chosen period, flag the stream.
 
 Be careful with the threshold. A real scene at night with no motion also produces tiny differences, but camera sensor noise normally keeps the difference above exactly zero. A truly frozen stream is usually identical or nearly so. Tune this on recorded examples from your own cameras rather than trusting a number from an article.
+
+![Line chart of a frame-change score on a log-like scale over 24 seconds of warehouse footage. The score varies between about 0.02 and 3 while live, and drops to exactly zero during an 8 second stretch where one frame was repeated.](img:handling-rtsp-dropouts-and-reconnects-frozen-check.png "Caption: On real footage the frame-change score never reaches zero, even in quiet moments; a repeated frame drops it to exactly zero. The freeze was simulated by repeating one frame. Footage: Intel IoT DevKit sample videos (CC BY 4.0).")
 
 Similar content checks can catch other silent failures: an all-black frame (lens covered, IR failure), an all-grey frame, or a sudden large change in sharpness (lens out of focus). These matter because a blind camera produces zero detections, which looks exactly like a quiet scene.
 

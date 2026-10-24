@@ -2,7 +2,7 @@
 title: "Setting Up a Clean Python Environment for Computer Vision"
 description: "Set up a clean Python environment for computer vision: venv, pinned requirements, matching PyTorch to CUDA, and reproducible installs for training and edge."
 category: "Tools and Workflow"
-date: 2027-01-06
+date: 2026-10-24
 tags: [python, venv, pytorch, cuda, reproducibility]
 ---
 

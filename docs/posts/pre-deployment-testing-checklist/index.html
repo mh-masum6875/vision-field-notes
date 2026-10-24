@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A Pre-Deployment Testing Checklist for Vision Models</title>
+<meta name="description" content="A practical pre-deployment testing checklist for computer vision models: real footage, edge cases, day and night, latency, alerts, monitoring and rollback.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/pre-deployment-testing-checklist/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A Pre-Deployment Testing Checklist for Vision Models"><meta property="og:description" content="A practical pre-deployment testing checklist for computer vision models: real footage, edge cases, day and night, latency, alerts, monitoring and rollback.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/pre-deployment-testing-checklist/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/pre-deployment-testing-checklist-overhead-camera.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "A Pre-Deployment Testing Checklist for Vision Models", "description": "A practical pre-deployment testing checklist for computer vision models: real footage, edge cases, day and night, latency, alerts, monitoring and rollback.", "datePublished": "2026-10-24", "dateModified": "2026-10-24", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/pre-deployment-testing-checklist/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/pre-deployment-testing-checklist-overhead-camera.jpg", "articleSection": "Tools and Workflow", "keywords": "testing, deployment, checklist, video-analytics, production"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Tools and Workflow", "item": "https://mh-masum6875.github.io/vision-field-notes/category/tools-and-workflow/"}, {"@type": "ListItem", "position": 3, "name": "A Pre-Deployment Testing Checklist for Vision Models"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/tools-and-workflow/">Tools and Workflow</a></div><h1>A Pre-Deployment Testing Checklist for Vision Models</h1><div class="byline">By Maidul Hasan Masum · 2026-10-24 · 8 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#1-test-on-footage-from-the-real-deployment">1. Test on footage from the real deployment</a></li><li><a href="#2-measure-what-matters-for-the-task">2. Measure what matters for the task</a></li><li><a href="#3-cover-the-edge-cases">3. Cover the edge cases</a></li><li><a href="#4-test-performance-under-real-load">4. Test performance under real load</a></li><li><a href="#5-test-failure-handling">5. Test failure handling</a></li><li><a href="#6-test-the-alert-logic">6. Test the alert logic</a></li><li><a href="#7-check-privacy-and-compliance-basics">7. Check privacy and compliance basics</a></li><li><a href="#8-prepare-monitoring-and-rollback">8. Prepare monitoring and rollback</a></li><li><a href="#9-get-sign-off-with-clear-limits">9. Get sign-off with clear limits</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>A good validation score does not mean a model is ready for a real camera. Validation data is usually cleaner, closer to the training set and easier than what a live site produces. In production video analytics, a common pattern is that a model looks fine on the test set and then fails on things nobody sampled: a night shift, a dirty lens, a camera that moved a little, or a lorry parked in the same place all day.</p>
+<p>This checklist is for the step between "the metrics look good" and "it is live". It is organised so you can work through it in order.</p>
+<h2 id="1-test-on-footage-from-the-real-deployment">1. Test on footage from the real deployment</h2>
+<p>The most valuable test is footage from the actual camera, at the actual angle, in the actual place. Not a similar camera. Not stock video.</p>
+<ul>
+<li>Collect footage covering at least the full range of conditions the camera will see: different times of day, weather, and busy and quiet periods. If that is not possible before launch, plan a supervised trial period and say so.</li>
+<li>Make sure this footage was <strong>not</strong> used for training or for choosing thresholds. If it was, set aside new footage. For why this matters, see <a href="/vision-field-notes/posts/train-val-test-split-video-frames/">train/validation split for video frames</a>.</li>
+<li>Run the full pipeline, not only the model. That includes decoding, resizing, tracking, rules and alerts. Bugs often sit in the glue.</li>
+</ul>
+<p>Review the output by eye. Watch the video with the boxes drawn. Ten minutes of watching will tell you things a metric will not.</p>
+<figure><img alt="Two overhead frames of a car park, looking straight down at the cars, with detection boxes from a pretrained model. On the left, a white car seen from above is boxed and labelled cell phone 0.94. On the right, a red car at the top is labelled bus 0.54, while a silver car at the bottom is correctly labelled car 0.74." src="/vision-field-notes/images/pre-deployment-testing-checklist-overhead-camera.jpg" loading="lazy"><figcaption>Caption: A general-purpose model watching from an unusual angle: cars seen from directly above come out as a confident cell phone and a bus. Only footage from the real camera position reveals this kind of error. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.</figcaption></figure>
+<h2 id="2-measure-what-matters-for-the-task">2. Measure what matters for the task</h2>
+<p>Choose metrics that match the real cost of errors.</p>
+<ul>
+<li>For a safety alert, a missed event may be much worse than a false alarm. For a counting task, both errors change the number. For an alert that wakes someone at night, false alarms are expensive.</li>
+<li>Count events, not just frames. If a person is missed in one frame out of twenty but caught in the others, the event may still be detected. Evaluate on the unit the business cares about.</li>
+<li>Look at per-class results. An average can hide a weak class. See <a href="/vision-field-notes/posts/map-precision-recall-explained/">mAP, precision and recall</a>.</li>
+<li>Set the confidence threshold using your own data, not the default. See <a href="/vision-field-notes/posts/confidence-threshold-tuning/">confidence thresholds: tuning a detector to cut false alarms</a>.</li>
+</ul>
+<p>Write down the target before you test, for example "at most N false alerts per camera per day" or "counts within an agreed error of manual counts". Then you are measuring against a decision, not looking for a reason to say yes.</p>
+<h2 id="3-cover-the-edge-cases">3. Cover the edge cases</h2>
+<p>List the situations that are rare but plausible, and test each on purpose.</p>
+<table>
+<thead>
+<tr>
+<th>Edge case</th>
+<th>What to check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Night, dusk, dawn</td>
+<td>Does accuracy hold with low light, noise and infrared mode?</td>
+</tr>
+<tr>
+<td>Glare, reflections, rain, fog</td>
+<td>Are there false detections on wet surfaces or lights?</td>
+</tr>
+<tr>
+<td>Crowds and occlusion</td>
+<td>Do objects overlap, merge or lose IDs?</td>
+</tr>
+<tr>
+<td>Unusual objects</td>
+<td>Costumes, large loads, carts, animals, reflections in glass</td>
+</tr>
+<tr>
+<td>Small or distant objects</td>
+<td>Do they fall below the detectable size? See <a href="/vision-field-notes/posts/class-imbalance-and-small-objects/">class imbalance and small objects</a></td>
+</tr>
+<tr>
+<td>Camera changes</td>
+<td>Slight movement, a lens smudge, a changed exposure setting</td>
+</tr>
+<tr>
+<td>Empty scenes</td>
+<td>Does the model hallucinate objects when nothing is there?</td>
+</tr>
+<tr>
+<td>Static look-alikes</td>
+<td>Posters, mannequins, shadows, parked vehicles</td>
+</tr>
+</tbody>
+</table>
+<p>Testing empty scenes deserves emphasis. Many false alarms come from long periods with nothing happening, and a test set made only of interesting frames will not show them.</p>
+<h2 id="4-test-performance-under-real-load">4. Test performance under real load</h2>
+<ul>
+<li><strong>Latency.</strong> Measure end to end, from frame capture to alert, not only model time. Include warm-up and use enough frames. The method is in <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">measuring FPS and latency correctly</a>.</li>
+<li><strong>Throughput.</strong> Run all the streams you plan to run at once, on the real hardware, for a long period. One stream working says nothing about twenty. See <a href="/vision-field-notes/posts/scaling-to-hundreds-of-camera-streams/">scaling video analytics to hundreds of camera streams</a> for what changes with scale.</li>
+<li><strong>Resources.</strong> Watch CPU, GPU, memory and temperature over hours. Memory that grows slowly is a leak, and it will crash the service eventually. On small devices, check for thermal throttling. See <a href="/vision-field-notes/posts/power-cooling-storage-edge-ai-box/">power, cooling and storage for an edge AI box</a>.</li>
+<li><strong>Soak test.</strong> Leave it running for a day or more. Many problems only show up over time.</li>
+</ul>
+<h2 id="5-test-failure-handling">5. Test failure handling</h2>
+<p>Real systems fail in boring ways. Cause each failure on purpose and see what happens.</p>
+<ul>
+<li>Unplug a camera or block the network. Does the reader reconnect, and does anyone get told? See <a href="/vision-field-notes/posts/handling-rtsp-dropouts-and-reconnects/">handling RTSP dropouts</a>.</li>
+<li>Feed a corrupted or black frame.</li>
+<li>Restart the machine. Does the service start by itself, and in the right order?</li>
+<li>Fill the disk. Are logs and saved clips rotated or limited?</li>
+<li>Lose the connection to the alert destination. Are alerts queued, retried or dropped?</li>
+</ul>
+<p>A system that fails silently is worse than one that fails loudly. Silence looks like "nothing happened".</p>
+<h2 id="6-test-the-alert-logic">6. Test the alert logic</h2>
+<p>Alerts are what people actually experience. Check:</p>
+<ul>
+<li>Schedules and time zones.</li>
+<li>Cooldowns, so one event does not send fifty messages.</li>
+<li>What happens when the same event spans a restart.</li>
+<li>Whether the right person receives it, and whether the message contains enough to act on, such as camera name, time and an image.</li>
+</ul>
+<p>Design guidance is in <a href="/vision-field-notes/posts/designing-alert-rules/">designing alert rules</a>, and ways to cut noise are in <a href="/vision-field-notes/posts/reduce-false-alarms-in-production/">reducing false alarms in production</a>.</p>
+<h2 id="7-check-privacy-and-compliance-basics">7. Check privacy and compliance basics</h2>
+<p>Before going live, confirm what is stored, for how long, who can see it, and whether people on site have been informed as required where you work. Do not treat this as an afterthought. This is not legal advice. See <a href="/vision-field-notes/posts/privacy-and-ethics-camera-analytics/">privacy and ethics in camera analytics</a>.</p>
+<h2 id="8-prepare-monitoring-and-rollback">8. Prepare monitoring and rollback</h2>
+<p>Launch is the start of testing, not the end.</p>
+<ul>
+<li><strong>Monitor inputs and outputs.</strong> Track detection counts per camera per hour, average confidence, stream uptime and frame rate. A sudden change often means a camera moved, the lighting changed, or the model is drifting.</li>
+<li><strong>Keep a sample for review.</strong> Save a small, regular sample of frames and predictions, within your privacy rules, so a person can check quality periodically.</li>
+<li><strong>Version everything.</strong> Know which model, threshold and code are running on each device.</li>
+<li><strong>Have a rollback plan.</strong> Keep the previous model and configuration ready, and test that you can switch back quickly. A rollback you have never tried is not a plan.</li>
+<li><strong>Roll out in steps.</strong> Start with one camera or site, in a shadow mode if possible (running and logging without sending real alerts), then widen.</li>
+</ul>
+<figure><img alt="Line chart of detections per hour for one camera over seven days. For the first four days the count follows a clear daily cycle, rising to peaks of about 25 to 33 around midday and falling to a few per hour at night. A dashed red line on day 5 is labelled camera knocked out of position; after it the counts stay low, mostly under 10, and the daily peaks disappear." src="/vision-field-notes/images/pre-deployment-testing-checklist-monitoring.png" loading="lazy"><figcaption>Caption: A moved camera rarely raises an error. It shows up as a change in the counts, which is why per-camera detection counts are worth tracking. The data is illustrative.</figcaption></figure>
+<figure><img alt="Diagram of four stages in a row joined by arrows: offline tests on held-out footage, edge cases, soak runs and failure drills; shadow mode, which runs and logs without real alerts; one camera live, with real alerts and close monitoring; and wider rollout to more cameras and sites. A monitoring band runs under the last three stages, listing counts per camera, confidence, uptime and frame rate. A red rollback line runs from the end back to the first stage, labelled previous model and config, tested before launch." src="/vision-field-notes/images/pre-deployment-testing-checklist-rollout.png" loading="lazy"><figcaption>Caption: Each step widens the audience only after the previous one has run cleanly, and monitoring covers every live stage. The rollback path is part of the plan, and it should be tested before launch.</figcaption></figure>
+<h2 id="9-get-sign-off-with-clear-limits">9. Get sign-off with clear limits</h2>
+<p>Write a short note for the people who will use the system: what it detects, what it does not, the known weak spots, and the metrics you measured on real footage. Honest limits prevent disappointment and unfair blame later.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Tested on held-out footage from the real camera and site.</li>
+<li>Success targets written down before testing.</li>
+<li>Metrics measured per class and per event, with thresholds tuned on your own data.</li>
+<li>Edge cases covered: night, weather, crowds, empty scenes, look-alikes.</li>
+<li>Latency and load tested end to end on real hardware, including a long soak run.</li>
+<li>Failures simulated: network, camera, power, disk, alert channel.</li>
+<li>Alert logic reviewed: schedules, cooldowns, recipients, message content.</li>
+<li>Privacy and retention confirmed.</li>
+<li>Monitoring, versioning and a tested rollback in place.</li>
+<li>Staged rollout with a shadow period if possible.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/reduce-false-alarms-in-production/">reducing false alarms in production video analytics</a>, <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">measuring FPS and latency correctly</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Tools and Workflow</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/cloud-gpus-for-training-compared/"><div class="cat">Tools and Workflow</div><h3>Cloud GPUs for Model Training: How to Choose</h3><p>How to choose a cloud GPU for training vision models: compare cost models, GPU memory, storage and reliability, and avoid the habits that waste money.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/experiment-tracking-tensorboard-wandb-mlflow/"><div class="cat">Tools and Workflow</div><h3>Experiment Tracking: TensorBoard, Weights &amp; Biases and MLflow</h3><p>Why experiment tracking matters for computer vision, what to log on every training run, and how TensorBoard, Weights &amp; Biases and MLflow compare.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/host-cv-demos-free-on-github-pages/"><div class="cat">Tools and Workflow</div><h3>Host Computer Vision Demos for Free on GitHub Pages</h3><p>Host a computer vision demo for free on GitHub Pages: static hosting, running an ONNX model in the browser, size limits, licensing and a shareable portfolio demo.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

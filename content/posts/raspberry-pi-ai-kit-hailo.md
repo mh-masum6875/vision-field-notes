@@ -2,7 +2,7 @@
 title: "Raspberry Pi AI Kit and Hailo Accelerators: Is It Worth It?"
 description: "Is the Raspberry Pi AI Kit with a Hailo accelerator worth it? What it changes for detection projects, the trade-offs, and when a plain CPU is enough."
 category: "Edge Hardware and Deployment"
-date: 2027-01-11
+date: 2026-10-24
 tags: [raspberry-pi, hailo, accelerator, edge-ai]
 ---
 

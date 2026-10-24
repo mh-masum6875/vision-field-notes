@@ -8,6 +8,8 @@ tags: [false-alarms, production, temporal-filtering, monitoring, video-analytics
 
 A detector that scores well on a validation set can still be unusable on a live camera. The reason is arithmetic. A camera produces tens of thousands of frames per hour at typical frame rates, and even a small per-frame false positive rate yields many false alerts per day. Multiply by many cameras and the operators learn to ignore the system. A system that is ignored has failed, whatever its mAP.
 
+![Log-log line chart of false events per camera per day against the share of frames with a false detection, for 15, 5 and 1 analysed frames per second. At 0.01 percent and 15 frames per second the result is about 130 events a day.](img:reduce-false-alarms-in-production-per-frame-arithmetic.png "Caption: Pure arithmetic, not a measurement: without temporal filtering, even 1 false frame in 10,000 gives over a hundred events per camera per day at 15 analysed frames per second.")
+
 This article lists the practical levers for reducing false alarms, roughly in the order that gives the best return.
 
 ## Start by classifying your false alarms
@@ -21,6 +23,8 @@ Do not tune blindly. Collect a sample of false alerts (save the frame, the detec
 - **System faults.** Frozen frames, stream glitches, tracker ID switches causing double events.
 
 Each group has a different fix. A pile of reflections points to masks or retraining. A pile of one-frame blips points to temporal filtering. Counting causes tells you which lever to pull first.
+
+![Two frames with red boxes. Left: a woman walking in a hallway detected only as dog 0.50, and a frosted window detected as tv 0.32. Right: a white car seen from above detected as cell phone 0.95.](img:reduce-false-alarms-in-production-wrong-object.jpg "Caption: Wrong-object errors from a general COCO model on real clips: a person scored as a dog, a window as a TV, and a car seen from above as a cell phone with high confidence. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 ## Lever 1: confidence thresholds, per class and per camera
 
@@ -39,6 +43,8 @@ Real objects persist; many false detections do not. Require evidence over time b
 - **Smoothing scores.** Average a track's confidence over its life rather than reacting to a single spike.
 
 The cost is added delay before an alert. For many safety and security rules a delay of a few seconds is acceptable, but for others it is not, so choose per rule. Always work in time units, not frames, so the behaviour does not change when the frame rate does.
+
+![Two raster charts of detections per frame over 24 seconds for the classes person, dog, cat, tv and handbag. Top, raw: 10 person events and several short dog, cat, tv and handbag events. Bottom, after a 5 of 8 frames rule: 4 person events, cat and handbag removed, dog and tv still present.](img:reduce-false-alarms-in-production-n-of-m.png "Caption: A 5-of-8 rule on real detections removes the short blips (cat, handbag) and merges flickering person detections, but persistent mistakes such as the window scored as a TV survive. Those need a mask or retraining. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 ## Lever 3: geometry and size filters
 

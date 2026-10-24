@@ -2,7 +2,7 @@
 title: "Designing Alert Rules: Schedules, Cooldowns and Escalation"
 description: "Design video analytics alert rules people trust: time windows, cooldowns, absence rules, grouping, escalation and reliable delivery for camera-based alerts."
 category: "Video Analytics"
-date: 2026-11-09
+date: 2026-10-24
 tags: [alerts, alert-rules, cooldown, video-analytics, notifications]
 ---
 
@@ -18,6 +18,8 @@ Keep two concepts apart:
 - An **alert** is a decision to interrupt someone: "send a message to the night supervisor".
 
 Store every event, whether or not it triggers an alert. Events are your audit trail and your data for tuning. You can review them later, change the rules, and replay history to see what the new rules would have done. If you only store alerts, you cannot tune anything.
+
+![Flow diagram: detections go to confirm, then events, then rule (scope, schedule, stream health, cooldown, severity), then alert. Events also flow down to an event store for audit and replay; alerts flow down to delivery with queue, retry, rate limit and escalation.](img:designing-alert-rules-rule-layer.png "Caption: Events are stored whether or not they become alerts; only the rule layer decides when to interrupt a person.")
 
 ## What a rule should contain
 
@@ -54,6 +56,8 @@ Without a cooldown, one person standing in a zone creates an alert every second.
 - Per zone is often the best compromise for presence alerts.
 
 Cooldown length is a trade-off. Too short and messages pile up. Too long and a new, different event gets hidden behind the old one. One approach is to suppress repeats but still escalate if the condition persists, for example, send a reminder only if the situation continues beyond a larger threshold.
+
+![Timeline from 22:00 to 23:40 with four rows: presence in zone, events, alerts without cooldown (10 markers) and alerts with a 15 minute cooldown (4 alerts plus one reminder, 5 messages), with grey bars showing each cooldown window.](img:designing-alert-rules-cooldown-timeline.png "Caption: Repeated events during one long stay become 10 messages without a cooldown and 5 with a 15-minute cooldown plus a reminder for a condition that persists. Illustrative timeline.")
 
 Also consider **grouping**: if ten cameras report the same type of problem within a minute, such as a network fault or a lighting change that confuses the detector, send one grouped message rather than ten. A burst across many cameras at once is more often a system problem than ten separate real events, and it is worth flagging as such.
 

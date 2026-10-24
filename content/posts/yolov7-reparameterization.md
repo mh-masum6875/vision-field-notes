@@ -2,7 +2,7 @@
 title: "How YOLOv7 Gets Real-Time Speed with Re-parameterization"
 description: "How YOLOv7 uses re-parameterization: training-time and inference-time structure, how layers merge, and what it means when you export and deploy the model."
 category: "YOLO and Detection Basics"
-date: 2026-12-30
+date: 2026-10-24
 tags: [yolov7, reparameterization, inference, deployment]
 ---
 

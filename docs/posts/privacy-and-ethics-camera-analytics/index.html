@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy and Ethics in Camera Analytics | Vision Field Notes</title>
+<meta name="description" content="Practical privacy and ethics for camera analytics: data minimisation, retention, signage, consent, bias and access control. General guidance, not legal advice.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/privacy-and-ethics-camera-analytics/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Privacy and Ethics in Camera Analytics | Vision Field Notes"><meta property="og:description" content="Practical privacy and ethics for camera analytics: data minimisation, retention, signage, consent, bias and access control. General guidance, not legal advice.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/privacy-and-ethics-camera-analytics/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/privacy-and-ethics-camera-analytics-minimise.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Privacy and Ethics in Camera Analytics", "description": "Practical privacy and ethics for camera analytics: data minimisation, retention, signage, consent, bias and access control. General guidance, not legal advice.", "datePublished": "2026-10-24", "dateModified": "2026-10-24", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/privacy-and-ethics-camera-analytics/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/privacy-and-ethics-camera-analytics-minimise.jpg", "articleSection": "Video Analytics", "keywords": "privacy, ethics, data-minimisation, video-analytics, compliance"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Video Analytics", "item": "https://mh-masum6875.github.io/vision-field-notes/category/video-analytics/"}, {"@type": "ListItem", "position": 3, "name": "Privacy and Ethics in Camera Analytics"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/video-analytics/">Video Analytics</a></div><h1>Privacy and Ethics in Camera Analytics</h1><div class="byline">By Maidul Hasan Masum · 2026-10-24 · 7 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#start-with-the-purpose">Start with the purpose</a></li><li><a href="#data-minimisation">Data minimisation</a></li><li><a href="#retention">Retention</a></li><li><a href="#transparency-and-signage">Transparency and signage</a></li><li><a href="#access-control-and-security">Access control and security</a></li><li><a href="#bias-and-fairness">Bias and fairness</a></li><li><a href="#function-creep-and-misuse">Function creep and misuse</a></li><li><a href="#a-practical-assessment">A practical assessment</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>Camera analytics turns video of real people into data. Even a simple people counter processes images of individuals, and a badly designed system can collect far more than it needs. Engineers often treat privacy as a legal department problem. In practice, many of the most effective privacy protections are design decisions that only the engineers can make: what to store, what to discard, who can see it, and what the system is allowed to infer.</p>
+<p>This article is general engineering guidance, not legal advice. Laws about cameras, biometric data and workplace monitoring differ a great deal by country and region, and they change. Talk to a qualified professional and check the rules that apply to your site before you deploy.</p>
+<h2 id="start-with-the-purpose">Start with the purpose</h2>
+<p>Write down, in one or two sentences, what the system is for and what it is not for. "Count visitors entering the shop to plan staffing" is a clear purpose. "Monitor everything on cameras and see what is useful" is not. A clear purpose does three things:</p>
+<ul>
+<li>It tells you which data you need and which you do not.</li>
+<li>It lets you say no to later requests that stretch the system into something else (for example, using a safety camera to measure how long each employee takes breaks).</li>
+<li>It gives you something to explain to the people being filmed.</li>
+</ul>
+<p>Ask whether video analytics is needed at all. If a door sensor, a ticket system or a weight sensor answers the question, it may collect less sensitive data.</p>
+<h2 id="data-minimisation">Data minimisation</h2>
+<p>The best protection for data is not collecting or not keeping it. Concrete design options:</p>
+<ul>
+<li><strong>Process at the edge and store only results.</strong> If the goal is a count, store the count and timestamp, not the video. Many deployments need no stored footage for the analytics function.</li>
+<li><strong>Store events, not streams.</strong> Keep a short snapshot or clip only around events that matter, such as an alert.</li>
+<li><strong>Reduce what the camera sees.</strong> Choose angle, field of view and resolution so that faces and other identifying detail are not captured when they are not required. An overhead view for counting records people very differently from a face-height view.</li>
+<li><strong>Mask areas</strong> that should never be analysed or recorded, such as neighbouring property, windows, or private spaces. Apply masks before storage, not just in the display.</li>
+<li><strong>Blur or pixelate</strong> faces and licence plates in anything stored or shared for tuning and debugging, where this is compatible with the purpose.</li>
+<li><strong>Avoid identification features you do not need.</strong> Detecting that a person is present is a different thing from recognising who they are. Do not add face recognition, gait analysis, or attribute estimation (age, gender, emotion) unless there is a strong, justified reason, a legal basis, and a careful assessment. Several of these are restricted or contested in some regions, and emotion inference in particular has weak scientific grounding.</li>
+</ul>
+<figure><img alt="Two versions of a store aisle frame. Left: the live frame with three people boxed. Right: the stored version with the left part of the frame masked grey and the three people pixelated. Below: what the counting purpose needs long-term, people in aisle equals 3, time stamp and camera id." src="/vision-field-notes/images/privacy-and-ethics-camera-analytics-minimise.jpg" loading="lazy"><figcaption>Caption: The live frame is analysed in memory; anything kept for review is masked and pixelated first, and for a counting purpose the long-term record is just a number. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.</figcaption></figure>
+<h2 id="retention">Retention</h2>
+<p>Decide how long each kind of data is kept and enforce it automatically:</p>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Typical approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Live stream</td>
+<td>Processed in memory, not stored</td>
+</tr>
+<tr>
+<td>Alert snapshots and clips</td>
+<td>Kept for a short, defined period needed to review the alert</td>
+</tr>
+<tr>
+<td>Aggregated counts and statistics</td>
+<td>Kept longer, since they are not personal</td>
+</tr>
+<tr>
+<td>Training and test footage</td>
+<td>Kept only as long as needed, access-restricted, and anonymised where possible</td>
+</tr>
+<tr>
+<td>Logs</td>
+<td>Avoid putting personal data into logs</td>
+</tr>
+</tbody>
+</table>
+<p>Do not rely on someone remembering to delete files. Use scheduled deletion and verify that it works. Include backups and copies on developers' laptops in the picture, because those are where old footage tends to survive.</p>
+<figure><img alt="Flow diagram: camera to edge analytics, where raw video is not stored. Events go to alert snapshots (blurred, role-based access, short period) and results go to aggregates (kept longer). Both flow to deletion on a schedule, including backups and dev copies." src="/vision-field-notes/images/privacy-and-ethics-camera-analytics-data-flow.png" loading="lazy"><figcaption>Caption: Each kind of data has its own path and retention, and deletion is automatic. No specific periods are shown because they depend on purpose and local rules.</figcaption></figure>
+<p>The right retention period depends on your purpose and on local rules, so set it with the site owner and your advisers instead of using a default number.</p>
+<h2 id="transparency-and-signage">Transparency and signage</h2>
+<p>People should know when they are being filmed and why. Typical measures include clear signs at entrances to monitored areas, stating who operates the system and how to contact them, plus a privacy notice describing what is collected, why, how long it is kept and who can access it. In workplaces, communicate with employees before deployment, and involve their representatives where that is customary or required. Requirements for notice and consent differ by jurisdiction and by context (public spaces, workplaces, private property), so confirm locally.</p>
+<p>Consent is not always practical or the right legal basis for cameras in shared spaces, and requirements vary. Do not assume a sign alone is sufficient everywhere.</p>
+<h2 id="access-control-and-security">Access control and security</h2>
+<p>Video is sensitive data, and a leak can harm people. Basic security hygiene applies:</p>
+<ul>
+<li>Change default camera passwords and keep camera firmware updated. Poorly secured cameras are a common route into networks.</li>
+<li>Put cameras on a separate network segment, and do not expose RTSP ports to the internet.</li>
+<li>Encrypt data in transit and at rest where possible.</li>
+<li>Give access by role and on a need-to-know basis, and log who viewed or exported footage.</li>
+<li>Protect credentials that appear in RTSP URLs. They are often stored in plain text in config files, so keep them out of repositories and logs.</li>
+<li>Secure your annotation and training data too. Labelling services and shared drives that hold footage are part of your attack surface. If you use a hosted annotation platform, read its data handling terms.</li>
+</ul>
+<h2 id="bias-and-fairness">Bias and fairness</h2>
+<p>Detectors are trained on data, and their performance can differ across groups and conditions. Possible problems include lower recall for people with certain skin tones in poor lighting, for children, for people using wheelchairs, for unusual clothing or for groups under-represented in the training data. Consequences get worse when output is tied to decisions about individuals.</p>
+<p>What an engineer can do:</p>
+<ul>
+<li>Evaluate on data that reflects the people and conditions at the site, and break results down by relevant conditions (lighting, distance, clothing, pose) instead of only reporting one average.</li>
+<li>Be cautious with systems that make decisions about individuals. The more consequential the decision (discipline, access, suspicion), the stronger the justification, testing and human review must be.</li>
+<li>Keep a human in the loop for consequential outcomes, and let the alert provide evidence for a person to judge rather than an automatic verdict.</li>
+<li>Document known limitations and communicate them to the customer honestly.</li>
+</ul>
+<h2 id="function-creep-and-misuse">Function creep and misuse</h2>
+<p>A system built for one thing tends to be asked to do another. A counter becomes a productivity monitor; a safety alert becomes a disciplinary record. Reduce this risk by writing the purpose into the contract and documentation, limiting the data the system produces to what the purpose needs, and refusing, or at least re-assessing, new uses before they happen. Technical limits help: if the system never stores identity, it cannot be turned into an identity tool without visible changes.</p>
+<h2 id="a-practical-assessment">A practical assessment</h2>
+<p>Before deployment, many organisations carry out a data protection impact assessment or similar review. Even where it is not required, a short written review with these questions is valuable:</p>
+<ol>
+<li>What is the purpose, and is there a less intrusive way to meet it?</li>
+<li>What data is collected, and is each item necessary?</li>
+<li>Who is affected, and how will they be informed?</li>
+<li>How long is data kept, where, and who can access it?</li>
+<li>What could go wrong (leak, misuse, misdetection harming someone)?</li>
+<li>How can a person ask questions, object, or request access to data about them, where the law gives them that right?</li>
+<li>Who is accountable, and how are incidents handled?</li>
+</ol>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Write a specific purpose, and check for less intrusive options.</li>
+<li>Collect, store and share the minimum; prefer edge processing and storing results only.</li>
+<li>Avoid identification and attribute inference unless justified and lawful.</li>
+<li>Set automatic retention and deletion, including backups and dev copies.</li>
+<li>Use signage and notices, and check local legal requirements.</li>
+<li>Secure cameras, networks, credentials and footage access.</li>
+<li>Test for uneven performance and keep humans in consequential decisions.</li>
+<li>Guard against function creep and document limits.</li>
+</ul>
+<p>Next steps: apply minimisation to a concrete task in <a href="/vision-field-notes/posts/people-counting-line-crossing/">People Counting with Line Crossing: A Practical Tutorial</a>, and see how data volume and design interact in <a href="/vision-field-notes/posts/scaling-to-hundreds-of-camera-streams/">Scaling Video Analytics to Hundreds of Camera Streams</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Video Analytics</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/designing-alert-rules/"><div class="cat">Video Analytics</div><h3>Designing Alert Rules: Schedules, Cooldowns and Escalation</h3><p>Design video analytics alert rules people trust: time windows, cooldowns, absence rules, grouping, escalation and reliable delivery for camera-based alerts.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/handling-rtsp-dropouts-and-reconnects/"><div class="cat">Video Analytics</div><h3>Handling RTSP Dropouts: Reconnects and Health Checks</h3><p>Design an RTSP reader that survives camera and network failures: detect stalls, reconnect with backoff, report health, and avoid the common silent-freeze bugs.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/object-tracking-bytetrack-explained/"><div class="cat">Video Analytics</div><h3>Object Tracking Explained: SORT, ByteTrack and Friends</h3><p>Learn how object trackers like SORT and ByteTrack link detections across video frames, why ID switches happen, and how to tune a tracker with Ultralytics.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

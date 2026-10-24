@@ -68,9 +68,13 @@ def update(tid, point, frame_idx, a, b, cooldown=60):
 
 This is a sketch, not a finished product. It leaves out the segment check and cleanup of old IDs, and the cooldown value is in frames, so it depends on your frame rate.
 
+![Overhead view of an empty room with a green counting line across the floor. Coloured trails of foot points for tracks 1, 5 and 6 cross the line upward, each crossing circled; a short track 4 near the back wall does not cross. A counter reads in 3, out 0.](img:people-counting-line-crossing-real-tracks.jpg "Caption: Bottom-centre points of three people crossing a counting line, counted with the side test and a per-ID cooldown. Notice the flat start of each trail: while a person's feet are below the image edge, the box is cut off and the point sticks to the border. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 ## Common double-counting problems
 
 **Jitter on the line.** A person standing on the line produces boxes that wobble. The reference point crosses back and forth and the counter climbs. Fixes: require the point to move a minimum distance beyond the line before counting (hysteresis, using two parallel lines or a margin), and apply a per-ID cooldown as above.
+
+![Line chart of a foot point's signed distance to the counting line over 12 seconds. It approaches, wobbles around zero for six seconds, then moves away. 43 orange tick marks show plain sign-change counts; with a 15 pixel margin band there is one count.](img:people-counting-line-crossing-jitter-hysteresis.png "Caption: A person pausing on the line produces 43 sign changes but only one real crossing; requiring the point to leave a margin band fixes it. Illustrative simulated track, not measured data.")
 
 **ID switches.** If a person gets a new ID just after crossing, you can count them twice, or not at all. Tracking errors are the largest source of counting error. Reduce them with a good camera angle, a strong detector, and tracker settings that keep lost tracks alive through short occlusions.
 

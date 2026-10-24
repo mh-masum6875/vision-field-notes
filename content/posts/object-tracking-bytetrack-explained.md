@@ -2,7 +2,7 @@
 title: "Object Tracking Explained: SORT, ByteTrack and Friends"
 description: "Learn how object trackers like SORT and ByteTrack link detections across video frames, why ID switches happen, and how to tune a tracker with Ultralytics."
 category: "Video Analytics"
-date: 2026-12-04
+date: 2026-10-24
 tags: [tracking, bytetrack, sort, yolo, video-analytics]
 ---
 
@@ -18,6 +18,8 @@ Most practical trackers follow one pattern, called tracking by detection:
 4. Update matched tracks, start new tracks for unmatched detections, and age out tracks that have not been matched for a while.
 
 The detector does the hard visual work. The tracker is mostly bookkeeping and geometry, which is why it is cheap compared with the detector.
+
+![Cycle diagram: 1 Detect, 2 Predict with a Kalman filter, 3 Associate using IoU and one-to-one matching, 4 Update matched, new and lost tracks, then back to Detect for the next frame.](img:object-tracking-bytetrack-explained-loop.png "Caption: Tracking by detection repeats the same four steps every frame; only the first one looks at pixels.")
 
 ## Prediction: the Kalman filter
 
@@ -39,6 +41,8 @@ Older approaches threw away low-confidence detections before tracking. The ByteT
 2. Take the tracks that remain unmatched and try to match them to the low-confidence detections.
 
 A low-confidence box that fits an existing track's predicted location is probably a real, partly hidden object, so it keeps the track alive. A low-confidence box that matches nothing is treated as noise and discarded. This recovers many tracks that would otherwise break during occlusion, without adding a separate appearance model.
+
+![Two rows of three crops from a store aisle at frames 254, 261 and 270. A shopper is partly hidden by another person in frame 261 and her confidence drops to 0.34. In the top row her track is lost and she returns as ID 4; in the bottom row she keeps ID 2 throughout.](img:object-tracking-bytetrack-explained-occlusion-ids.jpg "Caption: When the shopper is half hidden, her score falls below 0.5. Matching only high-confidence boxes loses her and gives her a new ID; a second round with low-confidence boxes keeps ID 2. IDs come from a minimal tracker written for this figure that follows the ByteTrack idea, not from the Ultralytics implementation. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
 
 SORT and ByteTrack use motion and box overlap only. Other trackers, such as those in the DeepSORT family, also compare appearance using a small re-identification network. Appearance helps when objects cross paths or leave and re-enter, but it costs more compute and needs a re-ID model that suits your objects. Which is better depends on the scene, so test on your own footage.
 

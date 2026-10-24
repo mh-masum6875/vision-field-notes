@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Train/Validation Split for Video Frames: Avoid Data Leakage</title>
+<meta name="description" content="Why a random train/validation split of video frames inflates metrics, and how to split by video, camera and time so your detection results can be trusted.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/train-val-test-split-video-frames/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Train/Validation Split for Video Frames: Avoid Data Leakage"><meta property="og:description" content="Why a random train/validation split of video frames inflates metrics, and how to split by video, camera and time so your detection results can be trusted.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/train-val-test-split-video-frames/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/train-val-test-split-video-frames-near-copies.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Train/Validation Split for Video Frames: Avoid Data Leakage", "description": "Why a random train/validation split of video frames inflates metrics, and how to split by video, camera and time so your detection results can be trusted.", "datePublished": "2026-10-24", "dateModified": "2026-10-24", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/train-val-test-split-video-frames/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/train-val-test-split-video-frames-near-copies.jpg", "articleSection": "Datasets and Training", "keywords": "data-leakage, validation, video, dataset"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Datasets and Training", "item": "https://mh-masum6875.github.io/vision-field-notes/category/datasets-and-training/"}, {"@type": "ListItem", "position": 3, "name": "Train/Validation Split for Video Frames: Avoid Data Leakage"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/datasets-and-training/">Datasets and Training</a></div><h1>Train/Validation Split for Video Frames: Avoid Data Leakage</h1><div class="byline">By Maidul Hasan Masum · 2026-10-24 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#the-problem-near-duplicate-frames">The problem: near-duplicate frames</a></li><li><a href="#what-the-unit-of-splitting-should-be">What the unit of splitting should be</a></li><li><a href="#typical-scenarios">Typical scenarios</a></li><li><a href="#other-leaks-to-watch-for">Other leaks to watch for</a></li><li><a href="#train-validation-and-test">Train, validation and test</a></li><li><a href="#a-simple-grouped-split-in-python">A simple grouped split in Python</a></li><li><a href="#how-to-detect-leakage-you-already-have">How to detect leakage you already have</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>If your detector is trained on frames from video, the way you split those frames decides whether your metrics mean anything. A random split looks fair and is the default in many tutorials, yet it can produce validation scores that are far better than real-world performance. The model is not that good. The test is too easy.</p>
+<p>This article explains the leak, shows how to split correctly, and gives a short script and checklist.</p>
+<h2 id="the-problem-near-duplicate-frames">The problem: near-duplicate frames</h2>
+<p>Video frames that are close in time are nearly identical. The same people stand in almost the same places, the same lighting, the same background, the same motion blur pattern. If you extract frames from a clip and split them randomly, a frame at second 10 may go to training and the frame at second 11 to validation.</p>
+<p>At validation time, the model is shown an image that is almost a copy of something it trained on. It scores well because it has effectively seen the answer. That is data leakage: information from the evaluation set influences training.</p>
+<figure><img alt="Three panels from a hallway camera. Left: a training frame at 16.7 seconds with two people boxed. Middle: a validation frame at 17.7 seconds showing the same two people a step further along, also boxed. Right: a difference image that is almost entirely white, with dark areas only where the two people moved." src="/vision-field-notes/images/train-val-test-split-video-frames-near-copies.jpg" loading="lazy"><figcaption>Two frames one second apart from the same clip. Only about 9 percent of the pixels changed noticeably, so a model that trained on the left frame has nearly seen the middle one. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.</figcaption></figure>
+<p>The result is a validation score that tells you how well the model recognises its own training scenes, not how well it will do on a new day, a new camera or a new site. In production video analytics, this is one of the most common reasons a model that looked excellent fails on deployment.</p>
+<h2 id="what-the-unit-of-splitting-should-be">What the unit of splitting should be</h2>
+<p>Split by the largest unit that groups similar frames together. From smallest to largest:</p>
+<ol>
+<li><strong>Clip or video file.</strong> The minimum acceptable unit. All frames from one video go to the same split.</li>
+<li><strong>Time period.</strong> Frames from the same hour, shift or day share conditions. Splitting by day is stronger than splitting by clip.</li>
+<li><strong>Camera.</strong> Frames from the same camera share viewpoint and background. If you will deploy on cameras you have not seen, hold out entire cameras.</li>
+<li><strong>Site.</strong> If you deploy across locations, hold out a whole site.</li>
+</ol>
+<p>Choose the level that matches your deployment. Ask: what will be new when this model runs for real? If the answer is a new camera, validate on a camera that training never saw. If it is a new day on the same camera, split by day.</p>
+<h2 id="typical-scenarios">Typical scenarios</h2>
+<table>
+<thead>
+<tr>
+<th>Deployment</th>
+<th>Recommended split</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Same fixed camera, forever</td>
+<td>By time (hold out later days or weeks)</td>
+</tr>
+<tr>
+<td>Fixed cameras, new cameras added over time</td>
+<td>By camera</td>
+</tr>
+<tr>
+<td>Mobile or dashcam data</td>
+<td>By drive or trip</td>
+</tr>
+<tr>
+<td>Many sites</td>
+<td>By site</td>
+</tr>
+<tr>
+<td>One long recording only</td>
+<td>By time block, with a gap between blocks</td>
+</tr>
+</tbody>
+</table>
+<p>For a single long recording, take a block from the end for validation and leave a gap of unused frames between training and validation blocks, so edge frames are not near-copies.</p>
+<figure><img alt="Diagram of three rows of frame strips coloured blue for training and orange for validation. Random frame split: videos A, B and C each have orange frames scattered among blue ones. Split by video: videos A and B are all blue, video C is all orange. One long recording: a long blue block for earlier weeks, a few grey unused frames as a gap, then an orange block for later weeks." src="/vision-field-notes/images/train-val-test-split-video-frames-split-strategies.png" loading="lazy"><figcaption>In a random frame split every validation frame has a near-identical neighbour in training. Splitting by video, or by time with a gap, keeps whole groups of similar frames on one side.</figcaption></figure>
+<h2 id="other-leaks-to-watch-for">Other leaks to watch for</h2>
+<ul>
+<li><strong>Frame sampling before splitting vs after.</strong> Decide the split first, then sample frames within each side. Never sample, shuffle and split.</li>
+<li><strong>Augmented copies.</strong> If you saved augmented versions of an image, they must stay on the same side as their source. Better still, augment only on the fly, during training.</li>
+<li><strong>Duplicate files.</strong> The same image copied under different names, or the same video exported twice.</li>
+<li><strong>Merged public datasets.</strong> Different public datasets can contain overlapping or identical images. Check for duplicates when you merge.</li>
+<li><strong>Pre-labelling with a model trained on validation data.</strong> If a model used to pre-label images has seen the validation set, errors can be correlated.</li>
+<li><strong>Tuning on the test set.</strong> Every time you change settings after looking at a set, you fit to it a little. Keep a final test set that you evaluate once.</li>
+</ul>
+<h2 id="train-validation-and-test">Train, validation and test</h2>
+<p>Use three sets when you can:</p>
+<ul>
+<li><strong>Training:</strong> the model learns from this.</li>
+<li><strong>Validation:</strong> you use it to make choices, such as which epoch, which threshold, which augmentation.</li>
+<li><strong>Test:</strong> you evaluate once at the end for an honest estimate.</li>
+</ul>
+<p>All three should follow the same grouped splitting rule. If data is too limited for three sets, keep a clean validation set and be aware that your reported number is slightly optimistic.</p>
+<p>Also, balance the split by class where possible. A rare class that appears only in training leaves you with no validation signal for it. A grouped split can make this worse, since you cannot freely move single frames. Check the instance count per class in each split and adjust which videos or cameras go where. See <a href="/vision-field-notes/posts/class-imbalance-and-small-objects/">Class Imbalance and Small Objects: Practical Fixes</a>.</p>
+<h2 id="a-simple-grouped-split-in-python">A simple grouped split in Python</h2>
+<p>This script assigns whole videos to splits. It assumes each frame filename starts with its video id followed by an underscore, such as <code>cam3_0412_000123.jpg</code>, where the video id is <code>cam3_0412</code>.</p>
+<pre><code class="language-python">import random
+from collections import defaultdict
+from pathlib import Path
+
+frames = sorted(Path(&quot;frames&quot;).glob(&quot;*.jpg&quot;))
+
+by_video = defaultdict(list)
+for f in frames:
+    video_id = f.stem.rsplit(&quot;_&quot;, 1)[0]
+    by_video[video_id].append(f)
+
+videos = sorted(by_video)
+random.Random(42).shuffle(videos)
+
+n_val = max(1, int(0.2 * len(videos)))
+val_videos = set(videos[:n_val])
+
+train = [f for v in videos if v not in val_videos for f in by_video[v]]
+val = [f for v in val_videos for f in by_video[v]]
+print(len(train), &quot;train frames,&quot;, len(val), &quot;val frames&quot;)
+</code></pre>
+<p>Adapt the filename parsing to your naming scheme. For camera-level or time-level splits, group by camera id or date instead of video id. After splitting, copy or link images and their label files into <code>images/train</code>, <code>images/val</code>, <code>labels/train</code> and <code>labels/val</code>.</p>
+<p>Then verify. Print the set of group ids in each split and assert they do not intersect. This takes seconds and catches mistakes.</p>
+<h2 id="how-to-detect-leakage-you-already-have">How to detect leakage you already have</h2>
+<p>If you suspect a leak:</p>
+<ul>
+<li><strong>Compare with a fresh clip.</strong> Run the model on footage recorded after the dataset was built. If results are much worse than validation, leakage or a distribution shift is likely.</li>
+<li><strong>Check near-duplicates.</strong> Compute a simple image hash, such as a downscaled grayscale thumbnail, for each image and look for validation images whose nearest training image is almost identical.</li>
+<li><strong>Look at the metric.</strong> Very high validation scores on a hard problem, reached after just a few epochs, are suspicious.</li>
+<li><strong>Retrain with a grouped split</strong> and compare. A large drop in the validation score means the earlier number was inflated, and the new number is the more honest one.</li>
+</ul>
+<p>Do not be discouraged by a lower score after fixing the split. A lower honest number is more useful than a high misleading one.</p>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li>Using the default random split from a tool without checking how the images were produced.</li>
+<li>Extracting every frame from every video, which inflates counts and leakage.</li>
+<li>Splitting by frame but reporting results as if they predicted new-camera performance.</li>
+<li>Putting all the hard conditions, such as night, into training only.</li>
+<li>Re-splitting between experiments, which makes runs incomparable. Fix the split and store it as files.</li>
+</ul>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Decide what will be new in deployment: day, camera or site.</li>
+<li>Split by video, time, camera or site, never by random frame.</li>
+<li>Use a gap between blocks when splitting one long recording.</li>
+<li>Keep augmented copies on the same side as their source.</li>
+<li>Check for duplicate files and overlapping public datasets.</li>
+<li>Verify that group ids do not intersect between splits.</li>
+<li>Check per-class counts in every split.</li>
+<li>Keep a test set you evaluate only once.</li>
+<li>Save the split lists so experiments stay comparable.</li>
+</ul>
+<p>Next steps: use the clean split in <a href="/vision-field-notes/posts/train-yolo-on-a-custom-dataset/">Train YOLO on a Custom Dataset: A Step-by-Step Guide</a>, and learn to recognise the pattern leakage hides in <a href="/vision-field-notes/posts/spotting-overfitting-in-detection/">How to Spot Overfitting in Object Detection</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Datasets and Training</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/annotation-mistakes-that-hurt-models/"><div class="cat">Datasets and Training</div><h3>Annotation Mistakes That Quietly Ruin Your Model</h3><p>Common object detection annotation mistakes, from loose boxes to missing labels and inconsistent classes, and a practical way to audit and fix your dataset.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/class-imbalance-and-small-objects/"><div class="cat">Datasets and Training</div><h3>Class Imbalance and Small Objects: Practical Fixes</h3><p>Practical fixes for class imbalance and small objects in detection: more data, tiling, higher resolution, sampling and the right metrics to judge progress.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/cvat-vs-label-studio-vs-roboflow/"><div class="cat">Datasets and Training</div><h3>CVAT vs Label Studio vs Roboflow: Choosing an Annotation Tool</h3><p>CVAT vs Label Studio vs Roboflow compared on cost, hosting, export formats, team use and labelling speed, so you can pick an annotation tool for detection.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

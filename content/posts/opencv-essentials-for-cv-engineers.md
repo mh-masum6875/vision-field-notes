@@ -2,7 +2,7 @@
 title: "OpenCV Essentials Every Computer Vision Engineer Needs"
 description: "The OpenCV functions you use daily: reading images and video, drawing boxes, colour spaces, resizing, transforms, and the pitfalls that cause silent bugs."
 category: "Tools and Workflow"
-date: 2026-12-14
+date: 2026-10-24
 tags: [opencv, python, video, image-processing, tools]
 ---
 

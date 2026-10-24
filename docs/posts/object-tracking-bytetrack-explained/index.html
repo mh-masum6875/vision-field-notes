@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Object Tracking Explained: SORT, ByteTrack and Friends</title>
+<meta name="description" content="Learn how object trackers like SORT and ByteTrack link detections across video frames, why ID switches happen, and how to tune a tracker with Ultralytics.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/object-tracking-bytetrack-explained/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Object Tracking Explained: SORT, ByteTrack and Friends"><meta property="og:description" content="Learn how object trackers like SORT and ByteTrack link detections across video frames, why ID switches happen, and how to tune a tracker with Ultralytics.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/object-tracking-bytetrack-explained/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/object-tracking-bytetrack-explained-loop.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Object Tracking Explained: SORT, ByteTrack and Friends", "description": "Learn how object trackers like SORT and ByteTrack link detections across video frames, why ID switches happen, and how to tune a tracker with Ultralytics.", "datePublished": "2026-10-24", "dateModified": "2026-10-24", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/object-tracking-bytetrack-explained/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/object-tracking-bytetrack-explained-loop.png", "articleSection": "Video Analytics", "keywords": "tracking, bytetrack, sort, yolo, video-analytics"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Video Analytics", "item": "https://mh-masum6875.github.io/vision-field-notes/category/video-analytics/"}, {"@type": "ListItem", "position": 3, "name": "Object Tracking Explained: SORT, ByteTrack and Friends"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/video-analytics/">Video Analytics</a></div><h1>Object Tracking Explained: SORT, ByteTrack and Friends</h1><div class="byline">By Maidul Hasan Masum · 2026-10-24 · 7 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#the-tracking-by-detection-idea">The tracking-by-detection idea</a></li><li><a href="#prediction-the-kalman-filter">Prediction: the Kalman filter</a></li><li><a href="#association-matching-boxes">Association: matching boxes</a></li><li><a href="#what-bytetrack-changes">What ByteTrack changes</a></li><li><a href="#using-a-tracker-with-ultralytics">Using a tracker with Ultralytics</a></li><li><a href="#why-ids-switch">Why IDs switch</a></li><li><a href="#tuning-approach">Tuning approach</a></li><li><a href="#what-to-do-about-it-downstream">What to do about it downstream</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>A detector looks at each frame alone. It can tell you there are three people in the picture, but not that the person at the left in frame 100 is the same person at the right in frame 130. A tracker supplies that continuity by giving each object an ID that persists over time. You need this for counting, dwell time, speed estimation, and any rule that depends on what an object did rather than where it is.</p>
+<h2 id="the-tracking-by-detection-idea">The tracking-by-detection idea</h2>
+<p>Most practical trackers follow one pattern, called tracking by detection:</p>
+<ol>
+<li>Run the detector on the new frame.</li>
+<li>Predict where each existing track should be in this frame.</li>
+<li>Match detections to predicted tracks.</li>
+<li>Update matched tracks, start new tracks for unmatched detections, and age out tracks that have not been matched for a while.</li>
+</ol>
+<p>The detector does the hard visual work. The tracker is mostly bookkeeping and geometry, which is why it is cheap compared with the detector.</p>
+<figure><img alt="Cycle diagram: 1 Detect, 2 Predict with a Kalman filter, 3 Associate using IoU and one-to-one matching, 4 Update matched, new and lost tracks, then back to Detect for the next frame." src="/vision-field-notes/images/object-tracking-bytetrack-explained-loop.png" loading="lazy"><figcaption>Caption: Tracking by detection repeats the same four steps every frame; only the first one looks at pixels.</figcaption></figure>
+<h2 id="prediction-the-kalman-filter">Prediction: the Kalman filter</h2>
+<p>To predict where an object will be, SORT-style trackers use a Kalman filter. The state includes the box position, size, and their rates of change. Between frames, the filter assumes roughly constant velocity and projects the box forward. When a detection is matched, the filter corrects its estimate. In plain terms, it is a smoothed guess of motion that also tells the tracker how uncertain it is.</p>
+<p>This prediction is why a tracker can keep following a person who is briefly missed by the detector: the track coasts on its predicted motion for a few frames and reconnects when the detection returns.</p>
+<h2 id="association-matching-boxes">Association: matching boxes</h2>
+<p>Matching needs a cost between every track and every detection. SORT uses IoU (intersection over union) between the predicted box and the detected box. If you need a refresher on IoU, read <a href="/vision-field-notes/posts/iou-and-nms-explained/">IoU and Non-Maximum Suppression, Explained with Examples</a>. A solver for the assignment problem (the Hungarian algorithm) then finds the best one-to-one matching, and pairs below a minimum IoU are rejected.</p>
+<p>This works well when objects move modestly between frames and do not overlap much. It struggles when the camera frame rate is low (objects jump far between frames), when objects cross each other, and when detections flicker.</p>
+<h2 id="what-bytetrack-changes">What ByteTrack changes</h2>
+<p>Older approaches threw away low-confidence detections before tracking. The ByteTrack idea is to keep them for a second round of matching. Low-score boxes often are real objects that are partly occluded or blurred. The method works in two steps:</p>
+<ol>
+<li>Match high-confidence detections to tracks first.</li>
+<li>Take the tracks that remain unmatched and try to match them to the low-confidence detections.</li>
+</ol>
+<p>A low-confidence box that fits an existing track's predicted location is probably a real, partly hidden object, so it keeps the track alive. A low-confidence box that matches nothing is treated as noise and discarded. This recovers many tracks that would otherwise break during occlusion, without adding a separate appearance model.</p>
+<figure><img alt="Two rows of three crops from a store aisle at frames 254, 261 and 270. A shopper is partly hidden by another person in frame 261 and her confidence drops to 0.34. In the top row her track is lost and she returns as ID 4; in the bottom row she keeps ID 2 throughout." src="/vision-field-notes/images/object-tracking-bytetrack-explained-occlusion-ids.jpg" loading="lazy"><figcaption>Caption: When the shopper is half hidden, her score falls below 0.5. Matching only high-confidence boxes loses her and gives her a new ID; a second round with low-confidence boxes keeps ID 2. IDs come from a minimal tracker written for this figure that follows the ByteTrack idea, not from the Ultralytics implementation. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.</figcaption></figure>
+<p>SORT and ByteTrack use motion and box overlap only. Other trackers, such as those in the DeepSORT family, also compare appearance using a small re-identification network. Appearance helps when objects cross paths or leave and re-enter, but it costs more compute and needs a re-ID model that suits your objects. Which is better depends on the scene, so test on your own footage.</p>
+<h2 id="using-a-tracker-with-ultralytics">Using a tracker with Ultralytics</h2>
+<p>Ultralytics ships tracker configurations, and tracking is a single call:</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+model = YOLO(&quot;yolo11n.pt&quot;)  # any detection weights you have
+
+results = model.track(
+    source=&quot;video.mp4&quot;,
+    tracker=&quot;bytetrack.yaml&quot;,
+    persist=True,
+    stream=True,
+)
+
+for r in results:
+    if r.boxes.id is None:
+        continue
+    ids = r.boxes.id.int().tolist()
+    boxes = r.boxes.xyxy.tolist()
+    # use ids and boxes
+</code></pre>
+<p>Notes:</p>
+<ul>
+<li><code>persist=True</code> tells the tracker that frames belong to one continuing sequence. This matters when you call <code>track</code> frame by frame in your own loop. Without it, the tracker state may reset each call and IDs restart.</li>
+<li><code>r.boxes.id</code> can be <code>None</code> when nothing is tracked in that frame, so check before using it.</li>
+<li>The tracker settings live in a YAML file (the built-in <code>bytetrack.yaml</code>). You can copy it, edit values, and pass the path. Open the file in your installed version to see the parameter names and defaults, because they can change between releases.</li>
+</ul>
+<p>The parameters you will typically see cover the confidence level that separates "high" from "low" detections, the threshold for starting a new track, how many frames a lost track is kept before removal, and the matching threshold. Their exact names and defaults depend on the version, so read the file rather than relying on memory.</p>
+<p>Remember the licence point: Ultralytics YOLO models are AGPL-3.0, with a commercial licence available from Ultralytics. Check the current licence before using them in a product. See <a href="/vision-field-notes/posts/yolo-licenses-explained/">YOLO Licenses Explained: AGPL, GPL and Commercial Use</a>.</p>
+<h2 id="why-ids-switch">Why IDs switch</h2>
+<p>An ID switch happens when one real object receives a new ID, or two objects swap IDs. Common causes:</p>
+<ul>
+<li><strong>Occlusion.</strong> A person walks behind a pole or another person for longer than the track's patience. The track is deleted, and a new ID is created when they reappear.</li>
+<li><strong>Crowding.</strong> Overlapping boxes make IoU matching ambiguous.</li>
+<li><strong>Detector flicker.</strong> Missed detections for several frames let a track expire.</li>
+<li><strong>Low frame rate.</strong> Large jumps between frames break the overlap that matching needs.</li>
+<li><strong>Camera motion.</strong> A panning camera moves every box at once, which the simple motion model does not expect.</li>
+<li><strong>Unstable boxes.</strong> Boxes that change size from frame to frame reduce IoU even for a stationary object.</li>
+</ul>
+<h2 id="tuning-approach">Tuning approach</h2>
+<p>Tune on a short clip that contains your hard cases, and review it visually with IDs drawn on the frames. Do not tune only on a summary metric.</p>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Direction to try</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IDs break during short occlusions</td>
+<td>Keep lost tracks longer</td>
+</tr>
+<tr>
+<td>Many short-lived ghost tracks</td>
+<td>Raise the threshold to start a track</td>
+</tr>
+<tr>
+<td>Two nearby objects merge or swap</td>
+<td>Stricter matching threshold, better detector</td>
+</tr>
+<tr>
+<td>Tracks stay on after the object left</td>
+<td>Shorten the lost-track buffer</td>
+</tr>
+<tr>
+<td>Detector misses objects for many frames</td>
+<td>Fix the detector first (more data, better threshold)</td>
+</tr>
+</tbody>
+</table>
+<p>Keeping lost tracks longer helps with occlusion but raises the risk of linking a new object to an old track. Every setting trades one error for another.</p>
+<p>The best improvement usually comes from a better detector and a sensible camera angle, not from tracker tuning. A camera that looks down at a steep angle has fewer occlusions than one at head height in a crowd.</p>
+<h2 id="what-to-do-about-it-downstream">What to do about it downstream</h2>
+<p>Design your logic to tolerate imperfect IDs. For counting, count crossings of a line by a track and de-duplicate within a short window rather than trusting that an ID never changes. For dwell time, allow short gaps. The tutorial <a href="/vision-field-notes/posts/people-counting-line-crossing/">People Counting with Line Crossing: A Practical Tutorial</a> shows how to do this.</p>
+<p>To evaluate a tracker, compare against hand-labelled sequences and look at identity-focused metrics such as IDF1 and the count of ID switches, along with the standard MOTA. Do not report a tracker as good because the demo video looks fine.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Use tracking when your logic needs identity over time.</li>
+<li>Start with ByteTrack in Ultralytics and <code>persist=True</code> for frame-by-frame use.</li>
+<li>Check for <code>None</code> IDs before reading them.</li>
+<li>Draw IDs on a clip and review failures by eye.</li>
+<li>Keep the detector strong, since tracking depends on it.</li>
+<li>Design downstream logic to tolerate ID switches.</li>
+</ul>
+<p>Next steps: apply tracks to counting in <a href="/vision-field-notes/posts/people-counting-line-crossing/">People Counting with Line Crossing: A Practical Tutorial</a> and to areas in <a href="/vision-field-notes/posts/zone-intrusion-and-dwell-time/">Zone Intrusion and Dwell Time Alerts</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Video Analytics</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/designing-alert-rules/"><div class="cat">Video Analytics</div><h3>Designing Alert Rules: Schedules, Cooldowns and Escalation</h3><p>Design video analytics alert rules people trust: time windows, cooldowns, absence rules, grouping, escalation and reliable delivery for camera-based alerts.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/handling-rtsp-dropouts-and-reconnects/"><div class="cat">Video Analytics</div><h3>Handling RTSP Dropouts: Reconnects and Health Checks</h3><p>Design an RTSP reader that survives camera and network failures: detect stalls, reconnect with backoff, report health, and avoid the common silent-freeze bugs.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/people-counting-line-crossing/"><div class="cat">Video Analytics</div><h3>People Counting with Line Crossing: A Practical Tutorial</h3><p>Build a people counter with line crossing: use tracks, check which side of a line a point is on, count direction, avoid double counting and validate the result.</p><div class="meta">6 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

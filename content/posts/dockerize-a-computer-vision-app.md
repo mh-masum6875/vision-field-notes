@@ -2,7 +2,7 @@
 title: "Dockerize a Computer Vision App for Edge and Cloud"
 description: "Dockerize a computer vision app: Dockerfile patterns for OpenCV and ONNX Runtime, GPU access, smaller images, pinned versions and reproducible builds."
 category: "Edge Hardware and Deployment"
-date: 2026-11-13
+date: 2026-10-24
 tags: [docker, deployment, opencv, onnxruntime, devops]
 ---
 

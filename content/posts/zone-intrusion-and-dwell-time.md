@@ -2,7 +2,7 @@
 title: "Zone Intrusion and Dwell Time Alerts"
 description: "How to build zone intrusion and dwell time alerts: define polygon zones, test points with point-in-polygon, run dwell timers, and handle the edge cases."
 category: "Video Analytics"
-date: 2027-01-08
+date: 2026-10-24
 tags: [zones, dwell-time, intrusion-detection, opencv, alerts]
 ---
 
@@ -44,6 +44,8 @@ Which point of the bounding box you test changes behaviour a lot.
 
 For a floor-marked danger area, the bottom centre matches what people mean by "standing in the area". For a hanging machine arm or an overhead hazard, any overlap may be more appropriate. Choose by asking what the safety or business rule actually states.
 
+![Two warehouse frames with an orange zone drawn over red floor markings. Left: a worker whose bottom-centre point is inside the zone while the box centre, at chest height, is outside. Right: the worker's whole walk as dots, blue inside the zone, white outside, grey where the box is cut off by the image edge, with an entry event and an exit event marked.](img:zone-intrusion-and-dwell-time-test-point.jpg "Caption: The test point decides the answer: here the feet are in the zone while the box centre is not. Entry and exit events are raised on confirmed transitions, and points from boxes cut off by the image edge are ignored. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 ## Intrusion alerts: entry events, not states
 
 An intrusion alert should fire on the transition from outside to inside, not on every frame that someone is inside. Keep per-track state: was the track inside last frame? If not, and it is inside now, that is an entry event. You can also generate an exit event on the opposite change.
@@ -79,6 +81,8 @@ Use video timestamps or a monotonic clock for durations, not frame counts, unles
 **Track loss inside the zone.** If a person is hidden for a moment or the tracker drops the ID and creates a new one, the timer restarts and the dwell alert is delayed or missed. Add a grace period: do not delete a timer the moment the track disappears. Keep it for some seconds, and if a new track appears near the same spot, consider merging. This is a heuristic, so test it on real footage.
 
 **Flicker at the boundary.** A person standing near the edge of a zone toggles between inside and outside as the box jitters. This resets the dwell timer and generates repeated entry events. Use hysteresis: require being clearly outside (for example, outside for a number of frames, or beyond a margin from the edge) before treating it as an exit.
+
+![Line chart of measured dwell time over two minutes. The naive timer saws up and down, never above 13 seconds, because brief outside frames reset it. The timer with a 2 second grace period rises steadily and crosses the 60 second limit, where an alert fires.](img:zone-intrusion-and-dwell-time-dwell-flicker.png "Caption: A person standing near the edge for 100 seconds never triggers the naive dwell alert, because each flicker restarts the timer. A short grace period lets the timer reach the limit. Illustrative simulation.")
 
 **Stationary non-targets.** Parked vehicles, a mannequin, a coat on a chair, or a poster of a person can be detected continuously and trigger dwell alerts. Handle them with exclusion zones, class filters, and, where appropriate, ignoring detections whose box has not moved in a very long time if that fits the rule.
 

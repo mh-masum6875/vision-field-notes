@@ -14,6 +14,8 @@ RTSP is a control protocol. It negotiates a session with the camera, and the vid
 
 That matters because most behaviour you will fight (buffering, timeouts, transport choice) belongs to the backend, not to OpenCV's Python API.
 
+![Diagram of five boxes in a row: IP camera, network, FFmpeg, VideoCapture and your loop, with a bracket over network and FFmpeg labelled transport, buffering and timeouts live here.](img:read-rtsp-streams-with-opencv-pipeline.png "Caption: Most of the behaviour you tune (transport, buffering, timeouts) lives in the network and FFmpeg stages, not in OpenCV's Python API.")
+
 ## The minimal reader
 
 ```python
@@ -50,6 +52,8 @@ Two details that trip people up:
 The most common complaint is that the image on screen falls further behind real time the longer the program runs. The cause is almost always the same: your processing loop is slower than the camera's frame rate. The backend keeps receiving and queueing frames while you are busy with inference. `cap.read()` then returns old frames from that queue instead of the newest.
 
 Suppose the camera sends 25 frames per second and your pipeline handles 10. Every second, 15 frames pile up. Nothing is dropped, so the delay only increases until memory or the backend's buffer limit is hit.
+
+![Line chart of delay behind real time over 60 seconds. The plain read loop rises in a straight line to 36 seconds; the latest-frame reader stays flat near zero.](img:read-rtsp-streams-with-opencv-latency.png "Caption: The 25 versus 10 frames per second example worked out: a plain loop adds 0.6 s of delay every second, while a latest-frame reader stays bounded. Computed from the example numbers, not measured.")
 
 There are three honest fixes:
 

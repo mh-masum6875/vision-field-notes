@@ -2,7 +2,7 @@
 title: "Measuring FPS and Latency Correctly"
 description: "Measure FPS and latency correctly for vision models: warm-up, model time vs end-to-end time, batch effects, GPU synchronisation and a simple benchmark."
 category: "Edge Hardware and Deployment"
-date: 2026-12-09
+date: 2026-10-24
 tags: [benchmarking, fps, latency, performance]
 ---
 

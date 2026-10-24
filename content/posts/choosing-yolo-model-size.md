@@ -2,7 +2,7 @@
 title: "Nano, Small, Medium: How to Choose a YOLO Model Size"
 description: "How to choose a YOLO model size and input resolution: a method that starts from your hardware budget and accuracy needs, not a guess at nano, small or medium."
 category: "YOLO and Detection Basics"
-date: 2026-11-11
+date: 2026-10-24
 tags: [yolo, model-size, input-resolution, edge-ai]
 ---
 

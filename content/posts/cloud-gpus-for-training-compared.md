@@ -2,7 +2,7 @@
 title: "Cloud GPUs for Model Training: How to Choose"
 description: "How to choose a cloud GPU for training vision models: compare cost models, GPU memory, storage and reliability, and avoid the habits that waste money."
 category: "Tools and Workflow"
-date: 2026-11-06
+date: 2026-10-24
 tags: [cloud-gpu, training, cost, mlops, workflow]
 ---
 
@@ -30,6 +30,8 @@ For object detection training, the main specifications are:
 
 A bigger GPU costs more per hour but may finish sooner, so total cost per run can be similar or even lower. The only way to know is to time a short run on each candidate. Do not assume. A quick test of one or two epochs gives you seconds per epoch to compare.
 
+![Three small charts with rectangles whose width is hours and height is hourly rate. Smaller GPU: 1 per hour for 10 hours, 10 units. Larger GPU: 2.5 per hour for 3.6 hours, 9 units. Oversized, under-used GPU: 4 per hour for 3.2 hours, 12.8 units.](img:cloud-gpus-for-training-compared-cost-per-run.png "Caption: Compare cost per run, the area of each rectangle, not the hourly rate. Illustrative units, not real prices; time a short run on each candidate to get your own numbers.")
+
 ## Types of cloud GPU services
 
 | Type | How you pay | Good for | Watch out for |
@@ -51,6 +53,8 @@ The hourly GPU rate is only part of the bill. Look for:
 - **Idle time.** The biggest cost leak. A GPU instance left running overnight after training finished still bills.
 - **Failed runs.** Hours spent on a run with a bug in the data config are pure waste.
 - **Minimum commitments or billing granularity.** Some services bill by the hour, others by the second.
+
+![Stacked horizontal bars of a monthly bill. Careless month: 113 units, of which 40 is useful training and the rest failed runs, idle instance, storage while stopped and data egress. Same work with good habits: 51 units, still 40 useful training.](img:cloud-gpus-for-training-compared-bill-breakdown.png "Caption: The useful training costs the same in both months; idle instances, failed runs and forgotten storage make the difference. Illustrative units, not real prices.")
 
 ## Habits that save money
 

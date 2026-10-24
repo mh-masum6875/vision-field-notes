@@ -2,7 +2,7 @@
 title: "Scaling Video Analytics to Hundreds of Camera Streams"
 description: "Architecture patterns for scaling video analytics to hundreds of camera streams: decoding, batching, frame skipping, queues, GPU sharing and monitoring."
 category: "Video Analytics"
-date: 2026-12-28
+date: 2026-10-24
 tags: [scaling, architecture, batching, triton, video-analytics]
 ---
 
@@ -47,6 +47,8 @@ cameras -> ingest workers -> frame queue -> inference service -> results queue -
 
 The key benefit is that each stage can be scaled and restarted independently. A crash in a native decoding library kills one ingest worker, not the whole system.
 
+![Architecture diagram: four cameras feed ingest workers, then a frame queue, an inference service that batches frames on the GPU, a results queue, tracking and rules keyed by camera, and finally alerts and storage. A dashed strip underneath lists metrics collected at every stage.](img:scaling-to-hundreds-of-camera-streams-architecture.png "Caption: Separate stages joined by bounded queues, so each can be scaled and restarted on its own, with metrics exported from every stage.")
+
 ## Batching
 
 GPUs are most efficient when given several images at once. A batcher collects frames from different cameras and sends them together. The trade-off is latency: waiting to fill a batch delays the first frame in it. Use a maximum wait time so a half-empty batch is still sent after a short delay. Whether batching helps depends on model size, GPU and how busy the system is, so test your own configuration rather than copying settings. Batching across cameras is natural, because frames from different cameras are independent. Batching frames from one camera adds latency for that camera.
@@ -61,6 +63,8 @@ Queues are where overload shows up. Define what should happen when the inference
 - **Block the producer.** Suits offline processing of files, where every frame matters, but is wrong for live streams, where it leads to growing latency.
 
 Use bounded queues. Unbounded queues turn an overload into memory exhaustion hours later. Count dropped frames per camera and expose it as a metric; if a camera drops most of its frames, your effective frame rate is lower than you believe, and rules based on timing may misbehave.
+
+![Line chart of queue wait over 300 seconds. During a 90 second slowdown, the unbounded queue's wait climbs to about 22 seconds and takes another 90 seconds to drain. The bounded queue's wait stays under one second.](img:scaling-to-hundreds-of-camera-streams-queue-overload.png "Caption: During a slowdown an unbounded queue builds lag that lasts long after the overload ends; a bounded queue that drops the oldest frames keeps lag small at the cost of dropped frames, which you should count. Illustrative simulation with arbitrary rates.")
 
 ## Process, thread and GPU considerations
 

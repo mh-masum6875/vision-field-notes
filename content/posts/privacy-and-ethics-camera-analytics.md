@@ -2,7 +2,7 @@
 title: "Privacy and Ethics in Camera Analytics"
 description: "Practical privacy and ethics for camera analytics: data minimisation, retention, signage, consent, bias and access control. General guidance, not legal advice."
 category: "Video Analytics"
-date: 2026-12-16
+date: 2026-10-24
 tags: [privacy, ethics, data-minimisation, video-analytics, compliance]
 ---
 
@@ -31,6 +31,8 @@ The best protection for data is not collecting or not keeping it. Concrete desig
 - **Blur or pixelate** faces and licence plates in anything stored or shared for tuning and debugging, where this is compatible with the purpose.
 - **Avoid identification features you do not need.** Detecting that a person is present is a different thing from recognising who they are. Do not add face recognition, gait analysis, or attribute estimation (age, gender, emotion) unless there is a strong, justified reason, a legal basis, and a careful assessment. Several of these are restricted or contested in some regions, and emotion inference in particular has weak scientific grounding.
 
+![Two versions of a store aisle frame. Left: the live frame with three people boxed. Right: the stored version with the left part of the frame masked grey and the three people pixelated. Below: what the counting purpose needs long-term, people in aisle equals 3, time stamp and camera id.](img:privacy-and-ethics-camera-analytics-minimise.jpg "Caption: The live frame is analysed in memory; anything kept for review is masked and pixelated first, and for a counting purpose the long-term record is just a number. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.")
+
 ## Retention
 
 Decide how long each kind of data is kept and enforce it automatically:
@@ -44,6 +46,8 @@ Decide how long each kind of data is kept and enforce it automatically:
 | Logs | Avoid putting personal data into logs |
 
 Do not rely on someone remembering to delete files. Use scheduled deletion and verify that it works. Include backups and copies on developers' laptops in the picture, because those are where old footage tends to survive.
+
+![Flow diagram: camera to edge analytics, where raw video is not stored. Events go to alert snapshots (blurred, role-based access, short period) and results go to aggregates (kept longer). Both flow to deletion on a schedule, including backups and dev copies.](img:privacy-and-ethics-camera-analytics-data-flow.png "Caption: Each kind of data has its own path and retention, and deletion is automatic. No specific periods are shown because they depend on purpose and local rules.")
 
 The right retention period depends on your purpose and on local rules, so set it with the site owner and your advisers instead of using a default number.
 

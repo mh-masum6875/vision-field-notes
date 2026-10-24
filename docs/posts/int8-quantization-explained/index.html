@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INT8 Quantization for Detectors: Benefits and Risks</title>
+<meta name="description" content="INT8 quantization for object detectors: post-training vs quantization-aware training, calibration data, what accuracy risks to expect and how to test them.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/int8-quantization-explained/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="INT8 Quantization for Detectors: Benefits and Risks"><meta property="og:description" content="INT8 quantization for object detectors: post-training vs quantization-aware training, calibration data, what accuracy risks to expect and how to test them.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/int8-quantization-explained/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/int8-quantization-explained-outlier-range.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "INT8 Quantization for Detectors: Benefits and Risks", "description": "INT8 quantization for object detectors: post-training vs quantization-aware training, calibration data, what accuracy risks to expect and how to test them.", "datePublished": "2026-10-24", "dateModified": "2026-10-24", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/int8-quantization-explained/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/int8-quantization-explained-outlier-range.png", "articleSection": "Edge Hardware and Deployment", "keywords": "quantization, int8, optimization, edge-ai"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Edge Hardware and Deployment", "item": "https://mh-masum6875.github.io/vision-field-notes/category/edge-hardware-and-deployment/"}, {"@type": "ListItem", "position": 3, "name": "INT8 Quantization for Detectors: Benefits and Risks"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge Hardware and Deployment</a></div><h1>INT8 Quantization for Detectors: Benefits and Risks</h1><div class="byline">By Maidul Hasan Masum · 2026-10-24 · 7 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#the-basic-idea">The basic idea</a></li><li><a href="#why-bother">Why bother</a></li><li><a href="#two-approaches">Two approaches</a></li><li><a href="#calibration-data">Calibration data</a></li><li><a href="#how-detectors-suffer">How detectors suffer</a></li><li><a href="#how-to-test-the-result">How to test the result</a></li><li><a href="#practical-paths">Practical paths</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#should-you-use-it">Should you use it</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav><p>Quantization stores a model's numbers with fewer bits. Instead of 32-bit floating point values, an INT8 model uses 8-bit integers for weights and often for activations. On hardware that supports it, this can reduce model size and memory traffic and increase speed. It can also quietly reduce accuracy, and detectors are more sensitive to this than many people expect.</p>
+<p>This article explains how INT8 quantization works in practice, the two main approaches, how to pick calibration data and how to check that the result is still good enough.</p>
+<h2 id="the-basic-idea">The basic idea</h2>
+<p>A floating-point number can represent a huge range with fine precision. An 8-bit integer has only 256 possible values. To map floats to integers, quantization uses a scale (and sometimes a zero point):</p>
+<p><code>integer = round(float / scale) + zero_point</code></p>
+<p>If the scale is chosen well, most values map with small error. If it is chosen badly, for example because one outlier stretches the range, many values collapse to the same integer and information is lost.</p>
+<figure><img alt="Two histograms of the same activation values clustered between minus 2 and 2, with orange vertical lines marking INT8 levels. Top: scale set by the largest value of 38 gives a step of 0.30 and only 27 levels across the bulk of the data. Bottom: scale set by calibration clipping at 5.3 gives a step of 0.042 and 189 levels." src="/vision-field-notes/images/int8-quantization-explained-outlier-range.png" loading="lazy"><figcaption>Illustrative synthetic data. When a single outlier sets the range, only a few dozen of the 256 integer levels cover the values that matter. Choosing the range from calibration data uses the levels far better.</figcaption></figure>
+<p>For weights, the ranges are known from the trained model. For activations, the values depend on the input data, so the ranges must be estimated by running sample images through the network. That step is called calibration.</p>
+<h2 id="why-bother">Why bother</h2>
+<p>Potential benefits:</p>
+<ul>
+<li><strong>Smaller model files.</strong> Weights take roughly a quarter of the space of FP32.</li>
+<li><strong>Less memory bandwidth.</strong> This often matters more than raw compute on edge devices.</li>
+<li><strong>Faster inference on supported hardware.</strong> Many accelerators and some CPUs have fast integer paths. Others do not, and then INT8 gives little or no gain.</li>
+<li><strong>Lower power use.</strong> Less data movement usually means less energy.</li>
+</ul>
+<p>The speed benefit is hardware-specific. Do not assume INT8 is faster everywhere; measure on your target. Also try FP16 first on devices that support it, because it often gives a good part of the benefit with much lower risk.</p>
+<h2 id="two-approaches">Two approaches</h2>
+<h3 id="post-training-quantization-ptq">Post-training quantization (PTQ)</h3>
+<p>You take a trained FP32 model, run a calibration set through it to collect activation ranges and convert it. No retraining is needed. This is the common starting point.</p>
+<p>Pros: fast, simple, no training code.
+Cons: accuracy loss can be noticeable, especially for small models, and for some layers or classes.</p>
+<h3 id="quantization-aware-training-qat">Quantization-aware training (QAT)</h3>
+<p>You simulate quantization during training or fine-tuning. The network sees rounding effects and learns to cope with them. Then you convert for deployment.</p>
+<p>Pros: usually recovers more accuracy than PTQ.
+Cons: needs a training setup, support in your framework, more time, and the training must match what the deployment toolchain does.</p>
+<p>A sensible plan: try PTQ first. If accuracy is acceptable, stop. If not, look at which layers or classes suffer, and consider mixed precision (keeping sensitive layers at higher precision) or QAT.</p>
+<figure><img alt="Flowchart: from the FP32 model, check whether FP16 or a smaller model meets the target; if yes, stop. If not, run post-training quantization with representative calibration images, validate against FP32 on mAP50-95, per-class, small-object and false-alarm results, and ship INT8 with re-tuned thresholds if it passes your rule. If it fails, try mixed precision or quantization-aware training and validate again." src="/vision-field-notes/images/int8-quantization-explained-decision-flow.png" loading="lazy"><figcaption>INT8 is the last step, not the first. Every quantized model goes through the same validation as a new model before it ships.</figcaption></figure>
+<h2 id="calibration-data">Calibration data</h2>
+<p>Calibration is where most INT8 projects succeed or fail.</p>
+<p>Rules that work:</p>
+<ul>
+<li><strong>Use real, representative images.</strong> They should come from the same cameras, lighting and scenes as production. Do not calibrate on random web images if you deploy on a dark warehouse camera.</li>
+<li><strong>Cover the variety.</strong> Include day and night, near and far, busy and empty scenes, if all of them occur in production.</li>
+<li><strong>Use enough images, but not necessarily thousands.</strong> Several hundred varied images is a common range, and tools document their own recommendations. More is not always better; variety matters more than count.</li>
+<li><strong>Do not use test images.</strong> Calibrate with training or separate data and keep your validation and test sets clean for evaluation.</li>
+<li><strong>Apply the exact same pre-processing</strong> as in inference: letterbox, colour order and scaling.</li>
+</ul>
+<p>A calibration set made of mostly empty frames can lead to poor ranges for the activations that matter when objects appear. Make sure objects are present in a good share of the images.</p>
+<h2 id="how-detectors-suffer">How detectors suffer</h2>
+<p>Detectors have properties that make quantization more delicate than plain classification:</p>
+<ul>
+<li><strong>Box regression needs precision.</strong> Small errors in the box output layers shift coordinates. Localisation quality, seen in the stricter mAP50-95 metric, often drops before mAP50 does.</li>
+<li><strong>Small objects are fragile.</strong> Their features are subtle, and rounding noise can erase them.</li>
+<li><strong>Rare classes are fragile.</strong> Overall mAP can look fine while a rare class loses recall.</li>
+<li><strong>The output head is sensitive.</strong> Some toolchains keep the last layers in higher precision for this reason.</li>
+</ul>
+<p>So never judge INT8 by overall mAP alone.</p>
+<h2 id="how-to-test-the-result">How to test the result</h2>
+<p>Treat the quantized model as a new model that needs validation.</p>
+<ol>
+<li>Run the same validation set through the FP32 and INT8 models.</li>
+<li>Compare mAP50 and mAP50-95, then precision and recall at your chosen confidence threshold. See <a href="/vision-field-notes/posts/map-precision-recall-explained/">mAP, precision and recall</a> for how to read these.</li>
+<li>Compare per-class results, especially rare and small-object classes.</li>
+<li>Compare the number of false alarms at your operating threshold. A small shift in confidence scores can change alert counts, so you may need to re-tune thresholds; see <a href="/vision-field-notes/posts/confidence-threshold-tuning/">confidence threshold tuning</a>.</li>
+<li>Run on real footage from the target cameras and look at failures with your own eyes.</li>
+<li>Measure speed and memory on the target hardware, with warm-up, using the method in <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">measuring FPS and latency correctly</a>.</li>
+</ol>
+<p>Define an acceptance rule before you start, for example "no class loses more than a set amount of recall." Deciding afterwards invites wishful thinking.</p>
+<h2 id="practical-paths">Practical paths</h2>
+<p>The tooling depends on the target:</p>
+<ul>
+<li><strong>NVIDIA GPUs and Jetson:</strong> TensorRT supports INT8 with a calibration step. See <a href="/vision-field-notes/posts/tensorrt-speedup-guide/">TensorRT for YOLO</a>.</li>
+<li><strong>CPU with ONNX Runtime:</strong> it offers quantization tools for ONNX models, both static (with calibration) and dynamic. Check the current ONNX Runtime documentation for the supported operators and options.</li>
+<li><strong>Accelerators such as Hailo:</strong> the vendor toolchain quantizes during model compilation and asks for a calibration set. See <a href="/vision-field-notes/posts/raspberry-pi-ai-kit-hailo/">Raspberry Pi AI Kit and Hailo accelerators</a>.</li>
+<li><strong>Ultralytics export:</strong> several export formats accept an <code>int8</code> option with calibration data. The exact behaviour and arguments differ by format and version, so read the current docs for your target.</li>
+</ul>
+<p>In every case, the pattern is the same: export, calibrate with representative images, validate, benchmark.</p>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li><strong>Calibrating on the wrong data.</strong> The most frequent cause of unexplained accuracy drops.</li>
+<li><strong>Comparing speed but not accuracy.</strong> A fast model that misses objects is not an improvement.</li>
+<li><strong>Assuming INT8 helps on every device.</strong> Some hardware has no fast INT8 path.</li>
+<li><strong>Forgetting to re-tune thresholds.</strong> Score distributions change after quantization.</li>
+<li><strong>Quantizing too early.</strong> Fix data and training first. Quantization should be one of the last steps.</li>
+<li><strong>Not keeping the FP32 model.</strong> You need it as the reference and for retraining.</li>
+</ul>
+<h2 id="should-you-use-it">Should you use it</h2>
+<p>Use INT8 when you have a clear need: the model does not fit in memory, the accelerator requires it, or you cannot reach the required throughput otherwise. Skip it when FP16 or a smaller model already meets your requirements. Fewer moving parts mean fewer surprises in production.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>FP16 or a smaller model considered before INT8.</li>
+<li>Calibration set is representative, varied and separate from test data.</li>
+<li>Same pre-processing used for calibration and inference.</li>
+<li>FP32 and INT8 compared on mAP50, mAP50-95, precision and recall.</li>
+<li>Per-class and small-object results checked.</li>
+<li>Thresholds re-tuned and false alarms counted.</li>
+<li>Speed measured on the target device.</li>
+<li>FP32 model kept as a reference.</li>
+</ul>
+<h2 id="next-steps">Next steps</h2>
+<p>Read <a href="/vision-field-notes/posts/tensorrt-speedup-guide/">TensorRT for YOLO</a> for the NVIDIA workflow, and <a href="/vision-field-notes/posts/reduce-false-alarms-in-production/">Reducing False Alarms in Production Video Analytics</a> for what to watch after deployment.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Edge Hardware and Deployment</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/best-cameras-for-computer-vision/"><div class="cat">Edge Hardware and Deployment</div><h3>Choosing a Camera for Computer Vision Projects</h3><p>How to choose a camera for computer vision: USB, CSI, IP/RTSP and depth cameras compared, with advice on shutter, lens, lighting and what really matters.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/dockerize-a-computer-vision-app/"><div class="cat">Edge Hardware and Deployment</div><h3>Dockerize a Computer Vision App for Edge and Cloud</h3><p>Dockerize a computer vision app: Dockerfile patterns for OpenCV and ONNX Runtime, GPU access, smaller images, pinned versions and reproducible builds.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/export-yolo-to-onnx/"><div class="cat">Edge Hardware and Deployment</div><h3>Export YOLO to ONNX and Run It with ONNX Runtime</h3><p>Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences.</p><div class="meta">6 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

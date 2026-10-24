@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nano, Small, Medium: How to Choose a YOLO Model Size</title>
+<meta name="description" content="How to choose a YOLO model size and input resolution: a method that starts from your hardware budget and accuracy needs, not a guess at nano, small or medium.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/choosing-yolo-model-size/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nano, Small, Medium: How to Choose a YOLO Model Size"><meta property="og:description" content="How to choose a YOLO model size and input resolution: a method that starts from your hardware budget and accuracy needs, not a guess at nano, small or medium.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/choosing-yolo-model-size/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/choosing-yolo-model-size-object-pixels.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Nano, Small, Medium: How to Choose a YOLO Model Size", "description": "How to choose a YOLO model size and input resolution: a method that starts from your hardware budget and accuracy needs, not a guess at nano, small or medium.", "datePublished": "2026-10-24", "dateModified": "2026-10-24", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/choosing-yolo-model-size/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/choosing-yolo-model-size-object-pixels.jpg", "articleSection": "YOLO and Detection Basics", "keywords": "yolo, model-size, input-resolution, edge-ai"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "YOLO and Detection Basics", "item": "https://mh-masum6875.github.io/vision-field-notes/category/yolo-and-detection-basics/"}, {"@type": "ListItem", "position": 3, "name": "Nano, Small, Medium: How to Choose a YOLO Model Size"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO and Detection Basics</a></div><h1>Nano, Small, Medium: How to Choose a YOLO Model Size</h1><div class="byline">By Maidul Hasan Masum · 2026-10-24 · 7 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#what-the-size-letters-change">What the size letters change</a></li><li><a href="#the-other-dial-input-resolution">The other dial: input resolution</a></li><li><a href="#a-method-for-choosing">A method for choosing</a></li><li><a href="#rules-of-thumb-that-help">Rules of thumb that help</a></li><li><a href="#common-mistakes">Common mistakes</a></li><li><a href="#where-hardware-fits">Where hardware fits</a></li><li><a href="#key-points">Key points</a></li></ul></nav><p>YOLO models come in sizes, usually called nano, small, medium, large and extra large (n, s, m, l, x). Picking one feels like a guess: bigger is more accurate, smaller is faster, so where do you land? A guess works badly. A short method works better. This article gives you one, built around a budget and a test, and does not rely on published speed numbers that will not match your hardware.</p>
+<h2 id="what-the-size-letters-change">What the size letters change</h2>
+<p>Within a model family, the letters change the depth and width of the network. A bigger model has more layers and more channels, so it has more parameters and needs more computation per image. In general:</p>
+<ul>
+<li>Larger models can learn more subtle patterns and often score higher on hard data.</li>
+<li>Larger models are slower, use more memory and draw more power.</li>
+<li>Smaller models are faster and fit on small devices, but may miss small or unusual objects.</li>
+</ul>
+<p>The relationship is not linear. Going from nano to small often brings a large gain, while going from large to extra large often brings little for a lot more cost. And on an easy, narrow problem, such as one object type on a plain background, a nano model can be enough. You cannot know without testing.</p>
+<h2 id="the-other-dial-input-resolution">The other dial: input resolution</h2>
+<p>Image size is a second lever, and it is just as important. Models are typically run at a fixed input size, commonly 640 pixels on the long side for Ultralytics defaults. Raising it lets the model see small objects better and costs compute roughly in proportion to the pixel count. A model at higher resolution can cost more than a larger model at lower resolution.</p>
+<p>So you have two dials: size and resolution. A useful rule of thumb is to choose resolution from your object size first, then choose the model size.</p>
+<h3 id="pick-resolution-from-the-object">Pick resolution from the object</h3>
+<p>Look at the smallest object you must detect, and ask how many pixels it will occupy in the model input.</p>
+<ol>
+<li>Take a representative frame at the camera's native resolution.</li>
+<li>Measure the smallest important object in pixels.</li>
+<li>Work out the scale factor from the camera frame to the model input. If a 1920-pixel-wide frame is resized to 640, everything shrinks by a factor of three.</li>
+<li>Check the object after resizing. If it is only a few pixels across, the detector will struggle, whatever the size letter says.</li>
+</ol>
+<figure><img alt="Four versions of the same store-aisle frame with detector boxes. Original, people about 181 pixels tall: all 3 people found, scores 0.79 to 0.82, plus two bowls. Shrunk 3 times, people about 60 pixels tall: 3 of 3 found. Shrunk 4 times, about 45 pixels tall: 2 of 3 found. Shrunk 6 times, about 30 pixels tall and visibly blocky: none found." src="/vision-field-notes/images/choosing-yolo-model-size-object-pixels.jpg" loading="lazy"><figcaption>The frame was shrunk and enlarged back to simulate a smaller image, then passed to the same model. Detections hold up to about 60 pixels per person here and disappear by 30. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.</figcaption></figure>
+<p>If objects are too small, options are a higher input size, cropping to the region of interest, tiling the frame, or moving the camera or changing the lens. Often the cheapest fix is a better camera position. See <a href="/vision-field-notes/posts/class-imbalance-and-small-objects/">Class Imbalance and Small Objects</a> for tiling.</p>
+<h2 id="a-method-for-choosing">A method for choosing</h2>
+<h3 id="step-1-set-the-budget">Step 1: set the budget</h3>
+<p>Write down what the deployment can afford.</p>
+<table>
+<thead>
+<tr>
+<th>Constraint</th>
+<th>Questions to ask</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time per frame</td>
+<td>How many frames per second do you actually need? One per second is very different from thirty.</td>
+</tr>
+<tr>
+<td>Streams per device</td>
+<td>How many cameras share the device?</td>
+</tr>
+<tr>
+<td>Hardware</td>
+<td>CPU only, Raspberry Pi class, embedded GPU, or server GPU?</td>
+</tr>
+<tr>
+<td>Power and heat</td>
+<td>Is it battery powered or enclosed?</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>How much RAM is available alongside everything else?</td>
+</tr>
+</tbody>
+</table>
+<p>Be honest about the frame rate you need. Many analytics tasks do not need every frame. Counting people through a door, or checking if a zone is occupied, often works at a low rate. Reading fast-moving objects may need more. Lowering the processing rate is the cheapest speedup available, and it allows a bigger model.</p>
+<h3 id="step-2-set-the-accuracy-target">Step 2: set the accuracy target</h3>
+<p>Define what good enough means in terms that match the job: for example, the recall you need on a certain class at a precision you can tolerate. Use the metrics from <a href="/vision-field-notes/posts/map-precision-recall-explained/">mAP, Precision and Recall</a>. Without a target, you cannot say when a smaller model is acceptable.</p>
+<h3 id="step-3-shortlist-two-or-three-candidates">Step 3: shortlist two or three candidates</h3>
+<p>Start with the smallest model that could plausibly work, and one size above it. For example, nano and small. Add medium only if both fall short on accuracy and your budget allows it.</p>
+<h3 id="step-4-train-under-identical-conditions">Step 4: train under identical conditions</h3>
+<p>Use the same dataset split, the same input size, the same number of epochs and the same augmentation for each. Otherwise the comparison is unfair. With the Ultralytics package:</p>
+<pre><code class="language-python">from ultralytics import YOLO
+
+for weights in [&quot;yolov8n.pt&quot;, &quot;yolov8s.pt&quot;]:
+    model = YOLO(weights)
+    model.train(data=&quot;data.yaml&quot;, epochs=50, imgsz=640, name=weights.replace(&quot;.pt&quot;, &quot;&quot;))
+    metrics = model.val()
+    print(weights, metrics.box.map50, metrics.box.map)
+</code></pre>
+<p>Change names to whichever generation you use. Keep a record of all runs.</p>
+<h3 id="step-5-export-and-measure-on-the-target-device">Step 5: export and measure on the target device</h3>
+<p>Accuracy is measured on any machine. Speed is not. Export each candidate to the format you will deploy, run it on the real device with real input sizes and a realistic pipeline, and measure end-to-end time per frame. Include decoding, resizing and post-processing, since they can cost as much as the model on small devices. Follow the method in <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">Measuring FPS and Latency Correctly</a>.</p>
+<h3 id="step-6-choose-with-a-table">Step 6: choose with a table</h3>
+<p>Fill in a simple comparison and decide.</p>
+<table>
+<thead>
+<tr>
+<th>Candidate</th>
+<th>Recall at chosen threshold</th>
+<th>Precision</th>
+<th>End-to-end time per frame</th>
+<th>Memory</th>
+<th>Meets budget?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nano at 640</td>
+<td>measured</td>
+<td>measured</td>
+<td>measured</td>
+<td>measured</td>
+<td>yes or no</td>
+</tr>
+<tr>
+<td>Small at 640</td>
+<td>measured</td>
+<td>measured</td>
+<td>measured</td>
+<td>measured</td>
+<td>yes or no</td>
+</tr>
+<tr>
+<td>Nano at higher resolution</td>
+<td>measured</td>
+<td>measured</td>
+<td>measured</td>
+<td>measured</td>
+<td>yes or no</td>
+</tr>
+</tbody>
+</table>
+<p>Pick the cheapest row that meets both the accuracy target and the time budget. If none does, change something else: reduce the frame rate, crop the region, improve the data, or upgrade the hardware.</p>
+<figure><img alt="Flow diagram of six steps in two rows: 1 set the budget, 2 accuracy target, 3 shortlist 2 or 3 sizes, 4 train identically, 5 measure on the device, 6 pick the cheapest that meets accuracy and time with headroom. A note below says if none passes, lower the frame rate, crop the region, improve the data or change the hardware." src="/vision-field-notes/images/choosing-yolo-model-size-method.png" loading="lazy"><figcaption>The six steps on one page. Steps 1 and 2 are written down before any training, so the final choice in step 6 is a lookup rather than a judgement call.</figcaption></figure>
+<h2 id="rules-of-thumb-that-help">Rules of thumb that help</h2>
+<ul>
+<li><strong>Start small.</strong> A nano or small model that meets the target is easier to deploy, cool and maintain. You can always move up.</li>
+<li><strong>Data beats size.</strong> Doubling labelled examples of your hard cases often does more than moving up a size. Check labels before scaling the model. See <a href="/vision-field-notes/posts/annotation-mistakes-that-hurt-models/">Annotation Mistakes That Quietly Ruin Your Model</a>.</li>
+<li><strong>Resolution before size for small objects.</strong> If the problem is tiny objects, a larger model at low resolution will not help.</li>
+<li><strong>Test the hard cases.</strong> Night, rain, glare and crowding often reveal a gap that overall metrics hide.</li>
+<li><strong>Leave headroom.</strong> Do not pick a model that uses 100 percent of your time budget. Other processes, thermal limits and spikes will bite.</li>
+<li><strong>One device, several streams.</strong> Total load is per-stream cost multiplied by the number of streams, so a small saving per frame adds up.</li>
+</ul>
+<h2 id="common-mistakes">Common mistakes</h2>
+<ul>
+<li>Choosing by leaderboard rank rather than by testing your data.</li>
+<li>Benchmarking on a workstation GPU, then deploying on a Raspberry Pi.</li>
+<li>Comparing models trained with different settings.</li>
+<li>Measuring only model inference time and ignoring the rest of the pipeline.</li>
+<li>Using the largest model "to be safe" and then lowering the frame rate to compensate.</li>
+<li>Forgetting that heat can slow a small device after minutes of use. Run tests long enough to see it.</li>
+</ul>
+<h2 id="where-hardware-fits">Where hardware fits</h2>
+<p>If your target is a Raspberry Pi 5 class board, expect to use small models and to tune carefully. A Jetson-class board with a GPU can run larger models. For a comparison, read <a href="/vision-field-notes/posts/raspberry-pi-vs-jetson-orin-nano/">Raspberry Pi vs Jetson Orin Nano for Object Detection</a>. If you want to try a small model on a <a href="https://www.raspberrypi.com/products/raspberry-pi-5/" rel="noopener" target="_blank">Raspberry Pi 5</a>, start with nano and measure.</p>
+<h2 id="key-points">Key points</h2>
+<ul>
+<li>Size letters change network depth and width. Resolution is a second, equally important dial.</li>
+<li>Set resolution by the smallest object, then choose size.</li>
+<li>Define the frame rate, hardware and accuracy target before comparing models.</li>
+<li>Compare two or three candidates under identical training settings.</li>
+<li>Measure speed end to end on the target device.</li>
+<li>Choose the cheapest option that meets both the accuracy and time budgets, and leave headroom.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/yolov5-vs-yolov8-vs-yolo11/">YOLOv5 vs YOLOv8 vs YOLO11</a>, <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">Measuring FPS and Latency Correctly</a> and <a href="/vision-field-notes/posts/yolo-on-raspberry-pi-5/">Running YOLO on a Raspberry Pi 5</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in YOLO and Detection Basics</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/"><div class="cat">YOLO and Detection Basics</div><h3>Anchor-Free vs Anchor-Based Object Detectors</h3><p>Anchor-free vs anchor-based object detectors: what anchors are, why newer YOLO versions dropped them, and what the change means for training and deployment.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/classification-vs-detection-vs-segmentation/"><div class="cat">YOLO and Detection Basics</div><h3>Classification vs Detection vs Segmentation: Pick the Right Task</h3><p>Classification vs detection vs segmentation: how to choose the right computer vision task for your project, with a decision guide, cost trade-offs and examples.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/confidence-threshold-tuning/"><div class="cat">YOLO and Detection Basics</div><h3>Confidence Thresholds: Tuning a Detector to Cut False Alarms</h3><p>How to tune a confidence threshold for an object detector: read the precision-recall curve, tune per class, and cut false alarms without missing real events.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

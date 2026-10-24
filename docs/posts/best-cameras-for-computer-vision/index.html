@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Choosing a Camera for Computer Vision Projects</title>
+<meta name="description" content="How to choose a camera for computer vision: USB, CSI, IP/RTSP and depth cameras compared, with advice on shutter, lens, lighting and what really matters.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/best-cameras-for-computer-vision/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Choosing a Camera for Computer Vision Projects"><meta property="og:description" content="How to choose a camera for computer vision: USB, CSI, IP/RTSP and depth cameras compared, with advice on shutter, lens, lighting and what really matters.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/best-cameras-for-computer-vision/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/best-cameras-for-computer-vision-pixels-on-target.jpg"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Choosing a Camera for Computer Vision Projects", "description": "How to choose a camera for computer vision: USB, CSI, IP/RTSP and depth cameras compared, with advice on shutter, lens, lighting and what really matters.", "datePublished": "2026-10-24", "dateModified": "2026-10-24", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/best-cameras-for-computer-vision/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/best-cameras-for-computer-vision-pixels-on-target.jpg", "articleSection": "Edge Hardware and Deployment", "keywords": "cameras, rtsp, hardware, lighting"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Edge Hardware and Deployment", "item": "https://mh-masum6875.github.io/vision-field-notes/category/edge-hardware-and-deployment/"}, {"@type": "ListItem", "position": 3, "name": "Choosing a Camera for Computer Vision Projects"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge Hardware and Deployment</a></div><h1>Choosing a Camera for Computer Vision Projects</h1><div class="byline">By Maidul Hasan Masum · 2026-10-24 · 7 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#start-with-the-task-not-the-spec-sheet">Start with the task, not the spec sheet</a></li><li><a href="#the-main-camera-types">The main camera types</a></li><li><a href="#specifications-that-matter">Specifications that matter</a></li><li><a href="#lighting-beats-resolution">Lighting beats resolution</a></li><li><a href="#placement-and-mounting">Placement and mounting</a></li><li><a href="#how-to-evaluate-a-camera-before-buying-many">How to evaluate a camera before buying many</a></li><li><a href="#quick-decision-guide">Quick decision guide</a></li><li><a href="#checklist">Checklist</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav><p>Many computer vision problems are camera problems in disguise. A blurry, dark or badly placed image limits what any model can do. Before you spend time on training or buying an accelerator, make sure the camera gives your model a fair chance.</p>
+<p>This guide covers the main camera types, the specifications that matter, and a practical way to choose.</p>
+<h2 id="start-with-the-task-not-the-spec-sheet">Start with the task, not the spec sheet</h2>
+<p>Ask three questions first:</p>
+<ol>
+<li><strong>What is the smallest detail the model must see?</strong> For example, a helmet on a person, a licence plate, a small defect on a part. This sets the pixels you need on the target.</li>
+<li><strong>How fast does the subject move?</strong> Fast motion needs short exposure times and often a different sensor type.</li>
+<li><strong>What is the lighting?</strong> Indoor, outdoor, day only, or day and night.</li>
+</ol>
+<p>Then work backwards. A useful rule: the object you care about should cover enough pixels for a human to recognise it in the image you feed the model. If you cannot tell what it is by eye, the model will struggle too. Remember that models usually receive a resized image, so a 4K frame shrunk to a small input loses detail. Think in terms of pixels on target after resizing.</p>
+<figure><img alt="The same worker in a hard hat and orange vest shown four times, resampled to 262, 60, 30 and 15 pixels tall. At 15 pixels the helmet is a few yellow blocks." src="/vision-field-notes/images/best-cameras-for-computer-vision-pixels-on-target.jpg" loading="lazy"><figcaption>The same person at fewer and fewer pixels, enlarged for display. At 15 pixels tall you can no longer confirm a helmet by eye, and a model will struggle too. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.</figcaption></figure>
+<h2 id="the-main-camera-types">The main camera types</h2>
+<h3 id="usb-webcams">USB webcams</h3>
+<p>A USB webcam is the easiest way to start. It needs no network setup, works with <code>cv2.VideoCapture</code> on most systems and is cheap. Most use the UVC standard, so they work without special drivers.</p>
+<p>Strengths: simple, cheap, good for prototypes, desks and short cable runs.
+Limits: USB cable length is short unless you use active extenders, many webcams have automatic exposure and focus that you cannot fully control, and consumer lenses are often wide with soft corners.</p>
+<h3 id="csi-camera-modules">CSI camera modules</h3>
+<p>CSI cameras connect directly to the board's camera connector. A <a href="https://www.raspberrypi.com/products/camera-module-3/" rel="noopener" target="_blank">Raspberry Pi camera module</a> is the common example. They offer low latency and good control over exposure and gain through the camera stack. Some variants have interchangeable lenses.</p>
+<p>Strengths: low overhead, good control, compact.
+Limits: short ribbon cables, tied to specific boards and software stacks, and not suited to long distances.</p>
+<h3 id="ip-cameras-over-rtsp">IP cameras over RTSP</h3>
+<p>For anything permanent, such as workplace monitoring, traffic or retail, IP cameras are the normal choice. A PoE IP camera sends compressed video (usually H.264 or H.265) over the network using RTSP, and power comes through the same Ethernet cable from a PoE switch.</p>
+<p>Strengths: long cable runs, weatherproof models, infrared night modes, proper lenses and mounting, many cameras on one network.
+Limits: you receive compressed video, so you must decode it; latency and buffering need care; and each camera has its own settings and quirks.</p>
+<p>If you go this route, read <a href="/vision-field-notes/posts/read-rtsp-streams-with-opencv/">Reading RTSP streams with OpenCV and FFmpeg</a> and <a href="/vision-field-notes/posts/handling-rtsp-dropouts-and-reconnects/">Handling RTSP dropouts</a>. Reliable stream reading is half of a real deployment.</p>
+<h3 id="depth-and-stereo-cameras">Depth and stereo cameras</h3>
+<p>An OAK-D camera combines an RGB camera with stereo depth and can run neural networks on the device. Depth is useful when you need distance, for example robot navigation, measuring size or separating objects by how far away they are.</p>
+<p>Strengths: depth data, on-device processing option.
+Limits: higher cost, depth is noisy on textureless or shiny surfaces, and you need to learn its SDK.</p>
+<p>Do not buy depth because it sounds advanced. If a regular camera answers your question, use that.</p>
+<h2 id="specifications-that-matter">Specifications that matter</h2>
+<h3 id="resolution">Resolution</h3>
+<p>More pixels are not always better. Higher resolution means more decoding work, more bandwidth and slower inference if you feed it to the model. Choose the lowest resolution that keeps your target large enough. Many detection systems run a sub-stream at lower resolution for analytics and keep the main stream for recording.</p>
+<h3 id="frame-rate">Frame rate</h3>
+<p>Match frame rate to the motion. Counting people at a door rarely needs more than a few analysed frames per second. A fast conveyor needs more. Note that the camera's frame rate and the rate you analyse can differ; you can skip frames on the analytics side.</p>
+<h3 id="shutter-type-and-exposure-time">Shutter type and exposure time</h3>
+<p>This is often overlooked. A rolling shutter reads the image line by line, so fast motion can look skewed. A global shutter captures the whole frame at once and is better for fast-moving objects. For slow scenes, rolling shutter is fine.</p>
+<p>More important for most projects is exposure time. Long exposure in low light causes motion blur, and a blurred object is hard to detect. If you can, set a short fixed exposure and add light rather than letting the camera lengthen exposure at night.</p>
+<figure><img alt="Four versions of a warehouse frame with increasing horizontal blur. Sharp: person 0.87. 17 pixel blur: person 0.83. 25 pixel blur: the worker is labelled fire hydrant 0.75. 41 pixel blur: no detection." src="/vision-field-notes/images/best-cameras-for-computer-vision-motion-blur.jpg" loading="lazy"><figcaption>Horizontal motion blur was added to one real frame to mimic a long exposure. Mild blur only lowers the score, but heavier blur turns the worker into a wrong class and then into nothing. Footage: Intel IoT DevKit sample videos (CC BY 4.0). Detections: YOLOv8n.</figcaption></figure>
+<h3 id="lens-and-field-of-view">Lens and field of view</h3>
+<p>A wide lens covers more area but makes objects small. A narrow lens enlarges distant targets but sees less. Wide lenses can also add distortion at the edges. Pick the field of view so that your target has enough pixels at the farthest point you care about. Many projects solve this by moving the camera closer, not by buying a higher resolution.</p>
+<h3 id="low-light-and-infrared">Low light and infrared</h3>
+<p>Night performance depends on sensor size, lens aperture and illumination. Infrared night mode gives a monochrome image, and your model may need training data from that mode. A model trained only on daytime colour images can behave very differently on infrared footage.</p>
+<h3 id="video-compression">Video compression</h3>
+<p>Compression artefacts blur fine detail. High bitrate settings preserve more detail but cost bandwidth and storage. H.265 saves bandwidth compared with H.264, but check that your decoding path supports it well. If detections are poor, look at the actual frames your code receives, not only the camera's web preview.</p>
+<h2 id="lighting-beats-resolution">Lighting beats resolution</h2>
+<p>Good, even lighting improves results more often than a more expensive camera. Practical points:</p>
+<ul>
+<li>Avoid backlight. A person in front of a bright window becomes a silhouette.</li>
+<li>Avoid glare and reflections on shiny surfaces.</li>
+<li>Keep lighting stable. Flickering lights can create banding in short exposures.</li>
+<li>For night scenes, use dedicated illumination suited to the camera's sensitivity.</li>
+</ul>
+<h2 id="placement-and-mounting">Placement and mounting</h2>
+<p>Position matters as much as hardware.</p>
+<ul>
+<li>Mount rigidly. Vibration blurs images and shifts zones that you drew on the image.</li>
+<li>Choose an angle that reduces occlusion. A higher, slightly angled view helps with crowds.</li>
+<li>Keep the camera out of direct sun glare.</li>
+<li>Protect cables and use proper connectors outdoors.</li>
+</ul>
+<h2 id="how-to-evaluate-a-camera-before-buying-many">How to evaluate a camera before buying many</h2>
+<ol>
+<li>Record sample footage from the real location at the real times of day, including the worst lighting.</li>
+<li>Run your model on that footage and look at the misses.</li>
+<li>Check whether failures come from the image (blur, dark, small objects) or from the model.</li>
+<li>Only then decide whether to change the camera, the lens, the position or the training data.</li>
+</ol>
+<p>In production video analytics, a common problem is trusting a short demo recorded in perfect light. Footage from the real site, across the full day, is the honest test. The <a href="/vision-field-notes/posts/pre-deployment-testing-checklist/">pre-deployment testing checklist</a> describes this in more depth.</p>
+<h2 id="quick-decision-guide">Quick decision guide</h2>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Reasonable starting point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Desk prototype, learning</td>
+<td>USB webcam</td>
+</tr>
+<tr>
+<td>Compact embedded device, short cable</td>
+<td>CSI camera module</td>
+</tr>
+<tr>
+<td>Permanent site, long cable, outdoors</td>
+<td>PoE IP camera with RTSP</td>
+</tr>
+<tr>
+<td>Need distance or 3D information</td>
+<td>Depth or stereo camera</td>
+</tr>
+<tr>
+<td>Fast-moving objects</td>
+<td>Short exposure, global shutter, more light</td>
+</tr>
+</tbody>
+</table>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Target size in pixels defined, after resizing for the model.</li>
+<li>Lens and distance chosen so the target stays large enough.</li>
+<li>Exposure set to avoid motion blur; extra light added where needed.</li>
+<li>Night and infrared images included in test and training data.</li>
+<li>Real-site footage recorded across the day and tested.</li>
+<li>Stream decoding and latency checked on the actual device.</li>
+<li>Mounting rigid, glare and backlight avoided.</li>
+</ul>
+<h2 id="next-steps">Next steps</h2>
+<p>Continue with <a href="/vision-field-notes/posts/read-rtsp-streams-with-opencv/">Reading RTSP Streams with OpenCV and FFmpeg</a>, then <a href="/vision-field-notes/posts/pre-deployment-testing-checklist/">A Pre-Deployment Testing Checklist for Vision Models</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Edge Hardware and Deployment</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/dockerize-a-computer-vision-app/"><div class="cat">Edge Hardware and Deployment</div><h3>Dockerize a Computer Vision App for Edge and Cloud</h3><p>Dockerize a computer vision app: Dockerfile patterns for OpenCV and ONNX Runtime, GPU access, smaller images, pinned versions and reproducible builds.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/export-yolo-to-onnx/"><div class="cat">Edge Hardware and Deployment</div><h3>Export YOLO to ONNX and Run It with ONNX Runtime</h3><p>Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/int8-quantization-explained/"><div class="cat">Edge Hardware and Deployment</div><h3>INT8 Quantization for Detectors: Benefits and Risks</h3><p>INT8 quantization for object detectors: post-training vs quantization-aware training, calibration data, what accuracy risks to expect and how to test them.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

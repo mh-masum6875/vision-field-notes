@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Static site builder. Reads content/ and writes the site to docs/."""
-import json, re, shutil, math, html
+import json, os, re, shutil, math, html
 from pathlib import Path
 from datetime import date
 import yaml, markdown
@@ -22,9 +22,13 @@ def split_fm(text):
 def slugify(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
+TODAY = date.fromisoformat(os.environ["BUILD_DATE"]) if os.environ.get("BUILD_DATE") else date.today()
+
 posts, slugs = [], set()
 for f in sorted((ROOT / "content/posts").glob("*.md")):
     fm, body = split_fm(f.read_text())
+    if date.fromisoformat(str(fm["date"])) > TODAY:
+        continue  # scheduled, published automatically on its date
     fm["slug"] = f.stem
     fm["body"] = body
     fm["date"] = str(fm["date"])
@@ -71,6 +75,9 @@ posts.sort(key=lambda p: (p["date"], p["title"]), reverse=True)
 pages = {}
 for f in (ROOT / "content/pages").glob("*.md"):
     fm, body = split_fm(f.read_text())
+    body = re.sub(r"\]\(page:([a-z0-9.-]+)\)", lambda m: f"]({BP}/{m.group(1)}" + ("" if "." in m.group(1) else "/") + ")", body)
+    body = re.sub(r"\[([^\]]+)\]\(post:([a-z0-9-]+)\)",
+                  lambda m: f"[{m.group(1)}]({BP}/posts/{m.group(2)}/)" if m.group(2) in slugs else m.group(1), body)
     fm["html"] = markdown.markdown(body, extensions=["extra"])
     pages[f.stem] = fm
 
@@ -130,8 +137,12 @@ footer.site a{color:var(--mut)}
 .cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
 .cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
 .cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
 .pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
-@media (max-width:600px){body{font-size:16.5px}.search input{width:150px}}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
 """
 
 JS_SEARCH = """
@@ -171,7 +182,7 @@ LAYOUT = """<!doctype html>
 </head><body>
 <header class="site"><div class="wrap">
 <a class="brand" href="{{ bp }}/">Vision <span>Field Notes</span></a>
-<nav class="main">{% for c in cats %}<a href="{{ bp }}/category/{{ c.slug }}/">{{ c.short }}</a>{% endfor %}<a href="{{ bp }}/about/">About</a></nav>
+<nav class="main">{% for c in cats %}<a href="{{ bp }}/category/{{ c.slug }}/">{{ c.short }}</a>{% endfor %}<a href="{{ bp }}/start-here/">Start here</a><a href="{{ bp }}/about/">About</a></nav>
 <div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
 </div></header>
 <main>{{ content|safe }}</main>
@@ -202,6 +213,10 @@ def page(path, title, desc, content, canon_path, is_post=False, jsonld=None):
     f = OUT / path
     f.parent.mkdir(parents=True, exist_ok=True)
     f.write_text(out)
+
+AUTHOR_BOX = (f'<aside class="author"><b>About the author</b><p>{html.escape(S["author"])} is a computer vision engineer who builds and runs '
+              f'video analytics on live camera feeds. Try his <a href="{S["author_url"]}/cv-test-bench/">CV Test Bench</a> demo in your browser, '
+              f'or <a href="{S["author_url"]}">get in touch</a> about a project.</p></aside>')
 
 def card(p):
     return (f'<a class="card" href="{BP}/posts/{p["slug"]}/"><div class="cat">{html.escape(p["category"])}</div>'
@@ -245,7 +260,7 @@ for p in posts:
     ad = ('<div class="ad"><ins class="adsbygoogle" style="display:block" data-ad-client="%s" data-ad-format="auto" data-full-width-responsive="true"></ins></div>' % S["adsense_client"]) if S["adsense_client"] else ""
     content = (f'<article><div class="crumb"><a href="{BP}/">Home</a> / <a href="{BP}/category/{slugify(p["category"])}/">{html.escape(p["category"])}</a></div>'
                f'<h1>{html.escape(p["title"])}</h1><div class="byline">By {html.escape(S["author"])} · {p["date"]} · {p["minutes"]} min read</div>'
-               f'{note}{toc}{p["html"]}{ad}</article>'
+               f'{note}{toc}{p["html"]}{ad}{AUTHOR_BOX}</article>'
                f'<div class="related"><h2 class="sec">More in {html.escape(p["category"])}</h2><div class="grid">{"".join(card(q) for q in rel)}</div></div>')
     ld = json.dumps({"@context": "https://schema.org", "@type": "Article", "headline": p["title"],
                      "description": p["description"], "datePublished": p["date"], "dateModified": p.get("updated", p["date"]),

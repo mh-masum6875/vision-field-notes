@@ -2,7 +2,7 @@
 title: "Cloud GPUs for Model Training: How to Choose"
 description: "How to choose a cloud GPU for training vision models: compare cost models, GPU memory, storage and reliability, and avoid the habits that waste money."
 category: "Tools and Workflow"
-date: 2026-10-22
+date: 2026-11-06
 tags: [cloud-gpu, training, cost, mlops, workflow]
 ---
 

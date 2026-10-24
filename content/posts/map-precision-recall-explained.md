@@ -2,7 +2,7 @@
 title: "mAP, Precision and Recall: How to Read Detection Results"
 description: "Learn how to read precision, recall, mAP50 and mAP50-95 in object detection results, and which metric matters most for your own use case and camera setup."
 category: "YOLO and Detection Basics"
-date: 2026-10-22
+date: 2026-10-24
 tags: [map, precision, recall, evaluation, yolo]
 ---
 

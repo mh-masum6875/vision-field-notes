@@ -2,7 +2,7 @@
 title: "A Pre-Deployment Testing Checklist for Vision Models"
 description: "A practical pre-deployment testing checklist for computer vision models: real footage, edge cases, day and night, latency, alerts, monitoring and rollback."
 category: "Tools and Workflow"
-date: 2026-10-22
+date: 2026-12-25
 tags: [testing, deployment, checklist, video-analytics, production]
 ---
 

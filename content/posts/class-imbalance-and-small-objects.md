@@ -2,7 +2,7 @@
 title: "Class Imbalance and Small Objects: Practical Fixes"
 description: "Practical fixes for class imbalance and small objects in detection: more data, tiling, higher resolution, sampling and the right metrics to judge progress."
 category: "Datasets and Training"
-date: 2026-10-22
+date: 2026-11-04
 tags: [class-imbalance, small-objects, tiling, training]
 ---
 

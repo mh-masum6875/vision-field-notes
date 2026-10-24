@@ -2,7 +2,7 @@
 title: "Power, Cooling and Storage for a Reliable Edge AI Box"
 description: "How to build a reliable edge AI box: power supply quality, thermal throttling and cooling, SD card wear versus SSD storage, and uptime practices."
 category: "Edge Hardware and Deployment"
-date: 2026-10-22
+date: 2027-01-01
 tags: [edge-ai, reliability, raspberry-pi, cooling, storage]
 ---
 

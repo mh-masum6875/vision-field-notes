@@ -18,6 +18,10 @@ tags: [yolo, training]
 
 Link another post with `[text](post:other-slug)`. Link a product with `[text](aff:key)`; keys live in `affiliates.json`.
 
+## Scheduling
+
+A post is published on the `date` in its front matter. Posts with a future date are left out of the build. A GitHub Actions workflow rebuilds the site every day and on every content push, so scheduled posts go live on their own.
+
 ## Build
 
 ```

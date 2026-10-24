@@ -2,7 +2,7 @@
 title: "Running YOLO on a Raspberry Pi 5: What to Expect"
 description: "Running YOLO on a Raspberry Pi 5: setup, model choices, export formats, thread tuning and realistic expectations, with a way to measure speed yourself."
 category: "Edge Hardware and Deployment"
-date: 2026-10-22
+date: 2026-10-24
 tags: [raspberry-pi, yolo, edge-ai, deployment]
 ---
 

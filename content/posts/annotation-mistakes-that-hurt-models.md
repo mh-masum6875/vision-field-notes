@@ -2,7 +2,7 @@
 title: "Annotation Mistakes That Quietly Ruin Your Model"
 description: "Common object detection annotation mistakes, from loose boxes to missing labels and inconsistent classes, and a practical way to audit and fix your dataset."
 category: "Datasets and Training"
-date: 2026-10-22
+date: 2026-10-24
 tags: [annotation, dataset, labels, object-detection]
 ---
 

@@ -2,7 +2,7 @@
 title: "Export YOLO to ONNX and Run It with ONNX Runtime"
 description: "Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences."
 category: "Edge Hardware and Deployment"
-date: 2026-10-22
+date: 2026-10-24
 tags: [onnx, onnxruntime, yolo, export, deployment]
 ---
 

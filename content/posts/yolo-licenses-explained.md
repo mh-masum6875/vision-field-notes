@@ -2,7 +2,7 @@
 title: "YOLO Licenses Explained: AGPL, GPL and Commercial Use"
 description: "YOLO licenses explained: what AGPL-3.0 and GPL-3.0 mean for YOLO projects, options for commercial products and safe habits. Not legal advice."
 category: "YOLO and Detection Basics"
-date: 2026-10-22
+date: 2026-12-18
 tags: [yolo, licensing, agpl, commercial-use]
 ---
 

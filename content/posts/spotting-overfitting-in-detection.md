@@ -2,7 +2,7 @@
 title: "How to Spot Overfitting in Object Detection"
 description: "How to spot overfitting in object detection: read loss curves and validation metrics, recognise the warning signs, and apply practical fixes that work."
 category: "Datasets and Training"
-date: 2026-10-22
+date: 2026-12-23
 tags: [overfitting, training, validation, object-detection]
 ---
 

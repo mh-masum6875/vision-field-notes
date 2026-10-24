@@ -2,7 +2,7 @@
 title: "Train YOLO on a Custom Dataset: A Step-by-Step Guide"
 description: "Train YOLO on a custom dataset with Ultralytics: folder layout, data.yaml, the training command, reading results and the first improvements to try."
 category: "Datasets and Training"
-date: 2026-10-22
+date: 2026-10-24
 tags: [yolo, ultralytics, training, custom-dataset]
 ---
 

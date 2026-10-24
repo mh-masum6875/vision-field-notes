@@ -2,7 +2,7 @@
 title: "People Counting with Line Crossing: A Practical Tutorial"
 description: "Build a people counter with line crossing: use tracks, check which side of a line a point is on, count direction, avoid double counting and validate the result."
 category: "Video Analytics"
-date: 2026-10-22
+date: 2026-10-24
 tags: [people-counting, tracking, line-crossing, opencv, video-analytics]
 ---
 

@@ -2,7 +2,7 @@
 title: "Choosing a Camera for Computer Vision Projects"
 description: "How to choose a camera for computer vision: USB, CSI, IP/RTSP and depth cameras compared, with advice on shutter, lens, lighting and what really matters."
 category: "Edge Hardware and Deployment"
-date: 2026-10-22
+date: 2026-10-30
 tags: [cameras, rtsp, hardware, lighting]
 ---
 

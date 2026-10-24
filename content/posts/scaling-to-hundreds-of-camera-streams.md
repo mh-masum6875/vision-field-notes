@@ -2,7 +2,7 @@
 title: "Scaling Video Analytics to Hundreds of Camera Streams"
 description: "Architecture patterns for scaling video analytics to hundreds of camera streams: decoding, batching, frame skipping, queues, GPU sharing and monitoring."
 category: "Video Analytics"
-date: 2026-10-22
+date: 2026-12-28
 tags: [scaling, architecture, batching, triton, video-analytics]
 ---
 

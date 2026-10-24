@@ -2,7 +2,7 @@
 title: "How Many Images Do You Need to Train an Object Detector?"
 description: "How many images to train an object detector? Realistic dataset sizes, how to know when to stop collecting, and ways to get more from a small dataset."
 category: "Datasets and Training"
-date: 2026-10-22
+date: 2026-10-24
 tags: [dataset, object-detection, training, yolo]
 ---
 

@@ -2,7 +2,7 @@
 title: "Zone Intrusion and Dwell Time Alerts"
 description: "How to build zone intrusion and dwell time alerts: define polygon zones, test points with point-in-polygon, run dwell timers, and handle the edge cases."
 category: "Video Analytics"
-date: 2026-10-22
+date: 2027-01-08
 tags: [zones, dwell-time, intrusion-detection, opencv, alerts]
 ---
 

@@ -17,4 +17,4 @@ The site may also show advertising from Google AdSense or similar networks. Ads 
 
 ## Questions
 
-If something looks unclear or wrong, please use the [contact page](contact/).
+If something looks unclear or wrong, please use the [contact page](page:contact).

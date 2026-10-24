@@ -2,7 +2,7 @@
 title: "YOLOv5 vs YOLOv8 vs YOLO11: Which Should You Use?"
 description: "YOLOv5 vs YOLOv8 vs YOLO11 compared in practice: workflow, accuracy and speed trade-offs, export support and licence, plus a simple way to decide."
 category: "YOLO and Detection Basics"
-date: 2026-10-22
+date: 2026-10-24
 tags: [yolo, yolov8, yolo11, ultralytics, comparison]
 ---
 

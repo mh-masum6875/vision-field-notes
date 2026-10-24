@@ -2,7 +2,7 @@
 title: "Training on Google Colab: Limits and Workarounds"
 description: "Train a YOLO model on Google Colab: what the free tier is good for, session limits, saving checkpoints to Drive, resuming runs and when to move on."
 category: "Tools and Workflow"
-date: 2026-10-22
+date: 2027-01-13
 tags: [colab, training, yolo, gpu, workflow]
 ---
 

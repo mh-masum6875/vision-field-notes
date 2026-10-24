@@ -2,7 +2,7 @@
 title: "TensorRT for YOLO: When and How to Use It"
 description: "TensorRT for YOLO explained: what it optimises, how to build an engine, FP16 and INT8 modes, portability limits and a safe workflow for NVIDIA GPUs."
 category: "Edge Hardware and Deployment"
-date: 2026-10-22
+date: 2027-01-15
 tags: [tensorrt, nvidia, yolo, optimization, jetson]
 ---
 

@@ -2,7 +2,7 @@
 title: "Fine-Tuning YOLO: Transfer Learning Explained"
 description: "Fine-tuning YOLO with transfer learning: why pretrained weights work, how to freeze layers, learning rate choices, and when fine-tuning fails."
 category: "Datasets and Training"
-date: 2026-10-22
+date: 2026-12-11
 tags: [fine-tuning, transfer-learning, yolo, training]
 ---
 

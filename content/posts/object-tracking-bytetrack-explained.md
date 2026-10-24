@@ -2,7 +2,7 @@
 title: "Object Tracking Explained: SORT, ByteTrack and Friends"
 description: "Learn how object trackers like SORT and ByteTrack link detections across video frames, why ID switches happen, and how to tune a tracker with Ultralytics."
 category: "Video Analytics"
-date: 2026-10-22
+date: 2026-12-04
 tags: [tracking, bytetrack, sort, yolo, video-analytics]
 ---
 

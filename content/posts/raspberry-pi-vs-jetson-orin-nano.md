@@ -2,7 +2,7 @@
 title: "Raspberry Pi vs Jetson Orin Nano for Object Detection"
 description: "Raspberry Pi vs Jetson Orin Nano for object detection: how GPU, software stack, power, price and ecosystem should decide which board fits your project."
 category: "Edge Hardware and Deployment"
-date: 2026-10-22
+date: 2026-10-24
 tags: [raspberry-pi, jetson, edge-ai, object-detection]
 ---
 

@@ -2,7 +2,7 @@
 title: "Train/Validation Split for Video Frames: Avoid Data Leakage"
 description: "Why a random train/validation split of video frames inflates metrics, and how to split by video, camera and time so your detection results can be trusted."
 category: "Datasets and Training"
-date: 2026-10-22
+date: 2027-01-04
 tags: [data-leakage, validation, video, dataset]
 ---
 

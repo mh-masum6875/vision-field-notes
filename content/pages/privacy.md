@@ -24,7 +24,7 @@ Where required by law, such as in the European Economic Area and the United King
 
 ## Affiliate links
 
-Some links on this site are affiliate links. See the [affiliate disclosure](disclosure/) for details.
+Some links on this site are affiliate links. See the [affiliate disclosure](page:disclosure) for details.
 
 ## Your choices
 
@@ -36,4 +36,4 @@ I may update this policy. The date at the top shows the latest revision.
 
 ## Contact
 
-Questions about this policy can be sent through the [contact page](contact/).
+Questions about this policy can be sent through the [contact page](page:contact).

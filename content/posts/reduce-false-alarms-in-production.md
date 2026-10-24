@@ -2,7 +2,7 @@
 title: "Reducing False Alarms in Production Video Analytics"
 description: "Cut false alarms in production video analytics with post-processing, temporal filtering, masks, per-camera tuning and monitoring for data drift over time."
 category: "Video Analytics"
-date: 2026-10-22
+date: 2026-10-24
 tags: [false-alarms, production, temporal-filtering, monitoring, video-analytics]
 ---
 

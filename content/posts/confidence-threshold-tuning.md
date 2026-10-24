@@ -2,7 +2,7 @@
 title: "Confidence Thresholds: Tuning a Detector to Cut False Alarms"
 description: "How to tune a confidence threshold for an object detector: read the precision-recall curve, tune per class, and cut false alarms without missing real events."
 category: "YOLO and Detection Basics"
-date: 2026-10-22
+date: 2026-12-07
 tags: [confidence-threshold, false-alarms, precision-recall, yolo]
 ---
 

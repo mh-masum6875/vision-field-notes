@@ -2,7 +2,7 @@
 title: "Best Books and Courses for Learning Computer Vision"
 description: "How to choose books and courses for learning computer vision by level, with honest pros and cons of each format and a plan that mixes study with projects."
 category: "Career and Freelancing"
-date: 2026-10-22
+date: 2026-11-02
 tags: [learning, books, courses, career, computer-vision]
 ---
 

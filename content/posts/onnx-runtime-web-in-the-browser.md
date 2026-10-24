@@ -2,7 +2,7 @@
 title: "Running Object Detection in the Browser with ONNX Runtime Web"
 description: "Run object detection in the browser with ONNX Runtime Web: how WASM and WebGPU execution works, model size limits, pre-processing and privacy benefits."
 category: "Edge Hardware and Deployment"
-date: 2026-10-22
+date: 2026-12-21
 tags: [onnx, browser, wasm, javascript, demos]
 ---
 

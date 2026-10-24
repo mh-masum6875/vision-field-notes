@@ -2,7 +2,7 @@
 title: "Reading RTSP Streams with OpenCV and FFmpeg"
 description: "How to read an RTSP stream with OpenCV and FFmpeg: opening the URL, controlling buffering and latency, TCP vs UDP, and fixes for the most common errors."
 category: "Video Analytics"
-date: 2026-10-22
+date: 2026-10-24
 tags: [rtsp, opencv, ffmpeg, video-analytics, ip-camera]
 ---
 

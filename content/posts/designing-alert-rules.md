@@ -2,7 +2,7 @@
 title: "Designing Alert Rules: Schedules, Cooldowns and Escalation"
 description: "Design video analytics alert rules people trust: time windows, cooldowns, absence rules, grouping, escalation and reliable delivery for camera-based alerts."
 category: "Video Analytics"
-date: 2026-10-22
+date: 2026-11-09
 tags: [alerts, alert-rules, cooldown, video-analytics, notifications]
 ---
 

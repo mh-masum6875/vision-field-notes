@@ -2,7 +2,7 @@
 title: "Host Computer Vision Demos for Free on GitHub Pages"
 description: "Host a computer vision demo for free on GitHub Pages: static hosting, running an ONNX model in the browser, size limits, licensing and a shareable portfolio demo."
 category: "Tools and Workflow"
-date: 2026-10-22
+date: 2026-12-02
 tags: [github-pages, demo, onnx, browser, portfolio]
 ---
 

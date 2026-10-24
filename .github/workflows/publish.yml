@@ -1,0 +1,32 @@
+name: Publish scheduled posts
+
+on:
+  push:
+    branches: [main]
+    paths: ["content/**", "build.py", "site.json", "affiliates.json"]
+  schedule:
+    - cron: "17 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install markdown pyyaml jinja2
+      - run: python build.py
+      - name: Commit the rebuilt site if it changed
+        run: |
+          git add docs
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git -c user.name="Maidul Hasan Masum" -c user.email="mhmasum6875@gmail.com" commit -m "Publish scheduled posts"
+            git push
+          fi

@@ -2,7 +2,7 @@
 title: "Experiment Tracking: TensorBoard, Weights & Biases and MLflow"
 description: "Why experiment tracking matters for computer vision, what to log on every training run, and how TensorBoard, Weights & Biases and MLflow compare."
 category: "Tools and Workflow"
-date: 2026-10-22
+date: 2026-11-20
 tags: [experiment-tracking, tensorboard, wandb, mlflow, training]
 ---
 

@@ -2,7 +2,7 @@
 title: "Build a Computer Vision Portfolio That Gets Clients"
 description: "How to build a computer vision portfolio that gets clients: which projects to show, how to report results honestly, how to demo, and what to leave out."
 category: "Career and Freelancing"
-date: 2026-10-22
+date: 2026-11-16
 tags: [portfolio, career, freelancing, demos, projects]
 ---
 

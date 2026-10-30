@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Detecting a Dirty, Blocked or Moved Camera Automatically</title>
+<meta name="description" content="Cheap image checks that catch a blurred lens, a covered camera or a shifted view before they silently break analytics, tuned per camera.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/detect-dirty-blocked-moved-camera/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Detecting a Dirty, Blocked or Moved Camera Automatically"><meta property="og:description" content="Cheap image checks that catch a blurred lens, a covered camera or a shifted view before they silently break analytics, tuned per camera.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/detect-dirty-blocked-moved-camera/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/detect-dirty-blocked-moved-camera-sharpness-baseline.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Detecting a Dirty, Blocked or Moved Camera Automatically", "description": "Cheap image checks that catch a blurred lens, a covered camera or a shifted view before they silently break analytics, tuned per camera.", "datePublished": "2026-10-30", "dateModified": "2026-10-30", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/detect-dirty-blocked-moved-camera/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/detect-dirty-blocked-moved-camera-sharpness-baseline.png", "articleSection": "Video Analytics", "keywords": "camera-health, tamper-detection, monitoring, video-analytics, production"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Video Analytics", "item": "https://mh-masum6875.github.io/vision-field-notes/category/video-analytics/"}, {"@type": "ListItem", "position": 3, "name": "Detecting a Dirty, Blocked or Moved Camera Automatically"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/video-analytics/">Video Analytics</a></div><h1>Detecting a Dirty, Blocked or Moved Camera Automatically</h1><div class="byline">By Maidul Hasan Masum · 2026-10-30 · 8 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#what-goes-wrong-with-the-picture">What goes wrong with the picture</a></li><li><a href="#check-1-sharpness">Check 1: sharpness</a></li><li><a href="#check-2-covered-or-blinded">Check 2: covered or blinded</a></li><li><a href="#check-3-the-view-has-moved">Check 3: the view has moved</a></li><li><a href="#run-the-checks-so-they-do-not-cry-wolf">Run the checks so they do not cry wolf</a></li><li><a href="#test-the-checks-before-trusting-them">Test the checks before trusting them</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>A camera that is blind produces no detections. So does a camera watching an empty room. From inside the analytics, the two look the same. A lens covered in dust, a camera knocked a few degrees by a cleaner, or a spider web lit by infrared at night can all leave the stream running while the results quietly stop meaning anything.</p>
+<p>Dead and frozen feeds are covered in <a href="/vision-field-notes/posts/handling-rtsp-dropouts-and-reconnects/">Handling RTSP Dropouts</a>. This article is about the harder case: the stream is fine, the picture is not. It gives three cheap checks, explains why fixed thresholds fail, and shows how to run them without creating a new source of false alarms.</p>
+<h2 id="what-goes-wrong-with-the-picture">What goes wrong with the picture</h2>
+<p>The failures fall into a few groups, and each needs a different check:</p>
+<table>
+<thead>
+<tr>
+<th>Failure</th>
+<th>What it does to the image</th>
+<th>Check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dust, smudge, condensation, out of focus</td>
+<td>Edges soften across the whole frame or part of it</td>
+<td>Sharpness, global and per region</td>
+</tr>
+<tr>
+<td>Lens covered, camera facing a wall, IR failure</td>
+<td>Frame becomes nearly uniform, very dark or very bright</td>
+<td>Brightness and contrast</td>
+</tr>
+<tr>
+<td>Camera knocked or re-aimed</td>
+<td>Same scene, shifted or rotated</td>
+<td>Position against a reference frame</td>
+</tr>
+<tr>
+<td>Spider web, insects or rain drops near the lens at night</td>
+<td>Bright blobs and streaks close to the lens, often moving</td>
+<td>Local brightness and sharpness changes, mostly in night mode</td>
+</tr>
+</tbody>
+</table>
+<p>None of these needs a neural network. They are classic image measures that cost almost nothing on a downscaled frame once a minute.</p>
+<h2 id="check-1-sharpness">Check 1: sharpness</h2>
+<p>The usual measure is the variance of the Laplacian. The Laplacian responds to edges; a sharp image has strong responses and a high variance, a blurred one has weak responses and a low variance.</p>
+<pre><code class="language-python">import cv2
+
+def sharpness(frame, width=640):
+    h, w = frame.shape[:2]
+    small = cv2.resize(frame, (width, int(h * width / w)), interpolation=cv2.INTER_AREA)
+    gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+    return cv2.Laplacian(gray, cv2.CV_64F).var()
+</code></pre>
+<p>Always resize to a fixed width first. The score depends on resolution, so a value from the main stream cannot be compared with one from the substream, or with the same camera after someone changes its resolution.</p>
+<h3 id="why-a-single-threshold-fails">Why a single threshold fails</h3>
+<p>The tempting approach is one threshold for every camera: below some number, the lens is dirty. It does not work, because the score measures how much edge content the scene has as much as how sharp the image is.</p>
+<figure><img alt="Two line charts of sharpness against applied Gaussian blur for a busy synthetic scene and a plain one. Left, on a log scale: the busy scene starts near 2750 and the plain scene near 220, and the busy scene blurred at sigma 2 still scores 96. Right, each divided by its own sharp value: both fall below 0.5 by sigma 0.75, the busy scene to about 0.03 and the plain scene levelling at about 0.37." src="/vision-field-notes/images/detect-dirty-blocked-moved-camera-sharpness-baseline.png" loading="lazy"><figcaption>Computed on two synthetic test scenes, not camera footage. A perfectly sharp plain scene can score lower than a badly blurred busy one, so absolute thresholds misfire. Measured against each camera's own baseline, the same relative rule works for both.</figcaption></figure>
+<p>In the synthetic example above, the busy scene scores more than ten times the plain one when both are perfectly sharp. Any fixed number is either too strict for the corridor or too loose for the shelves.</p>
+<p>The fix is a baseline per camera. Record the sharpness when the camera is known to be clean and in focus, over a day or so to cover changing light, and alert on the ratio to that baseline instead of the raw value.</p>
+<p>Note the right-hand panel: the plain scene levels off near 0.37 of its baseline however much it is blurred. Sensor noise has edges too, and it sets a floor under the score. Scenes with little texture therefore have less room between sharp and blurred, so their threshold needs to sit closer to the baseline, and they are the cameras where this check is weakest.</p>
+<h3 id="night-mode-breaks-the-baseline">Night mode breaks the baseline</h3>
+<p>Noise is also why one baseline per camera is not enough. At night a camera raises its gain, and the extra noise adds Laplacian response that has nothing to do with focus. For the simple 3 x 3 Laplacian OpenCV uses by default, independent noise with standard deviation σ adds about 20σ² to the variance, so doubling the noise roughly quadruples its contribution.</p>
+<figure><img alt="Bar chart of the sharpness score of the same blurred synthetic frame as sensor noise rises from 1 to 16 grey levels. The score climbs from 36 to about 5100, passing the sharp low-noise baseline of 2753 at a noise level of 12." src="/vision-field-notes/images/detect-dirty-blocked-moved-camera-noise-inflates.png" loading="lazy"><figcaption>Computed on a synthetic scene. The frame is blurred to the same degree in every bar; only the noise changes. With enough noise, a blurred frame scores higher than the sharp daytime baseline.</figcaption></figure>
+<p>So keep separate baselines for day and night. In infrared mode most cameras deliver a monochrome image, which is easy to detect: the colour channels become almost identical, so mean saturation drops close to zero. Use that to pick the baseline, and re-measure night baselines after any change to IR illumination.</p>
+<h3 id="partial-dirt">Partial dirt</h3>
+<p>A drop of water or a bird dropping may cover one corner and leave the global score almost unchanged. Split the frame into a grid, for example 4 x 4, and keep a baseline per cell. Alert when several neighbouring cells fall well below their own baseline while the rest of the frame is normal. Ignore cells that are mostly sky or a blank wall; they have too little texture to measure.</p>
+<h2 id="check-2-covered-or-blinded">Check 2: covered or blinded</h2>
+<p>A hand over the lens, tape, a bag hung on the camera, or a camera turned to face a wall gives a frame with very little variation. Two numbers catch most of these:</p>
+<ul>
+<li><strong>Mean brightness.</strong> Very dark (covered, IR failed at night) or very bright (pointed at a light, sun directly in the lens).</li>
+<li><strong>Standard deviation of grey levels.</strong> A uniform frame has a low value whatever its brightness.</li>
+</ul>
+<p>Again, compare with the camera's own day and night baselines rather than fixed numbers. A camera that watches a dark car park at night is supposed to be dark.</p>
+<h2 id="check-3-the-view-has-moved">Check 3: the view has moved</h2>
+<p>A camera that has turned by a few degrees still produces a good, sharp image. Sharpness and brightness checks miss it completely. But every zone and line drawn on that camera is now in the wrong place, and <a href="/vision-field-notes/posts/zone-intrusion-and-dwell-time/">zone intrusion</a> and <a href="/vision-field-notes/posts/people-counting-line-crossing/">line-crossing counts</a> go wrong without any visible error.</p>
+<p>To catch it, keep a reference frame from when the zones were drawn and compare the current view with it:</p>
+<pre><code class="language-python">import numpy as np
+
+orb = cv2.ORB_create(1000)
+
+def view_shift(reference_gray, current_gray):
+    k1, d1 = orb.detectAndCompute(reference_gray, None)
+    k2, d2 = orb.detectAndCompute(current_gray, None)
+    if d1 is None or d2 is None:
+        return None
+    matches = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True).match(d1, d2)
+    if len(matches) &lt; 30:
+        return None  # too few matches: view changed a lot, or the frame is unusable
+    src = np.float32([k1[m.queryIdx].pt for m in matches])
+    dst = np.float32([k2[m.trainIdx].pt for m in matches])
+    M, inliers = cv2.estimateAffinePartial2D(src, dst, method=cv2.RANSAC)
+    if M is None:
+        return None
+    h, w = current_gray.shape[:2]
+    cx, cy = w / 2, h / 2  # how far the centre of the view moved
+    dx = M[0, 0] * cx + M[0, 1] * cy + M[0, 2] - cx
+    dy = M[1, 0] * cx + M[1, 1] * cy + M[1, 2] - cy
+    shift_px = float(np.hypot(dx, dy))
+    angle_deg = float(np.degrees(np.arctan2(M[1, 0], M[0, 0])))
+    return shift_px, angle_deg, float(inliers.mean())
+</code></pre>
+<p><code>estimateAffinePartial2D</code> fits translation, rotation and uniform scale, which describes a bumped camera well enough. The shift is measured at the centre of the frame, because the raw translation term mixes in the rotation. RANSAC ignores matches on people and vehicles that moved between the two frames. Treat a <code>None</code> result as a finding in its own right, not as "no change": if the current frame cannot be matched to the reference at all, either the view changed completely or the image is unusable.</p>
+<p>Pick a reference frame without crowds or parked vehicles that will later leave, and express the allowed shift relative to your smallest zone, not as a fixed number of pixels; a ten-pixel shift is irrelevant for a large intrusion zone and serious for a counting line near a doorway.</p>
+<h2 id="run-the-checks-so-they-do-not-cry-wolf">Run the checks so they do not cry wolf</h2>
+<p>Health checks have their own false alarms. A person close to the camera blocks most of the frame, a parked bus hides the scene, headlights blind a camera for a few seconds. If each of these raises a ticket, the maintenance team stops reading them.</p>
+<p>What keeps them useful:</p>
+<ul>
+<li><strong>Check slowly.</strong> Once a minute is plenty. Lens dirt does not appear in a second.</li>
+<li><strong>Use a median of a few frames.</strong> Take three to five frames a few seconds apart and use the median score, which removes single bad frames.</li>
+<li><strong>Require persistence.</strong> Raise a problem only after the condition has held for a sustained period, for example fifteen to thirty minutes, and clear it automatically when it recovers. Choose the duration per check: a moved camera is worth reporting sooner than a slow drop in sharpness.</li>
+<li><strong>Send it to the right people.</strong> A dirty lens is a maintenance task, not a security event. Route it to whoever cleans cameras, not to the operators watching alerts. <a href="/vision-field-notes/posts/designing-alert-rules/">Designing Alert Rules</a> covers routing and cooldowns.</li>
+<li><strong>Mark the camera as degraded.</strong> While a camera fails a health check, flag its analytics output as unreliable, so that a blind camera's zero count is not reported as a quiet day.</li>
+</ul>
+<p>Many IP cameras also have built-in tampering or scene-change alarms. They are worth enabling as an extra signal, but behaviour varies between models, so test them before relying on them.</p>
+<h2 id="test-the-checks-before-trusting-them">Test the checks before trusting them</h2>
+<p>Treat health checks like any other detector: you need to know their misses as well as their false alarms. Before rollout, record clips from a few real cameras while you cause the faults on purpose: grease on a spare lens cover, a card over the lens, a slightly turned mount, and the same views at night. Run the checks on these clips and on a normal day of footage from the same cameras. A check that fires on the normal day is not ready, and neither is one that misses the card. The <a href="/vision-field-notes/posts/pre-deployment-testing-checklist/">pre-deployment testing checklist</a> has a section on camera changes that fits here.</p>
+<p>On large deployments, keep the checks out of the inference path: a separate low-priority job that samples one frame a minute per stream is enough. See <a href="/vision-field-notes/posts/scaling-to-hundreds-of-camera-streams/">Scaling Video Analytics to Hundreds of Camera Streams</a>.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Resize to a fixed width before measuring anything.</li>
+<li>Keep per-camera baselines, separately for day and night mode.</li>
+<li>Alert on the ratio to the baseline, not on raw values.</li>
+<li>Use a grid of regions to catch partial dirt.</li>
+<li>Check brightness and contrast for covered or blinded cameras.</li>
+<li>Compare the view against a reference frame to catch a moved camera.</li>
+<li>Sample slowly, take a median, and require the fault to persist.</li>
+<li>Route health problems to maintenance and mark affected analytics as degraded.</li>
+<li>Test the checks on recorded faults and on normal footage before relying on them.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/handling-rtsp-dropouts-and-reconnects/">Handling RTSP Dropouts: Reconnects and Health Checks</a> and <a href="/vision-field-notes/posts/reduce-false-alarms-in-production/">Reducing False Alarms in Production Video Analytics</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Video Analytics</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/designing-alert-rules/"><div class="cat">Video Analytics</div><h3>Designing Alert Rules: Schedules, Cooldowns and Escalation</h3><p>Design video analytics alert rules people trust: time windows, cooldowns, absence rules, grouping, escalation and reliable delivery for camera-based alerts.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/handling-rtsp-dropouts-and-reconnects/"><div class="cat">Video Analytics</div><h3>Handling RTSP Dropouts: Reconnects and Health Checks</h3><p>Design an RTSP reader that survives camera and network failures: detect stalls, reconnect with backoff, report health, and avoid the common silent-freeze bugs.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/object-tracking-bytetrack-explained/"><div class="cat">Video Analytics</div><h3>Object Tracking Explained: SORT, ByteTrack and Friends</h3><p>Learn how object trackers like SORT and ByteTrack link detections across video frames, why ID switches happen, and how to tune a tracker with Ultralytics.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

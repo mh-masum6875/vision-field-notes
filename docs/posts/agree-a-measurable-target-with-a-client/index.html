@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agreeing a Measurable Target with a Client Before You Start</title>
+<meta name="description" content="Turn &#39;it should work well&#39; into a written acceptance test: what counts as an event, which footage, who labels it and what result counts as a pass.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/agree-a-measurable-target-with-a-client/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agreeing a Measurable Target with a Client Before You Start"><meta property="og:description" content="Turn &#39;it should work well&#39; into a written acceptance test: what counts as an event, which footage, who labels it and what result counts as a pass.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/agree-a-measurable-target-with-a-client/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/agree-a-measurable-target-with-a-client-rule-of-three.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Agreeing a Measurable Target with a Client Before You Start", "description": "Turn 'it should work well' into a written acceptance test: what counts as an event, which footage, who labels it and what result counts as a pass.", "datePublished": "2026-11-01", "dateModified": "2026-11-01", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/agree-a-measurable-target-with-a-client/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/agree-a-measurable-target-with-a-client-rule-of-three.png", "articleSection": "Career and Freelancing", "keywords": "clients, acceptance-testing, scoping, freelancing, metrics"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Career and Freelancing", "item": "https://mh-masum6875.github.io/vision-field-notes/category/career-and-freelancing/"}, {"@type": "ListItem", "position": 3, "name": "Agreeing a Measurable Target with a Client Before You Start"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/career-and-freelancing/">Career and Freelancing</a></div><h1>Agreeing a Measurable Target with a Client Before You Start</h1><div class="byline">By Maidul Hasan Masum · 2026-11-01 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#95-accuracy-is-not-a-target">&quot;95% accuracy&quot; is not a target</a></li><li><a href="#what-a-usable-target-contains">What a usable target contains</a></li><li><a href="#keep-the-numbers-honest">Keep the numbers honest</a></li><li><a href="#a-short-example">A short example</a></li><li><a href="#benefits-beyond-avoiding-disputes">Benefits beyond avoiding disputes</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>Most disputes on computer vision projects are not about whether the model is good. They are about what "good" meant. The client expected one thing, the engineer measured another, and nobody wrote either down. Weeks later both sides are right and the project is stuck.</p>
+<p>The cure is to agree a measurable target before the work starts. This article shows what such a target needs to contain, why each part matters, and how to keep it realistic. It is not legal advice; how you put it into a contract depends on your situation.</p>
+<h2 id="95-accuracy-is-not-a-target">"95% accuracy" is not a target</h2>
+<p>Clients often ask for a percentage, and the most common one is "95% accuracy". It sounds precise, but it leaves almost everything open:</p>
+<ul>
+<li>95% of what? Frames, objects, events, days?</li>
+<li>Is it precision, recall, or something else?</li>
+<li>Measured on which footage, recorded when?</li>
+<li>Who decides what the correct answer was?</li>
+<li>What about the cases nobody could judge, such as a person mostly hidden behind a pillar?</li>
+</ul>
+<p>A target that leaves these open will be interpreted differently by each side when it matters. So the job is to close them, one by one.</p>
+<h2 id="what-a-usable-target-contains">What a usable target contains</h2>
+<p>A target that can be tested has these parts.</p>
+<p><strong>1. The event.</strong> Describe what the system must detect, in plain language, with edge cases. "A person enters the marked loading-bay zone while the forklift warning light is on. Entering means both feet inside the zone line. People inside a vehicle do not count."</p>
+<p><strong>2. The unit and the metric.</strong> For alerting systems, count events, not frames. Usually two numbers matter:</p>
+<ul>
+<li><strong>Event recall:</strong> the share of real events that produced an alert within an agreed time.</li>
+<li><strong>False alerts:</strong> the number of alerts with no real event, per camera per day (or per hour of footage).</li>
+</ul>
+<p>Precision as a percentage is less useful than false alerts per day, because operators feel the daily number. See Measuring Video Analytics by Events, Not Frames for how to score this.</p>
+<p><strong>3. Time limits.</strong> How quickly after the event must the alert arrive to count? Five seconds? Thirty? An alert two minutes late may be useless for safety and fine for reporting.</p>
+<p><strong>4. The test footage.</strong> Which cameras, how many hours, recorded when, covering which conditions. Include night if the system runs at night. Agree it is footage the model has not been trained on. Agree who records it and how it is handed over.</p>
+<p><strong>5. Ground truth.</strong> Who decides what really happened in the footage, and how disagreements are settled. Often the client's staff label events, or the engineer labels and the client reviews a sample. Write down the definition of an event used for labelling, the same one as in point 1.</p>
+<p><strong>6. Exclusions.</strong> Cases that do not count against the system, agreed in advance: objects smaller than a stated number of pixels, people more than a stated fraction occluded, footage during camera faults. Exclusions must be defined before testing, not argued about afterwards.</p>
+<p><strong>7. The pass mark.</strong> For example: "At least 90% event recall and no more than two false alerts per camera per day on the agreed test footage."</p>
+<p><strong>8. What happens otherwise.</strong> If the system misses the mark: an agreed further iteration period, a revised scope, or a stop. Agreeing this when everyone is still friendly is much easier than later.</p>
+<h2 id="keep-the-numbers-honest">Keep the numbers honest</h2>
+<p>Two traps catch people when setting the pass mark.</p>
+<h3 id="small-test-sets-cannot-prove-high-numbers">Small test sets cannot prove high numbers</h3>
+<p>If the test footage contains 20 real events, each one is 5% of event recall. One miss takes you from 100% to 95%. A pass mark of 95% on 20 events means "at most one miss", which is a coin toss for a good system.</p>
+<p>And even a perfect result proves less than it seems. With zero misses in <em>n</em> events, the upper bound of a 95% confidence interval on the miss rate is about 3/<em>n</em> (the "rule of three").</p>
+<figure><img alt="Line chart of the miss rate that cannot be ruled out, against the number of real events in the test, when zero misses are observed. The exact bound and the rule of three, 3 divided by n, nearly coincide. With 20 events the bound is 13.9%, with 50 it is 5.8%, with 100 it is 3.0% and with 200 it is 1.5%." src="/vision-field-notes/images/agree-a-measurable-target-with-a-client-rule-of-three.png" loading="lazy"><figcaption>Pure arithmetic, not data. Even if the system catches every event in a test of 20, a true miss rate of up to about 14% is still consistent with that result at 95% confidence.</figcaption></figure>
+<p>So either collect enough events to support the number you want to claim, or set a pass mark the test can actually distinguish. For rare events, this often means staging some: asking staff to walk into the zone at agreed times, across lighting conditions. Staged events are less natural than real ones, so mix both if you can.</p>
+<h3 id="do-not-promise-numbers-before-seeing-footage">Do not promise numbers before seeing footage</h3>
+<p>A target agreed before anyone has looked at the client's cameras is a guess. Put a short paid discovery phase first: review sample footage, run a baseline model, and only then agree the pass mark. <a href="/vision-field-notes/posts/freelancing-in-computer-vision/">Freelancing in Computer Vision</a> describes this phase structure, and When the Customer's Footage Doesn't Match the Demo covers what to do when the footage turns out to be harder than expected.</p>
+<h2 id="a-short-example">A short example</h2>
+<p>Here is what a written target can look like. The numbers are placeholders to show the form, not a recommendation:</p>
+<blockquote>
+<p><strong>Event:</strong> a person inside the loading-bay zone (both feet past the painted line) while the warning light is on.
+<strong>Test footage:</strong> 48 hours from cameras 3 and 7, recorded after model training, including two nights. At least 40 real or staged events.
+<strong>Ground truth:</strong> events labelled by the site supervisor from the footage using the event definition above; the engineer reviews and both agree the final list before scoring.
+<strong>Counts as detected:</strong> an alert within 10 seconds of the start of the event.
+<strong>Excluded:</strong> events where the person is less than 40 pixels tall, or during a recorded camera fault.
+<strong>Pass:</strong> event recall of at least 90% and at most 2 false alerts per camera per 24 hours.
+<strong>If not passed:</strong> one further two-week tuning round, then re-test on new footage; if still not passed, the project stops after the discovery and prototype phases.</p>
+</blockquote>
+<p>It fits on half a page. It removes most of the arguments that would otherwise come later.</p>
+<h2 id="benefits-beyond-avoiding-disputes">Benefits beyond avoiding disputes</h2>
+<p>A written target also helps you do the work:</p>
+<ul>
+<li>It tells you which metric to optimise, so you stop arguing with yourself over mAP50 versus mAP50-95.</li>
+<li>It forces the client to decide what matters, which often reveals that the real problem is narrower and easier than the first description.</li>
+<li>It gives you a natural end point. Without one, projects drift into endless tuning.</li>
+</ul>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Define the event in words, with edge cases.</li>
+<li>Count events, with recall and false alerts per camera per day.</li>
+<li>Agree the time limit for an alert to count.</li>
+<li>Agree the test footage, its conditions and that it is unseen.</li>
+<li>Agree who labels ground truth and how disagreements are settled.</li>
+<li>Agree exclusions before testing.</li>
+<li>Make sure the test has enough events to support the pass mark.</li>
+<li>Write down what happens if the mark is missed.</li>
+</ul>
+<p>Next steps: Running a Pilot Deployment: Scope, Duration and Exit Criteria and Handover Documentation for a Computer Vision System.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Career and Freelancing</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/books-and-courses-for-computer-vision/"><div class="cat">Career and Freelancing</div><h3>Best Books and Courses for Learning Computer Vision</h3><p>How to choose books and courses for learning computer vision by level, with honest pros and cons of each format and a plan that mixes study with projects.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/computer-vision-engineer-roadmap/"><div class="cat">Career and Freelancing</div><h3>Computer Vision Engineer Roadmap: What to Learn First</h3><p>A realistic computer vision engineer roadmap from Python and OpenCV to training detectors, edge deployment and video analytics, with projects for each stage.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/computer-vision-portfolio-that-gets-clients/"><div class="cat">Career and Freelancing</div><h3>Build a Computer Vision Portfolio That Gets Clients</h3><p>How to build a computer vision portfolio that gets clients: which projects to show, how to report results honestly, how to demo, and what to leave out.</p><div class="meta">8 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

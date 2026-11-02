@@ -98,7 +98,7 @@ nav.main a{white-space:nowrap}}
 <h2 id="2-which-class-is-weak">2. Which class is weak</h2>
 <p>mAP is a plain mean over classes, so every class counts the same, whatever its frequency or importance. A model can lose ten points on the one class your client cares about and gain a few points on three classes nobody cares about, and the mean barely moves.</p>
 <p>Always read per-class AP. If some classes matter more than others, say so up front and report them separately, rather than inventing a weighted mAP that nobody else can reproduce.</p>
-<p>Also check how many instances each class has in the test set. A class with 30 instances in the test set has a noisy AP; a few objects either way move it by several points. See Comparing Two Detectors Fairly for how large that noise is.</p>
+<p>Also check how many instances each class has in the test set. A class with 30 instances in the test set has a noisy AP; a few objects either way move it by several points. See <a href="/vision-field-notes/posts/comparing-two-detectors-fairly/">Comparing Two Detectors Fairly</a> for how large that noise is.</p>
 <h2 id="3-object-size">3. Object size</h2>
 <p>A detector can be excellent on large objects and poor on small ones, and the average hides which is which. The COCO evaluation reports AP separately for small (under 32 x 32 pixels), medium (32 to 96) and large (over 96) objects, measured by area in the original image. Ultralytics' built-in validation does not print these by default, but you can get them by exporting predictions to COCO JSON and running <code>pycocotools</code>.</p>
 <p>Size matters because size in production is not size in your test set. If your cameras are mounted higher than the ones in the dataset, everything is smaller, and the small-object AP is the number that predicts what you will see. See <a href="/vision-field-notes/posts/class-imbalance-and-small-objects/">Class Imbalance and Small Objects</a>.</p>
@@ -119,7 +119,7 @@ nav.main a{white-space:nowrap}}
 <p>So a number from one tool should only be compared with a number from the same tool and version, with the same settings. A paper's number and your Ultralytics number are not directly comparable even on the same dataset.</p>
 <h2 id="7-time">7. Time</h2>
 <p>mAP is computed per image. Video adds a dimension it cannot see. A detector that finds a person in 60% of frames, scattered at random, and one that finds the person in a solid 60% block of consecutive frames have similar frame-level numbers. With a temporal filter on top, the first may produce flickering tracks and broken counts, and the second clean events.</p>
-<p>If your system raises alerts or counts, the right unit is the event, not the frame. Measuring Video Analytics by Events, Not Frames covers how to score that.</p>
+<p>If your system raises alerts or counts, the right unit is the event, not the frame. <a href="/vision-field-notes/posts/evaluate-video-analytics-by-events/">Measuring Video Analytics by Events, Not Frames</a> covers how to score that.</p>
 <h2 id="what-to-report-instead-of-one-number">What to report instead of one number</h2>
 <p>When you compare models or report results to a client, a short table goes a long way:</p>
 <table>

@@ -108,7 +108,7 @@ nav.main a{white-space:nowrap}}
 <li><strong>Event recall:</strong> the share of real events that produced an alert within an agreed time.</li>
 <li><strong>False alerts:</strong> the number of alerts with no real event, per camera per day (or per hour of footage).</li>
 </ul>
-<p>Precision as a percentage is less useful than false alerts per day, because operators feel the daily number. See Measuring Video Analytics by Events, Not Frames for how to score this.</p>
+<p>Precision as a percentage is less useful than false alerts per day, because operators feel the daily number. See <a href="/vision-field-notes/posts/evaluate-video-analytics-by-events/">Measuring Video Analytics by Events, Not Frames</a> for how to score this.</p>
 <p><strong>3. Time limits.</strong> How quickly after the event must the alert arrive to count? Five seconds? Thirty? An alert two minutes late may be useless for safety and fine for reporting.</p>
 <p><strong>4. The test footage.</strong> Which cameras, how many hours, recorded when, covering which conditions. Include night if the system runs at night. Agree it is footage the model has not been trained on. Agree who records it and how it is handed over.</p>
 <p><strong>5. Ground truth.</strong> Who decides what really happened in the footage, and how disagreements are settled. Often the client's staff label events, or the engineer labels and the client reviews a sample. Write down the definition of an event used for labelling, the same one as in point 1.</p>

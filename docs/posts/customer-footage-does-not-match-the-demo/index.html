@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>When the Customer&#39;s Footage Doesn&#39;t Match the Demo</title>
+<meta name="description" content="The demo worked on clean sample video; the real cameras are higher, darker and more compressed. How to measure the gap, explain it and act.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/customer-footage-does-not-match-the-demo/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="When the Customer&#39;s Footage Doesn&#39;t Match the Demo"><meta property="og:description" content="The demo worked on clean sample video; the real cameras are higher, darker and more compressed. How to measure the gap, explain it and act.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/customer-footage-does-not-match-the-demo/"><meta property="og:site_name" content="Vision Field Notes">
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/customer-footage-does-not-match-the-demo-pixels-on-target.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "When the Customer's Footage Doesn't Match the Demo", "description": "The demo worked on clean sample video; the real cameras are higher, darker and more compressed. How to measure the gap, explain it and act.", "datePublished": "2026-11-03", "dateModified": "2026-11-03", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io"}, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/customer-footage-does-not-match-the-demo/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/customer-footage-does-not-match-the-demo-pixels-on-target.png", "articleSection": "Career and Freelancing", "keywords": "clients, footage, domain-shift, scoping, cameras"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Career and Freelancing", "item": "https://mh-masum6875.github.io/vision-field-notes/category/career-and-freelancing/"}, {"@type": "ListItem", "position": 3, "name": "When the Customer's Footage Doesn't Match the Demo"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/career-and-freelancing/">Career and Freelancing</a></div><h1>When the Customer&#x27;s Footage Doesn&#x27;t Match the Demo</h1><div class="byline">By Maidul Hasan Masum · 2026-11-03 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#why-demo-footage-is-always-easier">Why demo footage is always easier</a></li><li><a href="#measure-the-gap-in-the-first-week">Measure the gap in the first week</a></li><li><a href="#explain-it-in-terms-the-client-can-see">Explain it in terms the client can see</a></li><li><a href="#the-options">The options</a></li><li><a href="#prevent-it-next-time">Prevent it next time</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>The demo went well. The model found every person and every helmet in the sample clips, the client was impressed, and the project started. Then the first real footage arrived: cameras mounted at six metres, a fisheye lens in the warehouse, heavy compression, and half the hours at night under infrared. The model that looked perfect now misses a third of what matters.</p>
+<p>This is one of the most common moments in applied computer vision, and handled badly it sinks projects. This article covers why it happens, how to measure the gap quickly, how to explain it to a client, and what the options are.</p>
+<h2 id="why-demo-footage-is-always-easier">Why demo footage is always easier</h2>
+<p>Demo footage is chosen to show the system at its best, even when nobody means it to be. Public sample videos, the clips a vendor uses, and the footage people film to try a model all tend to share traits:</p>
+<ul>
+<li><strong>Cameras at eye level or slightly above,</strong> so people look like people in photos.</li>
+<li><strong>Objects that are large in the frame.</strong></li>
+<li><strong>Good daylight,</strong> often outdoors or in a bright shop.</li>
+<li><strong>High bitrate,</strong> because it was recorded for viewing, not for a 24-hour recorder.</li>
+<li><strong>Common objects,</strong> of the kind found in public datasets.</li>
+</ul>
+<p>Real site cameras are installed for coverage and for security staff, not for models. They are mounted high to see over shelves, use wide lenses to cover more area, run substreams at low bitrate to save storage, and switch to monochrome infrared at night. Every one of these makes detection harder.</p>
+<h2 id="measure-the-gap-in-the-first-week">Measure the gap in the first week</h2>
+<p>Do not argue from impressions. As soon as you have real footage, measure:</p>
+<ol>
+<li><strong>Pixels on target.</strong> How tall is a typical target, in pixels, at the model's input size, at the near, middle and far ends of the area the client cares about?</li>
+<li><strong>Baseline performance.</strong> Run the existing model on a sample of real footage and label a small set: a few hundred frames or a few dozen events, including night. Count hits, misses and false detections.</li>
+<li><strong>Conditions.</strong> List what differs from the demo: angle, lens, resolution, bitrate, lighting, night mode, occlusion, object types.</li>
+</ol>
+<p>Pixels on target is the quickest to check and often explains most of the gap. It follows from simple geometry: the camera's vertical field of view covers a height of about 2 × <em>distance</em> × tan(<em>field of view</em> / 2) at a given distance, and a target gets its share of the image's pixel rows. Then the model's resize shrinks it further.</p>
+<figure><img alt="Line chart, log scale, of the height of a 1.7 m person in pixels at a 640 model input from a 1080p camera, against distance from 3 to 60 metres, for vertical fields of view of 60, 30 and 12 degrees. All curves fall with distance; the 60-degree lens drops into a shaded band of very small targets, under about 16 pixels, beyond about 33 metres, while the 12-degree lens keeps the person above it out to 60 metres." src="/vision-field-notes/images/customer-footage-does-not-match-the-demo-pixels-on-target.png" loading="lazy"><figcaption>Geometry only, for an upright person and a simple pinhole camera; real lenses, angles and poses change the numbers. A wide lens covering a large area can leave far-away people only a few pixels tall at the model's input.</figcaption></figure>
+<p>For example, a 1080p camera with a 30-degree vertical field of view sees a height of about 10.7 m at 20 m. A 1.7 m person covers about 171 of the 1080 rows. Resized from 1920 × 1080 to a 640-pixel model input, that becomes about 57 pixels: workable. Put the same person at 40 m with a 60-degree lens and they are under 15 pixels: very hard for any detector, and impossible for small details such as a helmet.</p>
+<h2 id="explain-it-in-terms-the-client-can-see">Explain it in terms the client can see</h2>
+<p>Clients usually understand the problem immediately when you show it, and rarely when you describe it. Prepare:</p>
+<ul>
+<li><strong>Side-by-side frames:</strong> a demo frame and a real frame from their camera, with the target marked. The size difference speaks for itself.</li>
+<li><strong>A crop at model resolution:</strong> what the model actually sees of a person at the far end of their area.</li>
+<li><strong>The baseline numbers:</strong> "on 40 events from cameras 2 and 5, the current model detects 26; most misses are beyond 25 metres or at night."</li>
+<li><strong>The causes, in order of impact,</strong> and which ones can be changed.</li>
+</ul>
+<p>Be direct and early. A client told in week one that their cameras need work is an ally. A client told in week eight that the system will not meet the target feels misled, even if the cause is the same.</p>
+<h2 id="the-options">The options</h2>
+<p>There are four broad options, and most projects use a mix.</p>
+<p><strong>Change the cameras or their settings.</strong> Often the cheapest fix overall, and the most effective. Use the main stream instead of the substream, raise the bitrate, adjust the zoom, re-aim a camera, add lighting, add a camera for the far area. See <a href="/vision-field-notes/posts/best-cameras-for-computer-vision/">Choosing a Camera for Computer Vision Projects</a> and Main Stream or Substream.</p>
+<p><strong>Adapt the model to the footage.</strong> Fine-tune on labelled frames from the client's own cameras, including night. This usually closes a good part of the gap caused by angle, lighting and compression. It cannot create detail that is not in the pixels. See <a href="/vision-field-notes/posts/fine-tuning-yolo-transfer-learning/">Fine-Tuning YOLO</a>.</p>
+<p><strong>Change the processing.</strong> Higher input resolution, tiling large frames, or cropping to the region of interest put more pixels on small targets, at a cost in compute. See Input Resolution or Model Size.</p>
+<p><strong>Change the scope.</strong> Cover a smaller area per camera, drop a detail that cannot be seen (such as helmet colour at 40 metres), or accept lower recall at night. A narrower system that works is worth more than a broad one that does not.</p>
+<p>Put each option to the client with its cost and the gain you expect, and be honest about which gains are estimates.</p>
+<h2 id="prevent-it-next-time">Prevent it next time</h2>
+<p>Most of this pain can be moved to before the contract:</p>
+<ul>
+<li>Ask for real footage from the actual cameras, including night, before quoting. A few minutes per camera is enough to spot trouble.</li>
+<li>Do a short paid discovery phase that includes a baseline run on that footage. See <a href="/vision-field-notes/posts/freelancing-in-computer-vision/">Freelancing in Computer Vision</a>.</li>
+<li>Agree the target only after discovery, on the client's footage. See <a href="/vision-field-notes/posts/agree-a-measurable-target-with-a-client/">Agreeing a Measurable Target with a Client</a>.</li>
+<li>Visit or survey the site where possible. Site Surveys: What to Check Before Promising a Result has a list.</li>
+<li>Never let a demo on sample video stand in for evidence on the client's cameras, in your own mind or in theirs.</li>
+</ul>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Measure pixels on target at near, middle and far distances.</li>
+<li>Run the baseline model on real footage, including night, and count results.</li>
+<li>List the differences from the demo, in order of impact.</li>
+<li>Show the client side-by-side frames and crops at model resolution.</li>
+<li>Present camera, model, processing and scope options with costs.</li>
+<li>Raise the issue in the first week, not at the deadline.</li>
+<li>Get real footage before quoting next time.</li>
+</ul>
+<p>Next steps: Site Surveys: What to Check Before Promising a Result and <a href="/vision-field-notes/posts/fine-tuning-yolo-transfer-learning/">Fine-Tuning YOLO: Transfer Learning Explained</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">More in Career and Freelancing</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/agree-a-measurable-target-with-a-client/"><div class="cat">Career and Freelancing</div><h3>Agreeing a Measurable Target with a Client Before You Start</h3><p>Turn &#x27;it should work well&#x27; into a written acceptance test: what counts as an event, which footage, who labels it and what result counts as a pass.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/books-and-courses-for-computer-vision/"><div class="cat">Career and Freelancing</div><h3>Best Books and Courses for Learning Computer Vision</h3><p>How to choose books and courses for learning computer vision by level, with honest pros and cons of each format and a plan that mixes study with projects.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/computer-vision-engineer-roadmap/"><div class="cat">Career and Freelancing</div><h3>Computer Vision Engineer Roadmap: What to Learn First</h3><p>A realistic computer vision engineer roadmap from Python and OpenCV to training detectors, edge deployment and video analytics, with projects for each stage.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

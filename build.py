@@ -209,7 +209,10 @@ LAYOUT = """<!doctype html>
 <link rel="canonical" href="{{ canon }}">
 <meta property="og:type" content="{{ 'article' if is_post else 'website' }}">
 <meta property="og:title" content="{{ title }}"><meta property="og:description" content="{{ desc }}">
-<meta property="og:url" content="{{ canon }}"><meta property="og:site_name" content="{{ s.name }}">
+<meta property="og:url" content="{{ canon }}"><meta property="og:site_name" content="{{ s.name }}"><meta property="og:locale" content="en_US">
+{% if is_post %}<meta property="article:published_time" content="{{ pub }}">{% if mod and mod != pub %}<meta property="article:modified_time" content="{{ mod }}">{% endif %}<meta property="article:author" content="{{ s.author_url }}"><meta property="article:section" content="{{ section }}">{% for t in tags %}<meta property="article:tag" content="{{ t }}">{% endfor %}{% endif %}
+<link rel="alternate" type="application/atom+xml" title="{{ s.name }}" href="{{ s.base_url }}/feed.xml">
+{% if noindex %}<meta name="robots" content="noindex">{% endif %}
 {% if og_image %}<meta property="og:image" content="{{ og_image }}"><meta name="twitter:card" content="summary_large_image">{% else %}<meta name="twitter:card" content="summary">{% endif %}
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
 {% if s.adsense_publisher_id %}<meta name="google-adsense-account" content="ca-pub-{{ s.adsense_publisher_id }}">{% endif %}
@@ -224,7 +227,7 @@ LAYOUT = """<!doctype html>
 </div></header>
 <main>{{ content|safe }}</main>
 <footer class="site"><div class="wrap">
-<div>© {{ year }} {{ s.author }}. <a href="{{ bp }}/about/">About</a> · <a href="{{ bp }}/contact/">Contact</a> · <a href="{{ bp }}/privacy/">Privacy</a> · <a href="{{ bp }}/disclosure/">Affiliate disclosure</a></div>
+<div>© {{ year }} {{ s.author }}. <a href="{{ bp }}/about/">About</a> · <a href="{{ bp }}/contact/">Contact</a> · <a href="{{ bp }}/privacy/">Privacy</a> · <a href="{{ bp }}/disclosure/">Affiliate disclosure</a> · <a href="{{ bp }}/feed.xml">Feed</a></div>
 <div><a href="{{ s.author_url }}">Portfolio</a> · <a href="{{ s.github }}">GitHub</a></div>
 </div></footer>
 {% if s.adsense_client %}<div class="cookie" id="cookie" role="dialog" aria-label="Cookie notice"><p style="margin:0 0 10px">This site uses cookies for advertising. You can accept or decline. <a href="{{ bp }}/privacy/">Privacy policy</a></p><button class="p">Accept</button><button class="n">Decline</button></div>
@@ -245,12 +248,16 @@ catlist = [{"name": c, "slug": slugify(c), "short": SHORT.get(c, c)} for c in
            ["YOLO and Detection Basics", "Datasets and Training", "Edge Hardware and Deployment",
             "Video Analytics", "Tools and Workflow", "Career and Freelancing"] if c in cats]
 
-def page(path, title, desc, content, canon_path, is_post=False, jsonld=None, og_image=None):
+DEFAULT_OG = f"{BASE}/images/og-default.png" if (ROOT / "content/images/og-default.png").exists() else None
+
+def page(path, title, desc, content, canon_path, is_post=False, jsonld=None, og_image=None,
+         pub=None, mod=None, section=None, tags=(), noindex=False):
     # keep the browser/search title under ~60 characters: drop the site suffix on long titles
     full_title = title if title.startswith(S["name"]) or len(title) > 44 else f"{title} | {S['name']}"
     out = layout.render(s=S, bp=BP, cats=catlist, css=CSS, js_search=JS_SEARCH, js_consent=JS_CONSENT,
                         title=full_title, desc=desc, canon=BASE + canon_path, content=content,
-                        is_post=is_post, jsonld=jsonld, og_image=og_image, year=date.today().year)
+                        is_post=is_post, jsonld=jsonld, og_image=og_image or DEFAULT_OG, year=date.today().year,
+                        pub=pub, mod=mod, section=section, tags=tags, noindex=noindex)
     f = OUT / path
     f.parent.mkdir(parents=True, exist_ok=True)
     f.write_text(out)
@@ -258,6 +265,9 @@ def page(path, title, desc, content, canon_path, is_post=False, jsonld=None, og_
 AUTHOR_BOX = (f'<aside class="author"><b>About the author</b><p>{html.escape(S["author"])} is a computer vision engineer who builds and runs '
               f'video analytics on live camera feeds. Try his <a href="{S["author_url"]}/cv-test-bench/">CV Test Bench</a> demo in your browser, '
               f'or <a href="{S["author_url"]}">get in touch</a> about a project.</p></aside>')
+
+AUTHOR_LD = {"@type": "Person", "name": S["author"], "url": S["author_url"],
+             "sameAs": [u for u in [S["author_url"], S["github"], *S.get("same_as", [])] if u]}
 
 def card(p):
     return (f'<a class="card" href="{BP}/posts/{p["slug"]}/"><div class="cat">{html.escape(p["category"])}</div>'
@@ -280,8 +290,13 @@ for c in catlist:
     home += f'<h2 class="sec">{html.escape(c["name"])}</h2><div class="grid">' + "".join(card(p) for p in cp[:3]) + "</div>"
     home += f'<p><a href="{BP}/category/{c["slug"]}/">All {len(cp)} articles in {html.escape(c["name"])}</a></p>'
 home += "</div>"
+home_ld = json.dumps([
+    {"@context": "https://schema.org", "@type": "WebSite", "name": S["name"], "url": BASE + "/",
+     "description": S["tagline"], "inLanguage": "en", "author": AUTHOR_LD, "publisher": AUTHOR_LD},
+    {"@context": "https://schema.org", **AUTHOR_LD, "jobTitle": "Computer vision engineer"}])
 page("index.html", S["name"] + ": " + "computer vision and edge AI in practice",
-     "Practical guides on YOLO, datasets, edge deployment and video analytics from a computer vision engineer.", home, "/")
+     "Practical guides on YOLO, datasets, edge deployment and video analytics from a computer vision engineer.", home, "/",
+     jsonld=home_ld)
 
 # categories
 for c in catlist:
@@ -293,7 +308,10 @@ for c in catlist:
 # posts
 by_cat_order = {c["name"]: cats[c["name"]] for c in catlist}
 for p in posts:
-    rel = [q for q in by_cat_order[p["category"]] if q["slug"] != p["slug"]][:3]
+    ptags = set(map(str, p.get("tags", [])))
+    rel = sorted((q for q in posts if q["slug"] != p["slug"]),
+                 key=lambda q: (len(ptags & set(map(str, q.get("tags", [])))) * 2 + (q["category"] == p["category"]),
+                                q["date"]), reverse=True)[:3]
     toc = ""
     if len([t for t in p["toc"]]) >= 3:
         items = "".join(f'<li><a href="#{t["id"]}">{html.escape(t["name"])}</a></li>' for t in p["toc"])
@@ -304,28 +322,30 @@ for p in posts:
     content = (f'<article><div class="crumb"><a href="{BP}/">Home</a> / <a href="{BP}/category/{slugify(p["category"])}/">{html.escape(p["category"])}</a></div>'
                f'<h1>{html.escape(p["title"])}</h1><div class="byline">By {html.escape(S["author"])} · {p["date"]} · {p["minutes"]} min read</div>'
                f'{note}{toc}{p["html"]}{ad}{AUTHOR_BOX}</article>'
-               f'<div class="related"><h2 class="sec">More in {html.escape(p["category"])}</h2><div class="grid">{"".join(card(q) for q in rel)}</div></div>')
+               f'<div class="related"><h2 class="sec">Related articles</h2><div class="grid">{"".join(card(q) for q in rel)}</div></div>')
     crumb = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "Home", "item": BASE + "/"},
         {"@type": "ListItem", "position": 2, "name": p["category"], "item": f'{BASE}/category/{slugify(p["category"])}/'},
         {"@type": "ListItem", "position": 3, "name": p["title"]}]}
     ld = json.dumps({"@context": "https://schema.org", "@type": "Article", "headline": p["title"],
                      "description": p["description"], "datePublished": p["date"], "dateModified": p.get("updated", p["date"]),
-                     "author": {"@type": "Person", "name": S["author"], "url": S["author_url"]},
+                     "author": AUTHOR_LD, "inLanguage": "en", "wordCount": p["words"],
                      "publisher": {"@type": "Organization", "name": S["name"]},
                      "mainEntityOfPage": f'{BASE}/posts/{p["slug"]}/',
                      "image": f"{BASE}/images/{p['images'][0]}" if p["images"] else None,
                      "articleSection": p["category"], "keywords": ", ".join(map(str, p.get("tags", [])))})
     ld = ld[:-1] + ',"@graph":[]}' if False else json.dumps([json.loads(ld), crumb])
     og = f"{BASE}/images/{p['images'][0]}" if p["images"] else None
-    page(f"posts/{p['slug']}/index.html", p["title"], p["description"], content, f"/posts/{p['slug']}/", True, ld, og)
+    page(f"posts/{p['slug']}/index.html", p["title"], p["description"], content, f"/posts/{p['slug']}/", True, ld, og,
+         pub=p["date"], mod=str(p.get("updated", p["date"])), section=p["category"], tags=list(map(str, p.get("tags", []))))
 
 # static pages
 for k, v in pages.items():
     page(f"{k}/index.html", v["title"], v["description"],
          f'<article><h1>{html.escape(v["title"])}</h1>{v["html"]}</article>', f"/{k}/")
 page("404.html", "Page not found", "Page not found.",
-     f'<article><h1>Page not found</h1><p>That page does not exist. <a href="{BP}/">Go to the home page</a> or use the search box.</p></article>', "/404.html")
+     f'<article><h1>Page not found</h1><p>That page does not exist. <a href="{BP}/">Go to the home page</a> or use the search box.</p></article>', "/404.html",
+     noindex=True)
 
 # machine files
 today = TODAY.isoformat()
@@ -340,4 +360,16 @@ if S.get("indexnow_key"):
 if S["adsense_publisher_id"]:
     (OUT / "ads.txt").write_text(f"google.com, pub-{S['adsense_publisher_id']}, DIRECT, f08c47fec0942fa0\n")
 (OUT / "search.json").write_text(json.dumps([{"s": p["slug"], "t": p["title"], "d": p["description"], "c": p["category"], "g": " ".join(map(str, p.get("tags", [])))} for p in posts]))
+# Atom feed of the latest posts, for feed readers and aggregators
+def esc(s): return html.escape(str(s), quote=True)
+entries = "".join(
+    f'<entry><title>{esc(p["title"])}</title><link href="{BASE}/posts/{p["slug"]}/"/>'
+    f'<id>{BASE}/posts/{p["slug"]}/</id><published>{p["date"]}T00:00:00Z</published>'
+    f'<updated>{p.get("updated", p["date"])}T00:00:00Z</updated><category term="{esc(p["category"])}"/>'
+    f'<summary>{esc(p["description"])}</summary></entry>\n' for p in posts[:30])
+(OUT / "feed.xml").write_text('<?xml version="1.0" encoding="utf-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom">'
+    f'<title>{esc(S["name"])}</title><subtitle>{esc(S["tagline"])}</subtitle>'
+    f'<link href="{BASE}/"/><link rel="self" href="{BASE}/feed.xml"/><id>{BASE}/</id>'
+    f'<updated>{(posts[0]["date"] if posts else today)}T00:00:00Z</updated><author><name>{esc(S["author"])}</name>'
+    f'<uri>{esc(S["author_url"])}</uri></author>\n{entries}</feed>\n')
 print(f"built {len(posts)} posts, {len(pages)} pages -> {OUT}")

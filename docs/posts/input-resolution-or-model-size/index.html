@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Input Resolution or Model Size: Which to Increase for Small Objects</title>
+<meta name="description" content="When a detector misses small objects, a bigger model and a bigger input both cost compute. Why input size usually helps more, and when it does not.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/input-resolution-or-model-size/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Input Resolution or Model Size: Which to Increase for Small Objects"><meta property="og:description" content="When a detector misses small objects, a bigger model and a bigger input both cost compute. Why input size usually helps more, and when it does not.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/input-resolution-or-model-size/"><meta property="og:site_name" content="Vision Field Notes"><meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-11-05"><meta property="article:author" content="https://mh-masum6875.github.io"><meta property="article:section" content="YOLO and Detection Basics"><meta property="article:tag" content="small-objects"><meta property="article:tag" content="input-size"><meta property="article:tag" content="yolo"><meta property="article:tag" content="model-size"><meta property="article:tag" content="performance">
+<link rel="alternate" type="application/atom+xml" title="Vision Field Notes" href="https://mh-masum6875.github.io/vision-field-notes/feed.xml">
+
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/input-resolution-or-model-size-scaling.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Input Resolution or Model Size: Which to Increase for Small Objects", "description": "When a detector misses small objects, a bigger model and a bigger input both cost compute. Why input size usually helps more, and when it does not.", "datePublished": "2026-11-05", "dateModified": "2026-11-05", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io", "sameAs": ["https://mh-masum6875.github.io", "https://github.com/mh-masum6875"]}, "inLanguage": "en", "wordCount": 1189, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/input-resolution-or-model-size/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/input-resolution-or-model-size-scaling.png", "articleSection": "YOLO and Detection Basics", "keywords": "small-objects, input-size, yolo, model-size, performance"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "YOLO and Detection Basics", "item": "https://mh-masum6875.github.io/vision-field-notes/category/yolo-and-detection-basics/"}, {"@type": "ListItem", "position": 3, "name": "Input Resolution or Model Size: Which to Increase for Small Objects"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO and Detection Basics</a></div><h1>Input Resolution or Model Size: Which to Increase for Small Objects</h1><div class="byline">By Maidul Hasan Masum · 2026-11-05 · 5 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#what-the-model-actually-sees">What the model actually sees</a></li><li><a href="#the-compute-cost-of-each">The compute cost of each</a></li><li><a href="#when-input-size-helps">When input size helps</a></li><li><a href="#when-model-size-helps">When model size helps</a></li><li><a href="#cheaper-than-both">Cheaper than both</a></li><li><a href="#how-to-decide-with-data">How to decide with data</a></li><li><a href="#watch-the-side-effects">Watch the side effects</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>A detector misses people at the far end of a car park. You have compute to spare, and two obvious ways to spend it: move from the nano model to the small or medium one, or raise the input size from 640 to 960 or 1280. Both cost speed. They do not fix the same problem.</p>
+<p>This article explains what each change does, why input size is usually the first thing to try for small objects, and how to test both properly.</p>
+<h2 id="what-the-model-actually-sees">What the model actually sees</h2>
+<p>Before the network sees a frame, the frame is resized to the input size. A 1920 × 1080 frame resized to a 640-pixel input is shrunk by a factor of three. A person who is 60 pixels tall in the camera image is about 20 pixels tall at the model's input.</p>
+<p>At 20 pixels, a person is a smudge with a head. Details that separate a person from a post, or a helmet from a bare head, are a few pixels wide or have disappeared entirely. A bigger model cannot recover detail that was removed before the network saw the image. It can only make better guesses from the same smudge.</p>
+<p>Raising the input size puts the pixels back. At a 1280 input, the same frame is shrunk by 1.5 instead of 3, and the person is 40 pixels tall.</p>
+<h2 id="the-compute-cost-of-each">The compute cost of each</h2>
+<p>The cost of the convolutional layers that make up most of a detector grows roughly with the number of input pixels, so with the square of the input side.</p>
+<figure><img alt="Line chart against square input size from 320 to 1280. Relative compute rises with the square of the size, from 0.25 at 320 to 4 at 1280. Relative object height rises linearly, from 0.5 to 2." src="/vision-field-notes/images/input-resolution-or-model-size-scaling.png" loading="lazy"><figcaption>Arithmetic, not a benchmark. Going from 640 to 1280 doubles the pixels on every object and roughly quadruples the convolution work. Real speed also depends on hardware, runtime and post-processing.</figcaption></figure>
+<p>Model size scales differently. In the Ultralytics YOLOv8 family, for example, the published compute at 640 input grows by roughly three times from nano to small, and roughly three times again from small to medium. So, very roughly:</p>
+<ul>
+<li>640 → 960 input: about 2.25 times the compute.</li>
+<li>640 → 1280 input: about 4 times.</li>
+<li>nano → small at the same input: about 3 times.</li>
+</ul>
+<p>These ratios describe the network's arithmetic, not your frame rate. Actual speed depends on how well your hardware and runtime handle each case, so measure on the target device; see <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">Measuring FPS and Latency Correctly</a>.</p>
+<h2 id="when-input-size-helps">When input size helps</h2>
+<p>Raise the input size first when:</p>
+<ul>
+<li><strong>The missed objects are small at the current input.</strong> Measure this. Take the misses from your test set and look at their size in pixels after resizing to the model input. If most of them are under a few dozen pixels, resolution is the likely bottleneck.</li>
+<li><strong>Fine detail decides the class.</strong> Helmets, vests, gloves, phone in hand: these depend on a few pixels that resizing destroys.</li>
+<li><strong>The camera has the pixels to give.</strong> A 4K camera resized to 640 throws away most of its detail; a 640 × 360 substream has nothing more to offer at a larger input.</li>
+</ul>
+<p>Train at the size you will run. A model trained at 640 and run at 1280 sees objects at twice the scale it learned, and often does worse than you expect. Fine-tune at the new size; see <a href="/vision-field-notes/posts/fine-tuning-yolo-transfer-learning/">Fine-Tuning YOLO</a>.</p>
+<h2 id="when-model-size-helps">When model size helps</h2>
+<p>A bigger model helps when the objects are already visible but the decisions are hard:</p>
+<ul>
+<li><strong>Confusable classes,</strong> such as two vehicle types or uniforms that differ in small ways, when the objects are reasonably large.</li>
+<li><strong>Cluttered scenes,</strong> where telling objects from the background needs more context.</li>
+<li><strong>Many classes,</strong> where a small model lacks the capacity to learn them all well.</li>
+<li><strong>Large variation</strong> in appearance, pose or lighting across sites.</li>
+</ul>
+<p>If your misses are large, clear objects that the model gets wrong, resolution will not help. Capacity might. See <a href="/vision-field-notes/posts/choosing-yolo-model-size/">Nano, Small, Medium: How to Choose a YOLO Model Size</a>.</p>
+<h2 id="cheaper-than-both">Cheaper than both</h2>
+<p>Before paying for either, check the options that add pixels without adding much compute everywhere:</p>
+<ul>
+<li><strong>Crop to the region of interest.</strong> If the important area is a part of the frame, crop it before resizing. The objects grow without any extra compute.</li>
+<li><strong>Tile the frame.</strong> Split a large frame into overlapping tiles and run the model on each. This costs more compute but only where you choose, and works with the model you have. Merge the detections with NMS across tiles. <a href="/vision-field-notes/posts/class-imbalance-and-small-objects/">Class Imbalance and Small Objects</a> covers tiling.</li>
+<li><strong>Use a rectangular input.</strong> Many pipelines letterbox a 16:9 frame into a square input, wasting a quarter of the pixels on padding. Some runtimes and export paths accept a rectangular input such as 640 × 384; check that your toolchain supports it.</li>
+<li><strong>Change the camera.</strong> A narrower lens or a closer camera often beats any software change. See <a href="/vision-field-notes/posts/customer-footage-does-not-match-the-demo/">When the Customer's Footage Doesn't Match the Demo</a>.</li>
+</ul>
+<h2 id="how-to-decide-with-data">How to decide with data</h2>
+<ol>
+<li>Collect the misses at your operating threshold from a test set that represents the deployment.</li>
+<li>Measure their size at the current model input. Plot the distribution.</li>
+<li>If most misses are small, train and test the same model at a larger input, for example 960.</li>
+<li>If most misses are reasonably large, train and test the next model size at the current input.</li>
+<li>Compare both at your operating point, per class and by object size, and measure the speed of each on the target device.</li>
+<li>Repeat with a few seeds if the differences are small; see <a href="/vision-field-notes/posts/comparing-two-detectors-fairly/">Comparing Two Detectors Fairly</a>.</li>
+</ol>
+<p>Sometimes the answer is both: a small model at a larger input. Nano at 1280 and small at 640 cost similar compute, and for small-object problems the first often wins. That is something to test, not assume.</p>
+<h2 id="watch-the-side-effects">Watch the side effects</h2>
+<p>A larger input also changes things you might not expect:</p>
+<ul>
+<li><strong>Memory</strong> for activations grows with input pixels. See <a href="/vision-field-notes/posts/memory-budgets-on-small-boards/">Memory Budgets on Small Boards</a>.</li>
+<li><strong>Pre-processing</strong> takes longer, because resizing and normalising more pixels costs CPU time.</li>
+<li><strong>Confidence scores</strong> shift, so re-tune thresholds after the change. See <a href="/vision-field-notes/posts/confidence-threshold-tuning/">Confidence Thresholds</a>.</li>
+<li><strong>Training</strong> needs more GPU memory, so batch sizes fall.</li>
+</ul>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Measure the size of missed objects at the current model input.</li>
+<li>Small misses: try a larger input first, trained at that size.</li>
+<li>Large, clear misses: try a larger model.</li>
+<li>Consider cropping, tiling, rectangular inputs and camera changes.</li>
+<li>Compare at the operating point, per class and by size.</li>
+<li>Measure speed on the target device.</li>
+<li>Re-tune thresholds after any change.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/class-imbalance-and-small-objects/">Class Imbalance and Small Objects</a> and Preprocessing Mismatches That Silently Cost Accuracy.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">Related articles</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/choosing-yolo-model-size/"><div class="cat">YOLO and Detection Basics</div><h3>Nano, Small, Medium: How to Choose a YOLO Model Size</h3><p>How to choose a YOLO model size and input resolution: a method that starts from your hardware budget and accuracy needs, not a guess at nano, small or medium.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/yolo27-announced-what-to-do-before-it-ships/"><div class="cat">YOLO and Detection Basics</div><h3>YOLO27 Announced: What to Check Before You Switch</h3><p>Ultralytics announced YOLO27 in September 2026. What was actually said, what is still unknown, and how to evaluate it on your own data when it ships.</p><div class="meta">4 min read</div></a><a class="card" href="/vision-field-notes/posts/comparing-two-detectors-fairly/"><div class="cat">YOLO and Detection Basics</div><h3>Comparing Two Detectors Fairly</h3><p>Before calling one detector better, hold data, settings and training budget equal, and check the gap is larger than test-set and seed noise.</p><div class="meta">5 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a> · <a href="/vision-field-notes/feed.xml">Feed</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

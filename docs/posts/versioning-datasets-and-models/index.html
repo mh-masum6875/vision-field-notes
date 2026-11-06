@@ -119,7 +119,7 @@ cam07/2026-10-02/004410.jpg,1ab9...,test,cam07,2026-10-02
 <p>The manifest is small, so it can live in Git next to the label files. The images live in object storage or on a shared drive, ideally in a layout where files are never changed in place, only added. If an image is in the manifest and its hash matches, you have the right image.</p>
 <p>Give each dataset version a name or date, and never change a released version. Corrections create a new version. Tools such as DVC automate this pattern of hashed files tracked from Git; Git LFS, DVC or Object Storage compares the options. A plain manifest is enough to start.</p>
 <h3 id="labels-and-guidelines">Labels and guidelines</h3>
-<p>Keep labels in Git if they fit (YOLO text labels and COCO JSON usually do), versioned with the manifest. Also version the annotation guideline, because a label means what the guideline said at the time. If the guideline changed how occluded people are boxed, models trained before and after the change are learning slightly different targets. See Writing an Annotation Guide Labellers Can Follow.</p>
+<p>Keep labels in Git if they fit (YOLO text labels and COCO JSON usually do), versioned with the manifest. Also version the annotation guideline, because a label means what the guideline said at the time. If the guideline changed how occluded people are boxed, models trained before and after the change are learning slightly different targets. See <a href="/vision-field-notes/posts/annotation-guide-labellers-can-follow/">Writing an Annotation Guide Labellers Can Follow</a>.</p>
 <h2 id="record-every-training-run">Record every training run</h2>
 <p>For every run you might keep, record:</p>
 <ul>
@@ -150,7 +150,7 @@ cam07/2026-10-02/004410.jpg,1ab9...,test,cam07,2026-10-02
 <li><strong>Debugging.</strong> When a model misbehaves on the dock cameras, you can check whether those cameras were in training data, which labels were used, and what changed since the last good version.</li>
 <li><strong>Fair comparisons.</strong> Two models are only comparable if you know they used the same test set version. See <a href="/vision-field-notes/posts/comparing-two-detectors-fairly/">Comparing Two Detectors Fairly</a>.</li>
 <li><strong>Rollback.</strong> You can return to the exact previous model and thresholds, not an approximation.</li>
-<li><strong>Handover.</strong> A client or colleague can retrain or audit the model. See Handover Documentation for a Computer Vision System.</li>
+<li><strong>Handover.</strong> A client or colleague can retrain or audit the model. See <a href="/vision-field-notes/posts/handover-documentation-for-cv-systems/">Handover Documentation for a Computer Vision System</a>.</li>
 <li><strong>Data requests.</strong> If someone asks for footage to be deleted, the manifest tells you which dataset versions contain it.</li>
 </ul>
 <h2 id="keep-it-light">Keep it light</h2>

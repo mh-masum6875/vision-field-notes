@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hardware Video Decoding: Why Decode Is Often the Real Bottleneck</title>
+<meta name="description" content="Every stream is decoded at full resolution before the model sees it. Why decoding can cost more than inference, and how to use hardware decoders.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/hardware-video-decoding-on-edge/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hardware Video Decoding: Why Decode Is Often the Real Bottleneck"><meta property="og:description" content="Every stream is decoded at full resolution before the model sees it. Why decoding can cost more than inference, and how to use hardware decoders.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/hardware-video-decoding-on-edge/"><meta property="og:site_name" content="Vision Field Notes"><meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-11-08"><meta property="article:author" content="https://mh-masum6875.github.io"><meta property="article:section" content="Edge Hardware and Deployment"><meta property="article:tag" content="video-decoding"><meta property="article:tag" content="gstreamer"><meta property="article:tag" content="jetson"><meta property="article:tag" content="raspberry-pi"><meta property="article:tag" content="performance">
+<link rel="alternate" type="application/atom+xml" title="Vision Field Notes" href="https://mh-masum6875.github.io/vision-field-notes/feed.xml">
+
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/hardware-video-decoding-on-edge-pixel-rates.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<meta name="google-site-verification" content="B1rDBY5iKrbjTB8G4hetNb5K8bocBC1Rum9hT_1gCEc">
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Hardware Video Decoding: Why Decode Is Often the Real Bottleneck", "description": "Every stream is decoded at full resolution before the model sees it. Why decoding can cost more than inference, and how to use hardware decoders.", "datePublished": "2026-11-08", "dateModified": "2026-11-08", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io", "sameAs": ["https://mh-masum6875.github.io", "https://github.com/mh-masum6875"]}, "inLanguage": "en", "wordCount": 1108, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/hardware-video-decoding-on-edge/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/hardware-video-decoding-on-edge-pixel-rates.png", "articleSection": "Edge Hardware and Deployment", "keywords": "video-decoding, gstreamer, jetson, raspberry-pi, performance"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Edge Hardware and Deployment", "item": "https://mh-masum6875.github.io/vision-field-notes/category/edge-hardware-and-deployment/"}, {"@type": "ListItem", "position": 3, "name": "Hardware Video Decoding: Why Decode Is Often the Real Bottleneck"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge Hardware and Deployment</a></div><h1>Hardware Video Decoding: Why Decode Is Often the Real Bottleneck</h1><div class="byline">By Maidul Hasan Masum · 2026-11-08 · 5 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#why-decoding-costs-so-much">Why decoding costs so much</a></li><li><a href="#check-whether-decode-limits-you">Check whether decode limits you</a></li><li><a href="#hardware-decoders-on-common-platforms">Hardware decoders on common platforms</a></li><li><a href="#using-the-hardware-decoder">Using the hardware decoder</a></li><li><a href="#keep-frames-where-they-are">Keep frames where they are</a></li><li><a href="#reduce-the-work-before-decoding">Reduce the work before decoding</a></li><li><a href="#hardware-decoders-have-limits-too">Hardware decoders have limits too</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>You add an accelerator, the model runs in a few milliseconds, and the box still handles only a handful of cameras. The CPU sits near 100% while the accelerator idles. The model was never the bottleneck. Video decoding was.</p>
+<p>This article explains why decoding is so expensive, how to tell whether it limits you, and how to move it to the hardware decoders that most edge platforms include.</p>
+<h2 id="why-decoding-costs-so-much">Why decoding costs so much</h2>
+<p>Cameras send compressed video, usually H.264 or H.265. Before any analysis, every frame must be decoded back into raw pixels, at the full resolution the camera sends, and usually converted from the decoder's YUV format to BGR or RGB. Only then is it resized for the model.</p>
+<p>So the decoder handles far more pixels than the model ever sees.</p>
+<figure><img alt="Horizontal bar chart comparing megapixels per second decoded with megapixels per second seen by a 640 by 640 model, for six camera setups. For eight 1080p streams at 25 frames per second, the decoder produces about 415 megapixels per second while the model sees about 82." src="/vision-field-notes/images/hardware-video-decoding-on-edge-pixel-rates.png" loading="lazy"><figcaption>Arithmetic, not a benchmark. A 1080p frame has about five times as many pixels as a 640 by 640 model input, and every pixel is decoded and colour-converted before being thrown away by the resize.</figcaption></figure>
+<p>Decoding H.264 or H.265 in software is real work for a CPU, especially a small ARM CPU, and it grows with resolution, frame rate and the number of streams. Colour conversion and resizing on the CPU add more. Doing all of this in Python-adjacent code with extra copies adds more again.</p>
+<h2 id="check-whether-decode-limits-you">Check whether decode limits you</h2>
+<p>Measure before changing anything:</p>
+<ol>
+<li>Run only the capture and decode part of the pipeline, with no inference, for all cameras. Note CPU use and frames per second per stream.</li>
+<li>Run inference only, on frames already in memory. Note its throughput.</li>
+<li>Compare. If decoding alone uses most of the CPU, or delivers fewer frames than the cameras send, decode is your limit.</li>
+</ol>
+<p>Also watch the per-stage timings described in <a href="/vision-field-notes/posts/measuring-fps-and-latency-correctly/">Measuring FPS and Latency Correctly</a>. A pipeline where pre-processing and decode take longer than the model is common.</p>
+<h2 id="hardware-decoders-on-common-platforms">Hardware decoders on common platforms</h2>
+<p>Most edge platforms have dedicated video decoding hardware, separate from the CPU and the AI accelerator. What is available differs:</p>
+<ul>
+<li><strong>NVIDIA Jetson</strong> boards have hardware video decoders (NVDEC). They are used through NVIDIA's GStreamer elements, such as <code>nvv4l2decoder</code>, or through DeepStream. Check the decoder capability of your specific module in NVIDIA's documentation; some modules lack a hardware encoder but still decode in hardware.</li>
+<li><strong>NVIDIA GPUs in servers</strong> have NVDEC too, accessible through FFmpeg, GStreamer, DeepStream, or libraries built on them.</li>
+<li><strong>Raspberry Pi 5</strong> has a hardware decoder for H.265 (HEVC) but not for H.264, which is decoded on the CPU. If your cameras can send H.265, that matters a great deal on a Pi 5.</li>
+<li><strong>Intel CPUs with integrated graphics</strong> have Quick Sync video decoding, usable through VA-API or oneVPL with FFmpeg or GStreamer.</li>
+</ul>
+<p>Platforms and software change, so check the current documentation for your exact board and OS image before planning around a decoder.</p>
+<h2 id="using-the-hardware-decoder">Using the hardware decoder</h2>
+<p>The main obstacle is that the default paths often do not use it. OpenCV's <code>VideoCapture</code> with the FFmpeg backend decodes in software unless hardware acceleration is configured and supported by your OpenCV build. Recent OpenCV versions have a <code>CAP_PROP_HW_ACCELERATION</code> property for this; whether it works depends on how OpenCV was built.</p>
+<p>The more reliable route on many platforms is GStreamer. On a Jetson, a pipeline that decodes an RTSP H.264 stream in hardware and hands BGR frames to OpenCV looks roughly like this:</p>
+<pre><code class="language-python">pipeline = (
+    f&quot;rtspsrc location={url} latency=200 ! rtph264depay ! h264parse ! &quot;
+    &quot;nvv4l2decoder ! nvvidconv ! video/x-raw,format=BGRx,width=1280,height=720 ! &quot;
+    &quot;videoconvert ! video/x-raw,format=BGR ! appsink drop=true max-buffers=1&quot;
+)
+cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
+</code></pre>
+<p>Note three things. The resize to 1280 × 720 happens in <code>nvvidconv</code>, on the hardware, before frames reach the CPU. <code>drop=true max-buffers=1</code> keeps only the latest frame, so latency does not build up. And OpenCV must be built with GStreamer support; check <code>cv2.getBuildInformation()</code>. Element names and options vary between platform software versions, so test the pipeline with <code>gst-launch-1.0</code> first. GStreamer, FFmpeg or OpenCV for Video Pipelines compares the approaches.</p>
+<h2 id="keep-frames-where-they-are">Keep frames where they are</h2>
+<p>Hardware decoders put frames in their own memory. Copying each frame to the CPU, converting it, then copying it to the GPU for inference wastes much of the gain. Frameworks such as DeepStream keep frames in GPU memory from decode through inference for this reason. If you build your own pipeline, minimise copies and conversions, and do the resize as early as possible, ideally in the decoder's own scaler.</p>
+<h2 id="reduce-the-work-before-decoding">Reduce the work before decoding</h2>
+<p>Often the cheapest decode is the one you do not do:</p>
+<ul>
+<li><strong>Use the substream.</strong> Most IP cameras offer a second, lower-resolution stream. If the model runs at 640, a 720p or even 640 × 360 substream may be enough, at a fraction of the decode cost. See Main Stream or Substream.</li>
+<li><strong>Lower the camera's frame rate.</strong> If you analyse 5 frames per second, receiving 25 means decoding 25. Most decoders cannot skip frames freely, because compressed frames depend on earlier ones. Setting the camera's stream to the rate you need saves decode work. See How Many Frames per Second Does Your Analytics Need?.</li>
+<li><strong>Choose the codec your hardware decodes.</strong> On a Pi 5, H.265 is decoded in hardware and H.264 is not. Elsewhere it may be the other way, or both.</li>
+</ul>
+<h2 id="hardware-decoders-have-limits-too">Hardware decoders have limits too</h2>
+<p>A hardware decoder has a maximum throughput, often specified as a number of streams at a resolution and frame rate, and a maximum number of simultaneous sessions. Both are in the platform's documentation. Plan within them with a margin, and test with the real number of streams, since running many streams at once is different from one stream at a high rate.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Measure decode cost separately from inference.</li>
+<li>Find out which codecs your platform decodes in hardware.</li>
+<li>Check that your capture path actually uses the hardware decoder.</li>
+<li>Resize in hardware, before frames reach the CPU.</li>
+<li>Keep only the latest frame in capture buffers.</li>
+<li>Minimise copies between decoder, CPU and accelerator.</li>
+<li>Use substreams and lower camera frame rates where possible.</li>
+<li>Stay within the decoder's stream and session limits.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/read-rtsp-streams-with-opencv/">Reading RTSP Streams with OpenCV and FFmpeg</a> and <a href="/vision-field-notes/posts/memory-budgets-on-small-boards/">Memory Budgets on Small Boards</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">Related articles</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/memory-budgets-on-small-boards/"><div class="cat">Edge Hardware and Deployment</div><h3>Memory Budgets on Small Boards: What Actually Fits</h3><p>On a Pi or Jetson, memory often runs out before compute. Where it goes, from frame queues to runtimes and the model, and how to measure and cut it.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/thermal-throttling-on-edge-devices/"><div class="cat">Edge Hardware and Deployment</div><h3>Thermal Throttling on Edge Devices: Detecting It and Planning for It</h3><p>Edge boards slow down when they get hot. How to see throttling on a Raspberry Pi or Jetson, how to test for it properly and how to leave enough headroom.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/raspberry-pi-vs-jetson-orin-nano/"><div class="cat">Edge Hardware and Deployment</div><h3>Raspberry Pi vs Jetson Orin Nano for Object Detection</h3><p>Raspberry Pi vs Jetson Orin Nano for object detection: how GPU, software stack, power, price and ecosystem should decide which board fits your project.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a> · <a href="/vision-field-notes/feed.xml">Feed</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+
+
+</body></html>

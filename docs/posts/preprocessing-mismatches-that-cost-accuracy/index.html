@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Preprocessing Mismatches That Silently Cost Accuracy</title>
+<meta name="description" content="A model only works on inputs prepared the way it was trained. Resize method, colour order, normalisation and padding mismatches, and how to catch them.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/preprocessing-mismatches-that-cost-accuracy/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Preprocessing Mismatches That Silently Cost Accuracy"><meta property="og:description" content="A model only works on inputs prepared the way it was trained. Resize method, colour order, normalisation and padding mismatches, and how to catch them.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/preprocessing-mismatches-that-cost-accuracy/"><meta property="og:site_name" content="Vision Field Notes"><meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-11-09"><meta property="article:author" content="https://mh-masum6875.github.io"><meta property="article:section" content="YOLO and Detection Basics"><meta property="article:tag" content="preprocessing"><meta property="article:tag" content="letterbox"><meta property="article:tag" content="deployment"><meta property="article:tag" content="onnx"><meta property="article:tag" content="debugging">
+<link rel="alternate" type="application/atom+xml" title="Vision Field Notes" href="https://mh-masum6875.github.io/vision-field-notes/feed.xml">
+
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/preprocessing-mismatches-that-cost-accuracy-resize-and-colour.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<meta name="google-site-verification" content="B1rDBY5iKrbjTB8G4hetNb5K8bocBC1Rum9hT_1gCEc">
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Preprocessing Mismatches That Silently Cost Accuracy", "description": "A model only works on inputs prepared the way it was trained. Resize method, colour order, normalisation and padding mismatches, and how to catch them.", "datePublished": "2026-11-09", "dateModified": "2026-11-09", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io", "sameAs": ["https://mh-masum6875.github.io", "https://github.com/mh-masum6875"]}, "inLanguage": "en", "wordCount": 1241, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/preprocessing-mismatches-that-cost-accuracy/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/preprocessing-mismatches-that-cost-accuracy-resize-and-colour.png", "articleSection": "YOLO and Detection Basics", "keywords": "preprocessing, letterbox, deployment, onnx, debugging"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "YOLO and Detection Basics", "item": "https://mh-masum6875.github.io/vision-field-notes/category/yolo-and-detection-basics/"}, {"@type": "ListItem", "position": 3, "name": "Preprocessing Mismatches That Silently Cost Accuracy"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO and Detection Basics</a></div><h1>Preprocessing Mismatches That Silently Cost Accuracy</h1><div class="byline">By Maidul Hasan Masum · 2026-11-09 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#why-small-differences-matter">Why small differences matter</a></li><li><a href="#1-letterbox-versus-stretch">1. Letterbox versus stretch</a></li><li><a href="#2-mapping-boxes-back">2. Mapping boxes back</a></li><li><a href="#3-bgr-versus-rgb">3. BGR versus RGB</a></li><li><a href="#4-value-range-and-normalisation">4. Value range and normalisation</a></li><li><a href="#5-data-type-and-layout">5. Data type and layout</a></li><li><a href="#6-interpolation-and-resize-order">6. Interpolation and resize order</a></li><li><a href="#7-training-data-that-does-not-look-like-production-frames">7. Training data that does not look like production frames</a></li><li><a href="#the-test-that-catches-all-of-it">The test that catches all of it</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>A model validated at a good mAP is exported, wrapped in production code, and quietly performs worse. There is no error. Boxes still appear, mostly in the right places. But confidence is lower, small objects are missed, and some classes are confused. Very often the network is fine and the input is not: production code prepares frames slightly differently from the training pipeline.</p>
+<p>This article lists the mismatches that cause most of these losses and a simple test that catches all of them at once.</p>
+<h2 id="why-small-differences-matter">Why small differences matter</h2>
+<p>A network learns from inputs with a particular shape, colour order and value range. It has never seen anything else. If production feeds it stretched images, swapped colour channels or values on a different scale, it is effectively running on a different dataset. It will not fail loudly, because neural networks always produce some output. It will just be wrong more often.</p>
+<figure><img alt="Three versions of the same synthetic street-style frame at 640 by 640. Left: letterboxed, with grey bars top and bottom and round signs kept round. Middle: stretched to the square, with the round signs turned into tall ellipses. Right: letterboxed but with red and blue channels swapped, so the red stop sign appears blue." src="/vision-field-notes/images/preprocessing-mismatches-that-cost-accuracy-resize-and-colour.png" loading="lazy"><figcaption>A synthetic frame. A model trained on the left-hand version receives a different-looking world if production stretches the frame or swaps the colour channels.</figcaption></figure>
+<h2 id="1-letterbox-versus-stretch">1. Letterbox versus stretch</h2>
+<p>Most YOLO pipelines, including Ultralytics, resize with a letterbox: scale the frame to fit the input while keeping its aspect ratio, then pad the rest with a constant grey (value 114 in Ultralytics). A common hand-written alternative is <code>cv2.resize(frame, (640, 640))</code>, which stretches a 16:9 frame to a square.</p>
+<p>Stretching changes the shapes the model sees. People become taller and thinner, round objects become ellipses. A model trained on letterboxed images sees unfamiliar proportions and loses accuracy, especially on classes defined by shape.</p>
+<p>The reverse mismatch also happens: training on stretched images and letterboxing in production. Whatever you choose, do the same in both places.</p>
+<h2 id="2-mapping-boxes-back">2. Mapping boxes back</h2>
+<p>After a letterbox, the model's box coordinates are in the padded, scaled input space. To draw them on the original frame, subtract the padding and divide by the scale. Two frequent bugs:</p>
+<ul>
+<li>Padding placed in the centre during pre-processing, but subtracted as if it were at the top-left (or the other way round).</li>
+<li>Using the width ratio for both axes when the scale was set by the height.</li>
+</ul>
+<p>These bugs shift boxes rather than lose them, so detections look nearly right on a quick glance. They break zone and line rules, which depend on exact positions, and they make evaluation against ground truth look worse than the model really is. Test the round trip with a known box; <a href="/vision-field-notes/posts/regression-tests-for-vision-pipelines/">Regression Tests for a Vision Pipeline</a> shows how.</p>
+<h2 id="3-bgr-versus-rgb">3. BGR versus RGB</h2>
+<p>OpenCV loads and decodes images in BGR channel order. PIL, most deep learning datasets and many models expect RGB. Ultralytics' predictor accepts NumPy arrays in BGR, as OpenCV produces, and handles the conversion. But once you export to ONNX or TensorRT and write your own pre-processing, the conversion is your job.</p>
+<p>A swapped model still detects many objects, because shape carries a lot of information. Classes that depend on colour, such as a high-visibility vest, a red light or a coloured uniform, suffer most. Check with an image that has a strongly coloured object and confirm the tensor's first channel is red.</p>
+<h2 id="4-value-range-and-normalisation">4. Value range and normalisation</h2>
+<p>Training pipelines scale pixel values in a specific way. YOLO models typically expect values from 0 to 1 (pixel divided by 255). Many classification backbones expect ImageNet normalisation: subtract a per-channel mean and divide by a per-channel standard deviation. Feeding 0 to 255 to a model that expects 0 to 1, or skipping a mean subtraction, shifts every activation in the network.</p>
+<p>This one is usually dramatic, close to no detections at all, so it is found quickly. The subtler version is a second model in the pipeline, such as a classifier on detector crops, that expects a different normalisation from the detector.</p>
+<h2 id="5-data-type-and-layout">5. Data type and layout</h2>
+<p>Exported models usually expect a float32 tensor in NCHW layout: batch, channels, height, width. OpenCV frames are uint8 in HWC layout. Forgetting the transpose gives a tensor of the right size and the wrong meaning. Some runtimes will reject the wrong shape; with a square input, the shape can match by accident. FP16 engines may expect FP16 input, depending on how they were built.</p>
+<h2 id="6-interpolation-and-resize-order">6. Interpolation and resize order</h2>
+<p>Different resize methods (nearest, bilinear, area) give slightly different pixels. The effect is usually small, but not always: nearest-neighbour downscaling produces aliasing that can hurt small objects. Match the training pipeline's method if you can.</p>
+<p>Order matters for speed as well as accuracy. Resizing first and converting colour after is equivalent in output and much cheaper, because the conversion then runs on far fewer pixels. Profiling a Python Vision Pipeline shows the difference measured.</p>
+<h2 id="7-training-data-that-does-not-look-like-production-frames">7. Training data that does not look like production frames</h2>
+<p>Some mismatches come from the data, not the code:</p>
+<ul>
+<li><strong>Compression.</strong> Training images saved as heavily compressed JPEGs, production frames decoded from a high-bitrate stream, or the reverse.</li>
+<li><strong>Orientation.</strong> Phone photos carry rotation in EXIF metadata. Some loaders apply it and some do not, so a labelled image and the pixels the model sees can disagree.</li>
+<li><strong>Resolution path.</strong> Training frames extracted from the main stream, production running on the substream. See Main Stream or Substream.</li>
+<li><strong>Input size.</strong> A model trained at 640 and run at 1280 sees objects at a scale it never learned. See <a href="/vision-field-notes/posts/input-resolution-or-model-size/">Input Resolution or Model Size</a>.</li>
+</ul>
+<h2 id="the-test-that-catches-all-of-it">The test that catches all of it</h2>
+<p>Take a handful of real images. Run each through the training (or validation) pipeline's pre-processing and save the exact tensor the model received. Run the same images through your production pre-processing and save that tensor too. Then compare:</p>
+<pre><code class="language-python">import numpy as np
+
+a = np.load(&quot;reference_tensor.npy&quot;)    # from the training / validation pipeline
+b = np.load(&quot;production_tensor.npy&quot;)   # from your deployment code, same image
+print(a.shape, b.shape, a.dtype, b.dtype)
+print(&quot;max abs difference:&quot;, np.abs(a.astype(np.float32) - b.astype(np.float32)).max())
+</code></pre>
+<p>Shape, dtype and values should match closely. Small differences from resize implementations are expected. Large differences, or differences concentrated in one channel or along the edges, point to one of the mismatches above.</p>
+<p>Then compare outputs: run the reference model on the reference tensor and the exported model on the production tensor, and match the boxes. If tensors match but boxes do not, the problem is in the export or post-processing, not the input. <a href="/vision-field-notes/posts/export-yolo-to-onnx/">Export YOLO to ONNX and Run It with ONNX Runtime</a> covers checking an export.</p>
+<p>Add this comparison to your automated tests, so a future refactor cannot reintroduce the bug.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Same resize method (letterbox or stretch) in training and production.</li>
+<li>Same padding value and position, and correct box mapping back.</li>
+<li>Colour order converted correctly for exported models.</li>
+<li>Same value scaling and normalisation, for every model in the pipeline.</li>
+<li>Correct dtype and NCHW layout.</li>
+<li>Training images resemble production frames in compression, orientation and resolution.</li>
+<li>Tensor comparison between training and production pre-processing in your tests.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/export-yolo-to-onnx/">Export YOLO to ONNX and Run It with ONNX Runtime</a> and <a href="/vision-field-notes/posts/comparing-two-detectors-fairly/">Comparing Two Detectors Fairly</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">Related articles</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/export-yolo-to-onnx/"><div class="cat">Edge Hardware and Deployment</div><h3>Export YOLO to ONNX and Run It with ONNX Runtime</h3><p>Export a YOLO model to ONNX with Ultralytics and run it on CPU with ONNX Runtime, including pre-processing, output decoding and NMS differences.</p><div class="meta">6 min read</div></a><a class="card" href="/vision-field-notes/posts/yolov7-reparameterization/"><div class="cat">YOLO and Detection Basics</div><h3>How YOLOv7 Gets Real-Time Speed with Re-parameterization</h3><p>How YOLOv7 uses re-parameterization: training-time and inference-time structure, how layers merge, and what it means when you export and deploy the model.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/yolo-on-raspberry-pi-5/"><div class="cat">Edge Hardware and Deployment</div><h3>Running YOLO on a Raspberry Pi 5: What to Expect</h3><p>Running YOLO on a Raspberry Pi 5: setup, model choices, export formats, thread tuning and realistic expectations, with a way to measure speed yourself.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a> · <a href="/vision-field-notes/feed.xml">Feed</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+<script data-goatcounter="https://mhmasum6875.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+
+</body></html>

@@ -193,7 +193,7 @@ start_http_server(9100)
 <li><strong>Log events, not frames.</strong> Log a reconnect, a mode switch, an alert, a configuration change. Do not log every frame; at 25 frames per second per camera that buries everything else.</li>
 <li><strong>Log alerts with context.</strong> For each alert: camera, rule, track ID, confidence, model version, and a reference to the saved snapshot. This is what you need when a client questions an alert. <a href="/vision-field-notes/posts/hard-negative-mining-from-production/">Hard Negative Mining from Production Footage</a> reuses the same records.</li>
 <li><strong>Log configuration and version at start-up.</strong> Model version, thresholds version, code version and camera list. When behaviour changes, the first question is what changed.</li>
-<li><strong>Use wall-clock time in UTC with time zone stated,</strong> and synchronise the server clock. See Alerts at the Wrong Time of Day.</li>
+<li><strong>Use wall-clock time in UTC with time zone stated,</strong> and synchronise the server clock. See <a href="/vision-field-notes/posts/alerts-at-the-wrong-time-of-day/">Alerts at the Wrong Time of Day</a>.</li>
 <li><strong>Rate-limit repeating errors.</strong> A camera that is down should log "still down" once a minute, not a stack trace every 100 ms.</li>
 </ul>
 <p>Keep personal data out of logs where possible. Stream URLs often contain credentials; strip them before logging.</p>

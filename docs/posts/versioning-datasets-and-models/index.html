@@ -144,7 +144,7 @@ cam07/2026-10-02/004410.jpg,1ab9...,test,cam07,2026-10-02
 <p>Finally, keep a deployment record: which model version and thresholds run on which cameras, from when. A simple change log works:</p>
 <pre><code>2026-11-05  warehouse-2  cams 3,7,9  model ppe-1.8.0  thresholds v6  (was ppe-1.7.2 / v5)
 </code></pre>
-<p>This is the record you need when a client asks why alerts changed last Tuesday, and the one you need to roll back. If your deployment tooling can write it automatically, even better. Updating Models on Edge Devices Without Bricking Them covers the rollout side.</p>
+<p>This is the record you need when a client asks why alerts changed last Tuesday, and the one you need to roll back. If your deployment tooling can write it automatically, even better. <a href="/vision-field-notes/posts/updating-models-on-edge-devices/">Updating Models on Edge Devices Without Bricking Them</a> covers the rollout side.</p>
 <h2 id="what-this-buys-you">What this buys you</h2>
 <ul>
 <li><strong>Debugging.</strong> When a model misbehaves on the dock cameras, you can check whether those cameras were in training data, which labels were used, and what changed since the last good version.</li>

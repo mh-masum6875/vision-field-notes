@@ -13,6 +13,42 @@ AFF = json.loads((ROOT / "affiliates.json").read_text())
 BASE = S["base_url"].rstrip("/")
 BP = "/" + BASE.split("/", 3)[3] if BASE.count("/") > 2 else ""
 
+_dim_cache = {}
+
+def dims(src):
+    """Width and height attributes for an image, read from the file itself.
+
+    The browser needs the aspect ratio before the bytes arrive, or the text
+    below the image jumps down when it loads.
+    """
+    name = src.rsplit("/", 1)[-1]
+    if name not in _dim_cache:
+        path = ROOT / "content" / "images" / name
+        _dim_cache[name] = read_size(path) if path.exists() else None
+    wh = _dim_cache[name]
+    return f' width="{wh[0]}" height="{wh[1]}"' if wh else ""
+
+def read_size(path):
+    data = path.read_bytes()
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return (int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big"))
+    if data[:2] == b"\xff\xd8":
+        i = 2
+        while i + 9 < len(data):
+            if data[i] != 0xFF:
+                i += 1
+                continue
+            marker = data[i + 1]
+            if marker in (0xD8, 0xD9) or 0xD0 <= marker <= 0xD7:
+                i += 2
+                continue
+            length = int.from_bytes(data[i + 2:i + 4], "big")
+            if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
+                return (int.from_bytes(data[i + 7:i + 9], "big"),
+                        int.from_bytes(data[i + 5:i + 7], "big"))
+            i += 2 + length
+    return None
+
 def split_fm(text):
     m = re.match(r"^---\n(.*?)\n---\n(.*)$", text, re.S)
     if not m:
@@ -63,8 +99,11 @@ def render_body(p):
     h = md.convert(body)
     # an image alone in a paragraph becomes a figure; its title text is the caption
     h = re.sub(r'<p><img alt="([^"]*)" src="([^"]+)" title="([^"]*)" /></p>',
-               r'<figure><img alt="\1" src="\2" loading="lazy"><figcaption>\3</figcaption></figure>', h)
-    h = re.sub(r'<p><img alt="([^"]*)" src="([^"]+)" /></p>', r'<figure><img alt="\1" src="\2" loading="lazy"></figure>', h)
+               lambda m: f'<figure><img alt="{m.group(1)}" src="{m.group(2)}"{dims(m.group(2))}'
+                         f' loading="lazy"><figcaption>{m.group(3)}</figcaption></figure>', h)
+    h = re.sub(r'<p><img alt="([^"]*)" src="([^"]+)" /></p>',
+               lambda m: f'<figure><img alt="{m.group(1)}" src="{m.group(2)}"{dims(m.group(2))}'
+                         f' loading="lazy"></figure>', h)
     return h, md.toc_tokens, used_aff[0]
 
 def words(t): return len(re.findall(r"\w+", re.sub(r"```.*?```", "", t, flags=re.S)))

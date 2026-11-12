@@ -117,7 +117,7 @@ nav.main a{white-space:nowrap}}
 <p>The time saving depends on how good the teacher is on your footage. Measure it on a small batch before committing: how long does a labeller take per image from scratch, and how long correcting pseudo-labels?</p>
 <h3 id="2-split-by-confidence">2. Split by confidence</h3>
 <p>Not every box needs the same attention.</p>
-<figure><img alt="A horizontal bar of teacher confidence from 0 to 1 divided into three bands. Below 0.3: discard, mostly noise, but review a sample for missed objects. From 0.3 to 0.75: human review, accept, fix or delete each box, where the time goes. Above 0.75: accept and spot-check a random sample per class and per camera." src="/vision-field-notes/images/pseudo-labelling-with-a-larger-model-bands.png" loading="lazy"><figcaption>A diagram with example thresholds. Set the band edges per class from a small checked sample, not by guessing.</figcaption></figure>
+<figure><img alt="A horizontal bar of teacher confidence from 0 to 1 divided into three bands. Below 0.3: discard, mostly noise, but review a sample for missed objects. From 0.3 to 0.75: human review, accept, fix or delete each box, where the time goes. Above 0.75: accept and spot-check a random sample per class and per camera." src="/vision-field-notes/images/pseudo-labelling-with-a-larger-model-bands.png" width="1785" height="645" loading="lazy"><figcaption>A diagram with example thresholds. Set the band edges per class from a small checked sample, not by guessing.</figcaption></figure>
 <ul>
 <li><strong>High confidence:</strong> accept, but spot-check a random sample per class and per camera.</li>
 <li><strong>Middle:</strong> human review of every box. This is where most corrections happen.</li>

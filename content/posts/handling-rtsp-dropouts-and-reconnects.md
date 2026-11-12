@@ -1,6 +1,6 @@
 ---
 title: "Handling RTSP Dropouts: Reconnects and Health Checks"
-description: "Design an RTSP reader that survives camera and network failures: detect stalls, reconnect with backoff, report health, and avoid the common silent-freeze bugs."
+description: "Design an RTSP reader that survives camera and network failures: detect stalls, reconnect with backoff, report health, and avoid silent-freeze bugs."
 category: "Video Analytics"
 date: 2026-10-24
 tags: [rtsp, reliability, opencv, video-analytics, monitoring]

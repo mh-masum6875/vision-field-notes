@@ -1,6 +1,6 @@
 ---
 title: "What Is YOLO? Object Detection Explained Without the Math"
-description: "What is YOLO? A plain explanation of how this object detection model finds objects in a single pass, what its output means, and where it fits in a project."
+description: "What is YOLO? A plain explanation of how it finds objects in a single pass, what its output means, and where it fits in a project."
 category: "YOLO and Detection Basics"
 date: 2026-10-24
 tags: [yolo, object-detection, basics, computer-vision]

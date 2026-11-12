@@ -5,7 +5,12 @@ on:
     branches: [main]
     paths: ["content/**", "build.py", "site.json", "affiliates.json"]
   schedule:
+    # GitHub runs scheduled jobs late when its queue is busy, routinely by five or
+    # six hours here. Two runs a day mean a post is never held for a whole day by
+    # one late slot. The build is idempotent, so the second run is a no-op when the
+    # first has already published.
     - cron: "17 0 * * *"
+    - cron: "43 9 * * *"
   workflow_dispatch:
 
 permissions:

@@ -1,6 +1,6 @@
 ---
 title: "Privacy and Ethics in Camera Analytics"
-description: "Practical privacy and ethics for camera analytics: data minimisation, retention, signage, consent, bias and access control. General guidance, not legal advice."
+description: "Privacy and ethics for camera analytics: data minimisation, retention, signage, consent, bias and access control. General guidance, not legal advice."
 category: "Video Analytics"
 date: 2026-10-24
 tags: [privacy, ethics, data-minimisation, video-analytics, compliance]

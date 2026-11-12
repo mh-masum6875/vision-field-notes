@@ -1,6 +1,6 @@
 ---
 title: "Classification vs Detection vs Segmentation: Pick the Right Task"
-description: "Classification vs detection vs segmentation: how to choose the right computer vision task for your project, with a decision guide, cost trade-offs and examples."
+description: "Classification vs detection vs segmentation: how to choose the right task for your project, with a decision guide, cost trade-offs and examples."
 category: "YOLO and Detection Basics"
 date: 2026-10-24
 tags: [classification, detection, segmentation, project-planning]

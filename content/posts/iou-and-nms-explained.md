@@ -1,6 +1,6 @@
 ---
 title: "IoU and Non-Maximum Suppression, Explained with Examples"
-description: "Intersection over Union and non-maximum suppression explained step by step, with worked examples, code, and typical IoU and NMS threshold choices for detectors."
+description: "Intersection over Union and non-maximum suppression explained step by step, with worked examples, code, and typical threshold choices for detectors."
 category: "YOLO and Detection Basics"
 date: 2026-10-24
 tags: [iou, nms, object-detection, post-processing]

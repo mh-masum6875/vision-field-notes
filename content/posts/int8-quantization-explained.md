@@ -1,6 +1,6 @@
 ---
 title: "INT8 Quantization for Detectors: Benefits and Risks"
-description: "INT8 quantization for object detectors: post-training vs quantization-aware training, calibration data, what accuracy risks to expect and how to test them."
+description: "INT8 quantization for detectors: post-training vs quantization-aware training, calibration data, what accuracy risks to expect and how to test them."
 category: "Edge Hardware and Deployment"
 date: 2026-10-24
 tags: [quantization, int8, optimization, edge-ai]

@@ -1,6 +1,6 @@
 ---
 title: "CVAT vs Label Studio vs Roboflow: Choosing an Annotation Tool"
-description: "CVAT vs Label Studio vs Roboflow compared on cost, hosting, export formats, team use and labelling speed, so you can pick an annotation tool for detection."
+description: "CVAT vs Label Studio vs Roboflow compared on cost, hosting, export formats, team use and labelling speed, so you can pick an annotation tool."
 category: "Datasets and Training"
 date: 2026-10-24
 tags: [annotation, cvat, label-studio, roboflow]

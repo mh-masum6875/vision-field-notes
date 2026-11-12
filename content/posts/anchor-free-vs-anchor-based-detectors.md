@@ -1,6 +1,6 @@
 ---
 title: "Anchor-Free vs Anchor-Based Object Detectors"
-description: "Anchor-free vs anchor-based object detectors: what anchors are, why newer YOLO versions dropped them, and what the change means for training and deployment."
+description: "Anchor-free vs anchor-based detectors: what anchors are, why newer YOLO versions dropped them, and what the change means for training and deployment."
 category: "YOLO and Detection Basics"
 date: 2026-10-24
 tags: [anchors, yolo, object-detection, training]

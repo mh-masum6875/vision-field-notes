@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Why a Detector&#39;s Confidence Is Not a Probability</title>
+<meta name="description" content="A box scored 0.8 is not right 80% of the time. What confidence scores are, why they shift between models and classes, and what that means for thresholds.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/detector-confidence-is-not-a-probability/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Why a Detector&#39;s Confidence Is Not a Probability"><meta property="og:description" content="A box scored 0.8 is not right 80% of the time. What confidence scores are, why they shift between models and classes, and what that means for thresholds.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/detector-confidence-is-not-a-probability/"><meta property="og:site_name" content="Vision Field Notes"><meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-11-12"><meta property="article:author" content="https://mh-masum6875.github.io"><meta property="article:section" content="YOLO and Detection Basics"><meta property="article:tag" content="confidence"><meta property="article:tag" content="calibration"><meta property="article:tag" content="thresholds"><meta property="article:tag" content="yolo"><meta property="article:tag" content="evaluation">
+<link rel="alternate" type="application/atom+xml" title="Vision Field Notes" href="https://mh-masum6875.github.io/vision-field-notes/feed.xml">
+
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/detector-confidence-is-not-a-probability-reliability.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<meta name="google-site-verification" content="B1rDBY5iKrbjTB8G4hetNb5K8bocBC1Rum9hT_1gCEc">
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Why a Detector's Confidence Is Not a Probability", "description": "A box scored 0.8 is not right 80% of the time. What confidence scores are, why they shift between models and classes, and what that means for thresholds.", "datePublished": "2026-11-12", "dateModified": "2026-11-12", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io", "sameAs": ["https://mh-masum6875.github.io", "https://github.com/mh-masum6875"]}, "inLanguage": "en", "wordCount": 1096, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/detector-confidence-is-not-a-probability/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/detector-confidence-is-not-a-probability-reliability.png", "articleSection": "YOLO and Detection Basics", "keywords": "confidence, calibration, thresholds, yolo, evaluation"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "YOLO and Detection Basics", "item": "https://mh-masum6875.github.io/vision-field-notes/category/yolo-and-detection-basics/"}, {"@type": "ListItem", "position": 3, "name": "Why a Detector's Confidence Is Not a Probability"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO and Detection Basics</a></div><h1>Why a Detector&#x27;s Confidence Is Not a Probability</h1><div class="byline">By Maidul Hasan Masum · 2026-11-12 · 5 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#what-the-score-is">What the score is</a></li><li><a href="#what-calibration-would-look-like">What calibration would look like</a></li><li><a href="#why-scores-shift">Why scores shift</a></li><li><a href="#consequences-for-thresholds">Consequences for thresholds</a></li><li><a href="#do-not-show-raw-scores-as-probabilities">Do not show raw scores as probabilities</a></li><li><a href="#calibrating-scores-when-you-need-probabilities">Calibrating scores when you need probabilities</a></li><li><a href="#scores-in-tracking-and-temporal-filters">Scores in tracking and temporal filters</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>A detector reports a person with confidence 0.87, and it is tempting to read that as "87% chance this is a person". Operators read it that way, clients read it that way, and engineers often half-believe it. It is not true in general, and treating it as true leads to thresholds that break silently when the model changes.</p>
+<p>This article explains what a detector's confidence score is, why it is usually not a calibrated probability, and how to work with it correctly.</p>
+<h2 id="what-the-score-is">What the score is</h2>
+<p>In a typical modern YOLO detector, the network outputs, for each candidate box, a score per class after a sigmoid function, so each value lies between 0 and 1. The highest class score becomes the box's confidence. Training pushes scores towards 1 for boxes that match real objects and towards 0 for everything else, using a loss function and target assignment rules that vary between model versions.</p>
+<p>Nothing in that process forces the scores to be calibrated, meaning that among all boxes scored 0.8, about 80% are correct. The score is a ranking signal: higher usually means more likely to be right. How much more likely is not fixed.</p>
+<h2 id="what-calibration-would-look-like">What calibration would look like</h2>
+<p>A reliability diagram makes this visible. Group boxes by score into bins, and for each bin, compute the share of boxes that match a real object. A perfectly calibrated detector lies on the diagonal.</p>
+<figure><img alt="Reliability diagram with confidence score on the horizontal axis and share of correct boxes on the vertical axis. A dashed diagonal marks perfect calibration. An over-confident curve lies below it, so boxes scored 0.7 are correct only about half the time. An under-confident curve lies above it." src="/vision-field-notes/images/detector-confidence-is-not-a-probability-reliability.png" loading="lazy"><figcaption>Constructed curves, not measurements. Real detectors can lie above or below the diagonal, and differently for each class, input size and training run.</figcaption></figure>
+<p>You can draw this for your own model on your validation set: match predictions to ground truth by IoU as the evaluator does, bin by score, and plot. The shape is often surprising, and it differs by class.</p>
+<h2 id="why-scores-shift">Why scores shift</h2>
+<p>Even if one model happened to be well calibrated, its scores are not stable across changes. Scores move when you change:</p>
+<ul>
+<li><strong>The model or its size.</strong> A small model and a large one trained on the same data give different score distributions.</li>
+<li><strong>The training run.</strong> Different seeds, epochs or augmentations produce different scores for the same image.</li>
+<li><strong>The training data.</strong> Adding hard negatives often lowers scores on lookalike objects and sometimes on real ones nearby. See <a href="/vision-field-notes/posts/hard-negative-mining-from-production/">Hard Negative Mining from Production Footage</a>.</li>
+<li><strong>Precision.</strong> FP16 and especially INT8 conversion shift scores. See <a href="/vision-field-notes/posts/int8-quantization-explained/">INT8 Quantization for Detectors</a>.</li>
+<li><strong>Input size and pre-processing.</strong> A different resize or input size changes what the network sees. See <a href="/vision-field-notes/posts/preprocessing-mismatches-that-cost-accuracy/">Preprocessing Mismatches That Silently Cost Accuracy</a>.</li>
+<li><strong>The scene.</strong> Night footage, a new camera angle or heavy compression typically lowers scores for real objects.</li>
+</ul>
+<p>And scores differ between classes within one model. A rare class may rarely exceed 0.6 even when correct, while a common class routinely scores above 0.9.</p>
+<h2 id="consequences-for-thresholds">Consequences for thresholds</h2>
+<h3 id="a-threshold-belongs-to-one-model">A threshold belongs to one model</h3>
+<p>A threshold of 0.5 tuned for model version 1.7 means something different for 1.8. After every retraining or export, re-tune thresholds on validation data. Ship thresholds with the model as one package, not as a separate setting. See <a href="/vision-field-notes/posts/updating-models-on-edge-devices/">Updating Models on Edge Devices Without Bricking Them</a>.</p>
+<h3 id="tune-per-class">Tune per class</h3>
+<p>Because classes have different score distributions, one global threshold is a compromise. Choose each class's threshold from its own precision-recall curve at the precision or recall you need. See <a href="/vision-field-notes/posts/confidence-threshold-tuning/">Confidence Thresholds: Tuning a Detector to Cut False Alarms</a>.</p>
+<h3 id="re-check-per-condition">Re-check per condition</h3>
+<p>If night scores are systematically lower, a threshold that works by day misses people at night. Check precision and recall per condition at your chosen thresholds; per-mode thresholds can be justified. See <a href="/vision-field-notes/posts/day-night-switching-ir-cut-filter/">Day/Night Switching</a>.</p>
+<h2 id="do-not-show-raw-scores-as-probabilities">Do not show raw scores as probabilities</h2>
+<p>Displaying "87% confidence" next to an alert invites operators to treat it as a probability. They will learn that "87%" alerts are sometimes wrong and lose trust, or they will ignore "55%" alerts that are actually reliable for that class.</p>
+<p>Better options:</p>
+<ul>
+<li>Show no score at all; the alert passed the threshold, which is the decision.</li>
+<li>Show a simple category, such as "high" and "normal", with boundaries chosen from validation data.</li>
+<li>If you must show a number, calibrate it first, and say what it means.</li>
+</ul>
+<h2 id="calibrating-scores-when-you-need-probabilities">Calibrating scores when you need probabilities</h2>
+<p>Sometimes you do need meaningful probabilities, for example to combine evidence across several frames or cameras, or to set an alert policy in terms of expected false alerts. Standard calibration methods, developed mainly for classifiers, can be applied to detector scores after matching boxes to ground truth:</p>
+<ul>
+<li><strong>Temperature or Platt scaling:</strong> fit a simple function (one or two parameters) that maps raw scores to calibrated ones on validation data.</li>
+<li><strong>Isotonic regression:</strong> fit a flexible monotonic mapping; needs more data.</li>
+</ul>
+<p>Fit per class if classes behave differently, check the result with a reliability diagram on held-out data, and refit after every model change. Calibration does not change the ranking of boxes, so precision-recall curves and AP stay the same; only the meaning of the numbers changes.</p>
+<h2 id="scores-in-tracking-and-temporal-filters">Scores in tracking and temporal filters</h2>
+<p>Pipelines often average a track's confidence over its life, or require a minimum score over several frames. That is fine as long as you remember it is a heuristic. An average of uncalibrated scores is not a probability either. Tune these rules with event-level evaluation on real footage, not by reasoning about what the numbers ought to mean. See <a href="/vision-field-notes/posts/evaluate-video-analytics-by-events/">Measuring Video Analytics by Events, Not Frames</a>.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Treat confidence as a ranking, not a probability.</li>
+<li>Draw a reliability diagram per class on validation data if scores matter.</li>
+<li>Re-tune thresholds after any model, data, precision or input change.</li>
+<li>Tune thresholds per class and check them per condition.</li>
+<li>Ship thresholds with the model version.</li>
+<li>Do not show raw scores to operators as percentages.</li>
+<li>Calibrate per class, on held-out data, if you need real probabilities.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/confidence-threshold-tuning/">Confidence Thresholds: Tuning a Detector to Cut False Alarms</a> and <a href="/vision-field-notes/posts/what-map-hides/">What mAP Hides</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">Related articles</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/comparing-two-detectors-fairly/"><div class="cat">YOLO and Detection Basics</div><h3>Comparing Two Detectors Fairly</h3><p>Before calling one detector better, hold data, settings and training budget equal, and check the gap is larger than test-set and seed noise.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/map-precision-recall-explained/"><div class="cat">YOLO and Detection Basics</div><h3>mAP, Precision and Recall: How to Read Detection Results</h3><p>Learn how to read precision, recall, mAP50 and mAP50-95 in object detection results, and which metric matters most for your own use case and camera setup.</p><div class="meta">7 min read</div></a><a class="card" href="/vision-field-notes/posts/yolo27-announced-what-to-do-before-it-ships/"><div class="cat">YOLO and Detection Basics</div><h3>YOLO27 Announced: What to Check Before You Switch</h3><p>Ultralytics announced YOLO27 in September 2026. What was actually said, what is still unknown, and how to evaluate it on your own data when it ships.</p><div class="meta">4 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a> · <a href="/vision-field-notes/feed.xml">Feed</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+<script data-goatcounter="https://mhmasum6875.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+
+</body></html>

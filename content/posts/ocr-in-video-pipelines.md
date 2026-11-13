@@ -32,6 +32,10 @@ Track the object so you know which readings belong to the same subject. Then com
 
 Aggregation is also what lets you report a confidence you can act on. "Nine of eleven frames agree" is a far more useful signal than one softmax score.
 
+![Two panels. Left, a line chart of whole plates read correctly against the number of frames combined by majority vote, for three single-frame accuracies. The 80% line rises from 21% at one frame to 77% at twenty-one; the 90% line from 48% to 95%; the 95% line from 70% to 98%. All three climb steeply over the first five frames, then flatten below 100%. Right, a bar chart comparing one frame against fifteen voted frames at each accuracy: 21 against 75, 47 against 94, and 70 against 98.](img:ocr-in-video-pipelines-voting-across-frames.png "Simulated, not measured. Each plate gets its own per-character difficulty that holds across the whole pass, so a digit the camera renders badly reads the same wrong way every frame. Those are the reads voting cannot rescue, which is why the curves flatten short of 100% rather than reaching it.")
+
+The shape of that is worth internalising. Most of the gain arrives in the first five frames, and a recogniser at 90% per character goes from reading half the plates to reading almost all of them. But the curves flatten below 100%, and the gap that remains is systematic: a character that is dirty, clipped or badly angled reads the same wrong way in every frame, and fifty votes for the wrong answer is still the wrong answer. Voting fixes noise. It does not fix geometry, and that is the next section.
+
 ## Use the format
 
 These codes are not arbitrary strings. They have structure, and ignoring it throws away free accuracy.

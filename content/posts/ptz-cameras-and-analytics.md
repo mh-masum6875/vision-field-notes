@@ -14,6 +14,12 @@ PTZ cameras are common because they are useful to the humans watching. They are 
 
 **Zones.** A polygon drawn at one pan position covers something completely different at another. Intrusion alerts fire on the wrong area, or stop firing entirely. This is the most common and most confusing failure, because the detections still look correct.
 
+![A schematic yard seen through a camera. At preset 1 a dashed intrusion zone sits over a gateway in a building, and a person walking into the gateway turns the zone red and raises an alert. The camera then pans right. At preset 2 the zone has stayed in the same place on screen, so it now covers open ground beside a fence while the gateway sits to its left. A person standing in that same gateway raises no alert, and the same person walking on to the empty ground inside the drifted zone raises one.](vid:ptz-zone-drift.mp4 "Schematic, not footage. The zone never moves on screen because it is stored in image coordinates. The scene moves underneath it.")
+
+Watch what the zone does in that clip: nothing. It cannot move, because it is stored as image coordinates — a list of pixel positions in the frame. The scene slides underneath it. After the pan the gateway the zone was drawn around is still in shot, just to the left, and someone standing in it raises nothing. Walk a few metres further, onto open ground nobody cares about, and the system reports an intrusion.
+
+Both failures are worse than a crash, because nothing looks wrong. The detector still boxes the person correctly, the alerts still arrive, and the log still fills up. Only the meaning is gone.
+
 **Background subtraction.** Any method that accumulates a model of the static scene is invalidated by movement. The whole frame registers as foreground for several seconds after a move.
 
 **Calibration.** Ground-plane projection depends on the camera's orientation. Pan, tilt or zoom and your metres become fiction. Dwell times and speeds derived from them are wrong in a way nothing reports.

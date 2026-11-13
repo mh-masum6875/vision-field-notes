@@ -49,6 +49,32 @@ def read_size(path):
             i += 2 + length
     return None
 
+def video_figure(alt, src, caption):
+    """A short clip that loops silently, with the still as its poster.
+
+    The poster shares the clip's name and dimensions, so the space is reserved
+    before the video loads and nothing on the page jumps.
+    """
+    stem = src.rsplit("/", 1)[-1].rsplit(".", 1)[0]
+    poster = f"{BP}/images/{stem}-poster.png"
+    wh = dims(f"{stem}-poster.png")
+    has_poster = (ROOT / "content" / "images" / f"{stem}-poster.png").exists()
+    attrs = [f'src="{src}"']
+    if wh:
+        attrs.append(wh.strip())
+    if has_poster:
+        attrs.append(f'poster="{poster}"')
+    # controls so the loop can be stopped: WCAG 2.2.2 wants that for anything
+    # that moves on its own for more than five seconds
+    attrs.append('autoplay muted loop playsinline controls preload="metadata"')
+    if alt:
+        attrs.append(f'aria-label="{alt}"')
+    tag = "<video " + " ".join(attrs) + ">"
+    fall = f'<p>{alt}</p>' if alt else ""
+    cap = f"<figcaption>{caption}</figcaption>" if caption else ""
+    return f"<figure>{tag}{fall}</video>{cap}</figure>"
+
+
 def split_fm(text):
     m = re.match(r"^---\n(.*?)\n---\n(.*)$", text, re.S)
     if not m:
@@ -94,9 +120,14 @@ def render_body(p):
     body = re.sub(r"\[([^\]]+)\]\(post:([a-z0-9-]+)\)", link, body)
     p["images"] = re.findall(r"\]\(img:([A-Za-z0-9_.-]+)", body)
     body = re.sub(r"\]\(img:([A-Za-z0-9_.-]+)", lambda m: f"]({BP}/images/{m.group(1)}", body)
+    p["videos"] = re.findall(r"\]\(vid:([A-Za-z0-9_.-]+)", body)
+    body = re.sub(r"\]\(vid:([A-Za-z0-9_.-]+)", lambda m: f"]({BP}/videos/{m.group(1)}", body)
     md = markdown.Markdown(extensions=["extra", "toc", "attr_list", "sane_lists"],
                            extension_configs={"toc": {"toc_depth": "2-3", "permalink": False}})
     h = md.convert(body)
+    # a video alone in a paragraph becomes a looping figure, before the image rules below
+    h = re.sub(r'<p><img alt="([^"]*)" src="([^"]+/videos/[^"]+)"(?: title="([^"]*)")? /></p>',
+               lambda m: video_figure(m.group(1), m.group(2), m.group(3) or ""), h)
     # an image alone in a paragraph becomes a figure; its title text is the caption
     h = re.sub(r'<p><img alt="([^"]*)" src="([^"]+)" title="([^"]*)" /></p>',
                lambda m: f'<figure><img alt="{m.group(1)}" src="{m.group(2)}"{dims(m.group(2))}'
@@ -208,7 +239,7 @@ footer.site a{color:var(--mut)}
 .cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
 .author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
 .author p{margin:6px 0 0}
-figure{margin:1.8em 0}figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figure{margin:1.8em 0}figure img,figure video{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
 figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
 form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
 form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
@@ -317,6 +348,8 @@ if OUT.exists(): shutil.rmtree(OUT)
 OUT.mkdir()
 if (ROOT / "content/images").exists():
     shutil.copytree(ROOT / "content/images", OUT / "images")
+if (ROOT / "content/videos").exists():
+    shutil.copytree(ROOT / "content/videos", OUT / "videos")
 
 # home
 chips = "".join(f'<a href="{BP}/category/{c["slug"]}/">{html.escape(c["name"])}</a>' for c in catlist)

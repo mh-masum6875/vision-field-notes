@@ -132,7 +132,7 @@ cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
 <p>Often the cheapest decode is the one you do not do:</p>
 <ul>
 <li><strong>Use the substream.</strong> Most IP cameras offer a second, lower-resolution stream. If the model runs at 640, a 720p or even 640 × 360 substream may be enough, at a fraction of the decode cost. See Main Stream or Substream.</li>
-<li><strong>Lower the camera's frame rate.</strong> If you analyse 5 frames per second, receiving 25 means decoding 25. Most decoders cannot skip frames freely, because compressed frames depend on earlier ones. Setting the camera's stream to the rate you need saves decode work. See How Many Frames per Second Does Your Analytics Need?.</li>
+<li><strong>Lower the camera's frame rate.</strong> If you analyse 5 frames per second, receiving 25 means decoding 25. Most decoders cannot skip frames freely, because compressed frames depend on earlier ones. Setting the camera's stream to the rate you need saves decode work. See <a href="/vision-field-notes/posts/how-many-fps-does-analytics-need/">How Many Frames per Second Does Your Analytics Need?</a>.</li>
 <li><strong>Choose the codec your hardware decodes.</strong> On a Pi 5, H.265 is decoded in hardware and H.264 is not. Elsewhere it may be the other way, or both.</li>
 </ul>
 <h2 id="hardware-decoders-have-limits-too">Hardware decoders have limits too</h2>

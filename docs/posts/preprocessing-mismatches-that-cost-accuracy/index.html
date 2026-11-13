@@ -117,7 +117,7 @@ nav.main a{white-space:nowrap}}
 <p>Exported models usually expect a float32 tensor in NCHW layout: batch, channels, height, width. OpenCV frames are uint8 in HWC layout. Forgetting the transpose gives a tensor of the right size and the wrong meaning. Some runtimes will reject the wrong shape; with a square input, the shape can match by accident. FP16 engines may expect FP16 input, depending on how they were built.</p>
 <h2 id="6-interpolation-and-resize-order">6. Interpolation and resize order</h2>
 <p>Different resize methods (nearest, bilinear, area) give slightly different pixels. The effect is usually small, but not always: nearest-neighbour downscaling produces aliasing that can hurt small objects. Match the training pipeline's method if you can.</p>
-<p>Order matters for speed as well as accuracy. Resizing first and converting colour after is equivalent in output and much cheaper, because the conversion then runs on far fewer pixels. Profiling a Python Vision Pipeline shows the difference measured.</p>
+<p>Order matters for speed as well as accuracy. Resizing first and converting colour after is equivalent in output and much cheaper, because the conversion then runs on far fewer pixels. <a href="/vision-field-notes/posts/profiling-a-python-vision-pipeline/">Profiling a Python Vision Pipeline</a> shows the difference measured.</p>
 <h2 id="7-training-data-that-does-not-look-like-production-frames">7. Training data that does not look like production frames</h2>
 <p>Some mismatches come from the data, not the code:</p>
 <ul>

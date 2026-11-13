@@ -27,6 +27,12 @@ A project that ends in a deployed system usually includes most of these:
 
 The model is one item out of ten. Estimating it well and the rest badly still gives a bad estimate.
 
+![A horizontal bar chart of ten project phases against calendar weeks. Each phase shows a solid bar for effort inside a longer grey bar for elapsed time, with the difference marked as waiting. Discovery is 1.2 weeks of effort over 1.5 elapsed. Data access is 0.8 weeks of effort over 5 elapsed, almost all of it waiting. Labelling is 3 over 3.5. Model work, highlighted, is 1.3 weeks of effort over 1.5 elapsed. Pipeline is 2.2 over 2.5, integration 1.5 over 4, deployment 1 over 2.5, site testing 1.5 over 3.5, revisions 1.5 over 2.5 and handover 1 over 1.5. In total, 15 weeks of effort are spread across 17 weeks of calendar, and model work is 9% of the effort.](img:estimating-a-computer-vision-project-effort-vs-duration.png "Illustrative shape for a mid-sized deployment, not measured from a single project. The grey tails are the part clients find hardest to believe and the part that decides the delivery date.")
+
+Two things fall out of that picture. The model is **9% of the effort** — so halving your training time saves about four days on a four-month project. And the phases with the longest grey tails are the ones where nobody on your side is working at all: data access is 0.8 weeks of effort stretched across five weeks of calendar, almost entirely spent waiting for someone else's process.
+
+That is why an estimate given as a single number fails. The number you can control is effort. The number the client cares about is the date, and the date is mostly decided by how fast their IT, security and site teams respond.
+
 ## The usual underestimates
 
 ### Data access

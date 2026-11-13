@@ -22,6 +22,10 @@ In practice this means a thermal deployment needs a model trained on thermal dat
 
 Thermal cameras output a false-colour image, and the palette is a display setting. White-hot, black-hot, ironbow, rainbow — same sensor data, completely different pixels.
 
+![Four renderings of one synthetic thermal scene containing a standing person and a vehicle with a hot engine bay. White-hot shows warm objects bright on a dark background; black-hot inverts it; ironbow runs dark purple through red and orange to white; rainbow runs blue through green and yellow to dark red. A green circle marks the same pixel on the person's head in each panel. Below each panel, a colour swatch and its value: RGB 172, 172, 172 for white-hot, RGB 83, 83, 83 for black-hot, RGB 232, 120, 13 for ironbow, and RGB 251, 182, 55 for rainbow.](img:thermal-cameras-for-detection-palette-trap.png "A synthetic temperature field, not a real capture. The sensor reading at the circled pixel is identical in all four panels at 38.8 °C. The numbers underneath are what the detector actually receives.")
+
+Look at what the detector gets. One point on one scene, at one temperature, arrives as `172, 172, 172` under white-hot and `232, 120, 13` under ironbow. Nothing in the convolution stack knows those are the same measurement. As far as the model is concerned, somebody swapped the sensor.
+
 Train on ironbow and deploy on a camera set to white-hot and your model will fail entirely. This catches people because the palette is changed in the camera's web interface by whoever set it up, often for human viewing preference, with no idea it matters.
 
 Two defences. Fix the palette in the camera configuration and document it as a deployment requirement. Or, better, convert to single-channel greyscale before inference so the palette becomes irrelevant — then train on greyscale too.

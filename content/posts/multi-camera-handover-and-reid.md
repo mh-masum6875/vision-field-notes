@@ -38,6 +38,12 @@ Build a topology — which camera views connect to which, and the plausible tran
 
 This prunes the candidate set enormously before appearance matching runs. It converts an open-set problem into a small, time-bounded one, which is the single biggest accuracy gain available.
 
+![Two panels. Left, two overlapping histograms of appearance similarity: wrong pairs peak around 0.33, true pairs around 0.72, with a wide overlap between them. A dashed threshold line at 0.62 leaves 29% of true pairs below it and 5% of wrong pairs above it. Right, a bar chart of how many matches are correct as the candidate pool shrinks: 7% against every person seen today, 200 of them, with 9.2 wrong candidates above the threshold; 21% after a time window cuts the pool to 60, with 2.7 wrong candidates; 56% after time and topology cut it to 12, with 0.5 wrong candidates.](img:multi-camera-handover-and-reid-overlap-and-gating.png "Simulated similarity scores, not a benchmark. The model, the embedding and the threshold are identical across all three bars. Only the number of people it is allowed to consider changes.")
+
+The right-hand panel is the argument for all of this. The model does not change between those three bars. The threshold does not change. The only thing that changes is how many people the system is permitted to consider, and correct matches go from 7% to 56%. A better embedding moves the left-hand distributions slightly further apart; knowing which door someone walked out of removes most of the candidates outright.
+
+It is also worth sitting with the fact that 56% is where that ends up. Even with topology, timing and a decent model, roughly two in five matches are wrong. That is the honest ceiling for non-overlapping re-ID on a busy site, and it is the number to put in front of a client before anyone builds anything.
+
 You get the transit times by measuring them, not by estimating them. Walk it with a stopwatch, or mine them from a few days of recorded transitions.
 
 ## Score, then threshold, then decide what unmatched means

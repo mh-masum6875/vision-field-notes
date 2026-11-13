@@ -37,6 +37,10 @@ Before any decision, these are the questions that matter, and none of them is an
 
 Not on the announcement alone. A sensible plan:
 
+![A flowchart. YOLO27 announced leads to change nothing in production, then wait for release. The first gate asks whether the licence fits your product; no exits to stop here. Yes leads to fine-tuning on your own data with the same dataset version, budget and image size, then comparing on your own test set at your operating threshold, per class and by object size. The second gate asks whether the gain is bigger than run-to-run noise; no exits to stay put. Yes leads to exporting and timing on the target device, then running the replay set at the event level, then rolling out in stages.](img:yolo27-announced-what-to-do-before-it-ships-decision-flow.png "The plan drawn as the gates it actually is. The mAP figure in the announcement appears nowhere in it.")
+
+Notice what is not on that chart: the 60 mAP claim. It does not appear at any gate, because it cannot answer any of the questions that decide this. The licence either fits your product or it does not. The model is either faster than run-to-run noise on your cameras or it is not.
+
 1. **Do nothing to production now.** A model that is working on your cameras is worth more than a promised improvement.
 2. **When it ships, check the licence first.** If it does not fit your product, stop there.
 3. **Fine-tune it on your own data** with the same dataset version, training budget and image size as your current model.

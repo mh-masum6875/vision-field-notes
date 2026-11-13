@@ -31,6 +31,10 @@ Start with the conclusion, in plain words, with the key numbers:
 
 A busy manager can stop reading there and still make the right decision.
 
+![Two report outlines side by side, each five blocks tall, with a dashed red line across both after the first block marked most readers stop here. On the left, written like a paper: method, dataset, metrics, error analysis, and finally the conclusion, highlighted in green at the bottom below the line. On the right, written for a decision: the answer highlighted in green at the top above the line, giving 41 of 44 entries caught and 1.5 false alerts per camera per day, then what was tested, results in the client's units, what we recommend, and an appendix.](img:writing-results-reports-for-clients-answer-first.png "The same findings in both columns. Only the position of the conclusion changes.")
+
+Both columns contain exactly the same work. The difference is that one puts the conclusion where the reader already stopped.
+
 ### 2. What was tested
 
 Short and specific: which cameras, how many hours, which dates, day and night, how events were labelled and by whom. This is what makes the numbers credible. If the test footage was agreed in advance, say so and refer to the agreement. See [Agreeing a Measurable Target with a Client](post:agree-a-measurable-target-with-a-client).

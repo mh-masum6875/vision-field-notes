@@ -21,6 +21,10 @@ Usually not a computer vision engineer. More often a site IT person, a developer
 
 Organise the documentation around those questions, not around how you built it.
 
+![Three columns. The first lists the four questions a successor arrives with: is it running, this alert looks wrong where do I look, a camera was replaced what do I change, and which model is live and how was it trained. The second shows what they usually get: a folder called final containing best.pt, best_v2.pt, best_v2_FINAL.pt, config.yaml and notes.txt, with question marks beside the files that answer nothing. The third shows what to leave instead: a handover folder with a numbered system overview, runbook, camera and zone guide and retraining guide, plus models, config and data subfolders where the live model is dated and paired with its own notes file.](img:handover-documentation-for-cv-systems-what-to-leave.png "The left column is what arrives six months after you leave. The right column is the only thing that answers it without a phone call.")
+
+The middle column is not a strawman; it is what most projects actually end with. Three model files with no way to tell which is running, and a `notes.txt` written for the person who already knows.
+
 ## The documents
 
 ### 1. System overview (one or two pages)

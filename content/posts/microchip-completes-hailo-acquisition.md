@@ -31,6 +31,12 @@ None of this is unusual straight after an acquisition, and none of it is a reaso
 
 Acquisitions are one form of a general risk: your accelerator vendor changes direction. The same advice applies whatever the vendor.
 
+![A six-stage pipeline drawn left to right. The first three stages are green and marked as yours whatever the vendor does: training data and labels with their dataset version and label guide, the training recipe with code, seeds and hyper-parameters, and a framework-neutral ONNX model described as the handover point. A dashed red line divides them from three amber stages marked replaceable if you kept the left half: the vendor compiler with a pinned version and archived installer, the compiled binary which should be rebuilt rather than kept as the only copy, and the vendor runtime on the device. An arrow spans the divide, labelled: changing accelerator means recompiling from the ONNX, not retraining from scratch.](img:microchip-completes-hailo-acquisition-what-is-portable.png "Hailo is now part of Microchip. The same picture applies to any accelerator vendor, and the dashed line is where your leverage ends.")
+
+The dashed line is the whole risk assessment. Everything left of it you own outright, and no acquisition can touch it. Everything right of it is someone else's roadmap — but it is also *rebuildable*, provided the left half survived.
+
+That is the real failure mode, and it is not a vendor one. It is a team that has the compiled binary on the device and nothing else: no ONNX, no training recipe, no archived compiler. That team cannot move accelerators at any price, and it got there on its own.
+
 ### Keep the model portable
 
 Keep your trained model in a framework-neutral form, such as ONNX, alongside the vendor-compiled file, and keep the full training setup reproducible. Then moving to another accelerator means recompiling and revalidating, not retraining from scratch. See [Export YOLO to ONNX and Run It with ONNX Runtime](post:export-yolo-to-onnx) and [Reproducible Training Runs](post:reproducible-training-runs).

@@ -19,6 +19,12 @@ The amending regulation is Regulation (EU) 2026/1744, dated 8 July 2026, and in 
 - **Simplified documentation and quality management** are allowed for SMEs and some small mid-cap companies, and fine caps are adjusted for them.
 - **The AI literacy obligation** is reworded towards supporting AI literacy among staff, rather than requiring a set level.
 
+![A timeline from 2025 to 2029. Above the line, in red and marked not delayed: Article 5 prohibitions apply from 2 February 2025, covering scraped face databases, emotion recognition at work and live biometric identification; and new prohibitions on non-consensual intimate imagery and CSAM from 2 December 2026. Below the line, in amber and marked delayed by the omnibus: Annex III high-risk duties covering biometrics, critical infrastructure, education and employment, moved from 2 August 2026 to 2 December 2027, a delay of 16 months; and Annex I high-risk duties for safety components of regulated products from 2 August 2028. A dashed line marks today, in November 2026.](img:eu-ai-act-delay-camera-analytics-timeline.png "Dates from the AI Act and from Regulation (EU) 2026/1744, in force 27 July 2026. Not legal advice.")
+
+The shape of that picture is the whole answer to "has the AI Act been delayed?" Everything above the line was already in force and stayed there. Only the amber items below moved, and the one that moved is the one most teams were working towards: Annex III, pushed 16 months to December 2027.
+
+Note where today sits. The prohibitions on the left have applied for over a year and a half already.
+
 ## What did not change
 
 The prohibitions in Article 5 of the AI Act have applied since 2 February 2025, and the omnibus did not delay them. Several of them touch camera systems directly, including:

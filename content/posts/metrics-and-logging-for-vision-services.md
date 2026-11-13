@@ -46,7 +46,13 @@ So alert on absence:
 - No alerts delivered for unusually long, compared with that camera's history.
 - No metrics received from a device at all.
 
-The detection-count check needs care, because a quiet scene is normal at night or at weekends. Compare with the same hour on previous days, not with a fixed number. [Handling RTSP Dropouts](post:handling-rtsp-dropouts-and-reconnects) and [Detecting a Dirty, Blocked or Moved Camera](post:detect-dirty-blocked-moved-camera) cover the stream and image checks behind these numbers.
+The detection-count check needs care, because a quiet scene is normal at night or at weekends. Compare with the same hour on previous days, not with a fixed number.
+
+![A line chart of detections per hour from one camera over four days. The count peaks around 60 each afternoon and falls to near zero every night. A dotted red line marks a fixed threshold of five, which the real counts drop below on every one of the quiet nights, 30 hours in total. A dashed green line shows the average for the same hour over the previous three days, and a shaded band marks a quarter of that value. Partway through day four the camera goes blind and the count drops to zero while the dashed baseline continues to rise toward its usual afternoon peak, so the count falls through the shaded band one hour later.](img:metrics-and-logging-for-vision-services-alert-on-absence.png "Simulated counts for a shop doorway, not a real camera. The fixed threshold and the baseline are given the same data; only the comparison differs.")
+
+The two lines get identical data. A fixed threshold of five fires on **30 ordinary quiet hours** across those four days, which is enough to train everyone to ignore it, and when the camera actually fails at nine in the morning it says nothing, because nine in the morning is above five right up until it isn't.
+
+The baseline catches the same failure within an hour, and stays silent through every night, because it is asking a different question. Not "is this number low?" but "is this number low *for this hour on this camera*?" That is the whole trick, and it costs you a rolling average rather than a model. [Handling RTSP Dropouts](post:handling-rtsp-dropouts-and-reconnects) and [Detecting a Dirty, Blocked or Moved Camera](post:detect-dirty-blocked-moved-camera) cover the stream and image checks behind these numbers.
 
 ## Using Prometheus-style metrics
 

@@ -10,6 +10,10 @@ Every computer vision repository eventually meets the same problem. Someone comm
 
 Large files need somewhere else to live, with a link from the code to the exact version used. This article compares the three common approaches, Git LFS, DVC and plain object storage with a manifest, and suggests how to choose.
 
+![A decision tree. The first question is what the file is. A few files that belong with the code, such as weights and golden outputs, lead to Git LFS, which versions files with the commit but is limited by the provider's quota. A dataset of thousands of versioned images with splits leads to a second question: do you need pipelines and reproducible stages? Yes leads to DVC, which handles dataset versions, splits and a stage graph. No leads to object storage with a manifest, which is cheapest at scale but means writing the glue yourself. A note says most teams end up using Git LFS for weights and one of the other two for footage.](img:large-files-git-lfs-dvc-object-storage-decision-tree.png "The three options answer different questions, which is why most repositories end up using two of them.")
+
+The mistake worth avoiding is treating this as one choice. A repository holding both a 200 MB weights file and 80,000 training images has two different problems, and the answer for one is the wrong answer for the other.
+
 ## What you need from any approach
 
 - **Exact versions.** A commit of the code should identify the exact data and model files it used.

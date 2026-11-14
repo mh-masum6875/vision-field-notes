@@ -8,6 +8,12 @@ tags: [reproducibility, training, seeds, pytorch, workflow]
 
 You retrain last month's model with the same data and settings, and the new one scores a point lower. Is something broken, or is that normal? Without knowing how much a training run varies on its own, you cannot tell, and every comparison between models becomes guesswork.
 
+![Two panels. The left shows one training run of an old config at 54.3 mAP and one of a new config at 52.7, a gap of 1.6 points, labelled as the comparison usually looks. The right shows the same two configs trained eight times each: the old config averages 54.07 with a standard deviation of 0.61, the new averages 53.62 with 0.71, and the two clouds of points overlap heavily. The single pair from the left panel is circled, and sits at the top of one cloud and the bottom of the other.](img:reproducible-training-runs-run-to-run-spread.png "Simulated runs with a spread typical of a detector fine-tune. The real difference between these two configs is 0.45 points.")
+
+The circled pair is the trap. Those two runs are both perfectly ordinary — one happens to sit near the top of its spread, the other near the bottom — and comparing them suggests the new config costs you **1.6 points**. Train both eight times and the real difference is **0.45**.
+
+Nothing was broken, nobody made a mistake, and the conclusion was still wrong by a factor of three. That is what one run against one run buys you, and it is why the first number worth measuring is not a model's score but your own spread.
+
 This article covers what it takes to reproduce a detector training run, what variation remains even when you do everything right, and how to work with that variation.
 
 ## Two kinds of reproducibility

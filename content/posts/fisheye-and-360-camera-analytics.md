@@ -10,6 +10,12 @@ A single fisheye camera on a ceiling can cover a room that would otherwise take 
 
 The problem is not the detector. It is that almost every public detection model was trained on rectilinear images, where straight lines in the world stay straight in the picture. A fisheye lens breaks that assumption on purpose, in exchange for a much wider field of view.
 
+![Two circular schematics of a ceiling fisheye view. On the left, three people are drawn: one directly under the camera appears as a round blob, and two further out are stretched along the radius, lying sideways relative to the frame. Each has an axis-aligned box drawn around it, labelled with how much of the box the person fills: 79% at the centre, 71% halfway out, and 51% at the rim. On the right, the same circle is divided into three arcs labelled with the three approaches: dewarp into virtual views, train on the warped frames, and detect warped then reason in world coordinates.](img:fisheye-and-360-camera-analytics-radial-distortion.png "Schematic, not a real frame. The percentage is the person's area as a share of the axis-aligned box drawn around them.")
+
+The left panel is the mechanical reason this hurts. Under the camera you see the top of a head and a tight box fits it. At the rim the same person lies diagonally across the frame, and the axis-aligned box the detector has to emit is **about half floor**.
+
+That matters beyond looking untidy. IoU against a ground-truth box is computed on those same loose boxes, so training signal and evaluation both degrade towards the rim. Non-maximum suppression also works on them, so two people standing near each other at the edge have boxes that overlap heavily even when the people do not, and one of them gets suppressed.
+
 There are three practical ways to deal with it. They suit different situations and it is worth knowing which one you are choosing.
 
 ## Dewarp first, then detect

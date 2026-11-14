@@ -24,6 +24,14 @@ The arithmetic is not hard and it takes about an hour. It is worth doing before 
 
 Run it over three years and the pattern is usually one of these.
 
+![Two stacked bar charts of three-year cost, each comparing edge against cloud, broken into hardware, bandwidth, compute and operations. For 100 shops with two cameras each, 200 cameras in total, edge costs £330k, dominated by £150k of hardware and £180k of operations, while cloud costs £261k, so cloud is 21% cheaper. For one port with 60 cameras, edge costs £14k, almost all hardware, while cloud costs £65k, dominated by £39k of compute and £26k of bandwidth, so edge is 79% cheaper.](img:edge-vs-cloud-cost-model-three-year-cost.png "Illustrative rates, stated on the figure so you can substitute your own. The cost lines are identical in both scenarios; only the shape of the deployment changes.")
+
+Both panels use the same four lines and the same rates. The only thing that changes is how the cameras are distributed, and that is enough to reverse the answer.
+
+Look at what dominates each bar. In the hundred shops, edge is expensive because of **operations** — £180k of visiting and maintaining a hundred boxes, which is more than the hardware itself. At the port, cloud is expensive because of **compute and bandwidth** — 60 streams billed every month for three years, against a one-off £12k of hardware.
+
+Neither of those lines is the one people argue about. The argument is usually about the hardware price, which is the smaller number in both cases.
+
 **Few cameras, many sites** — a retail chain with two cameras per store — tends to favour the cloud. Per-site hardware is a poor deal when you are only running two streams, and the operational cost of maintaining hardware in a hundred shops is the real expense.
 
 **Many cameras, one site** — a port, a factory, a large warehouse — strongly favours edge. One box can serve many streams, bandwidth to the cloud would be enormous, and there is one physical location to maintain.

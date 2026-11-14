@@ -78,6 +78,12 @@ This is a sketch, not a finished product. It leaves out the segment check and cl
 
 **ID switches.** If a person gets a new ID just after crossing, you can count them twice, or not at all. Tracking errors are the largest source of counting error. Reduce them with a good camera angle, a strong detector, and tracker settings that keep lost tracks alive through short occlusions.
 
+![A schematic corridor seen from the side, with a vertical counting line and a shaded margin band either side of it. One person walks up to the line, hesitates and sways across it, then carries on through. Three times while they are stationary the detection drops out, and each time the tracker gives them a new ID: 1, then 2, 3 and 4. A naive counter that counts every ID crossing climbs to 3. A counter that re-links the fragments and requires the person to leave the margin band counts 1.](vid:line-crossing-loitering.mp4 "Schematic, not footage. Both counters see exactly the same detections; only the rule differs.")
+
+Watch the ID label in that clip. It reaches **4** for one person who walked through once, and the naive counter ends on **3**.
+
+The per-ID cooldown described above does not save you here, and that is worth understanding. A cooldown is keyed on the ID, and the ID is exactly what keeps changing. The fix has to happen one level down: re-link a track that reappears close in space and time to one that just vanished, so the state survives the blink. Then the margin rule has something stable to work with, and the count comes out at 1.
+
 **Groups.** Several people walking together can merge into one detection or hide each other. A steeper camera angle helps most. Some systems count by area flow rather than by individual boxes in very dense scenes, but that is a different method.
 
 **People who approach and turn back.** A person who touches the line and returns should not count as a full pass. Requiring a minimum travel distance on both sides of the line, or confirming that the track existed on one side for several frames before and on the other for several after, handles this.

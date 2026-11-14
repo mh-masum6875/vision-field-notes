@@ -31,6 +31,12 @@ The usual victims:
 - **Recordings.** A clip written to a file with a fixed frame rate in its header plays back too fast or too slow if the real rate varied.
 - **Throughput maths.** Capacity planned for 25 fps per camera is wrong in both directions: lighter at night, and wrong again if a camera goes up.
 
+![Two lanes showing the same person walking the same path at the same speed. The top lane is labelled 25 fps daytime: faint ghosts of recent detections sit close together, the person moved 1.1 units since the last frame, the overlap with the previous box is 0.78, and the tracker box is solid green. The bottom lane is labelled 5 fps slow shutter at night: the ghosts are widely spaced, the person moved 5.5 units, the overlap is 0.24, and the box is dashed red with a note that this is below 0.30 and starts a new ID.](vid:frame-rate-and-tracking.mp4 "Schematic. Association here needs consecutive boxes to overlap by 0.30, as in a SORT-style tracker. The overlap figure is a one-dimensional stand-in for IoU.")
+
+That clip is worth pausing on, because the detector is not the problem. Both lanes detect the person perfectly, every single time. The only difference is how many of those detections arrive, and therefore how far apart they are.
+
+At 25 fps the boxes overlap by **0.78** and association is trivial. At 5 fps the same walk puts them at **0.24**, below the threshold, and the tracker concludes it is looking at someone new. Dwell timers reset, counts inflate, and nothing anywhere logs an error.
+
 ## How to detect it
 
 Do not trust the frame rate the stream reports. With OpenCV, `cap.get(cv2.CAP_PROP_FPS)` returns a value from the stream's metadata, which may be the nominal rate, not the actual one. Measure arrivals instead:

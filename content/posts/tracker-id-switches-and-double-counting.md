@@ -16,6 +16,12 @@ A tracker links detections across frames into tracks, each with an ID. An ID swi
 
 - **Fragmentation:** a track is lost and the object reappears with a new ID.
 - **Swap:** two objects cross, and their IDs exchange.
+
+![A schematic corridor. A green person walks left to right and a purple person walks right to left. At first the green person has a blue box labelled ID 1 and the purple person an orange box labelled ID 2. As they pass, the two boxes merge into a single dashed box marked one blob, two claims. When they separate, the blue ID 1 box is on the purple person and the orange ID 2 box is on the green person. A note says every per-ID timer now belongs to the other person.](vid:tracker-id-swap.mp4 "Schematic, not footage. The people keep their colours throughout; only the boxes change hands.")
+
+The people in that clip never change. Green walks left to right from start to finish, purple the other way. What changes is which body the blue box is attached to, and it changes during the two seconds when there is one blob on screen and two tracks both claiming it.
+
+This is the form that does the most damage quietly. A fragmentation at least produces an obviously broken track. A swap produces two perfectly healthy-looking tracks that have exchanged people, and every per-ID quantity you have accumulated — dwell time, path, entry point, zone history — silently moves to the wrong person.
 - **Merge:** two objects close together are followed as one track for a while.
 
 For counting, fragmentation causes over-counting and merges cause under-counting. Swaps can do either, depending on the rule.

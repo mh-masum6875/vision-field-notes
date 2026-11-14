@@ -444,4 +444,20 @@ entries = "".join(
     f'<link href="{BASE}/"/><link rel="self" href="{BASE}/feed.xml"/><id>{BASE}/</id>'
     f'<updated>{(posts[0]["date"] if posts else today)}T00:00:00Z</updated><author><name>{esc(S["author"])}</name>'
     f'<uri>{esc(S["author_url"])}</uri></author>\n{entries}</feed>\n')
+# A vid: reference only becomes a <video> when Markdown puts it in a paragraph
+# of its own. Inside a list or a quote it stays an <img> pointing at an mp4,
+# which renders as a broken image. Catch that here rather than in the browser.
+stray = []
+for f in OUT.rglob("*.html"):
+    for m in re.finditer(r'<img[^>]+src="[^"]+\.(?:mp4|webm)"', f.read_text()):
+        stray.append(f"{f.relative_to(OUT)}: {m.group(0)[:90]}")
+if stray:
+    raise SystemExit("a vid: reference did not become a <video>, usually because it "
+                     "sits inside a list or quote:\n  " + "\n  ".join(stray))
+
+missing = [v for p in posts for v in p.get("videos", [])
+           if not (ROOT / "content" / "videos" / v).exists()]
+if missing:
+    raise SystemExit(f"posts reference missing video files: {sorted(set(missing))}")
+
 print(f"built {len(posts)} posts, {len(pages)} pages -> {OUT}")

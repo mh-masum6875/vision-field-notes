@@ -14,7 +14,19 @@ This article covers the projects worth declining or reshaping, how to tell the c
 
 ### The cameras cannot see it
 
-The client wants to read number plates at 60 metres from a wide-angle overview camera, or check whether workers wear gloves from a camera on the ceiling of a large hall. If the detail is not in the pixels, no model will find it. A quick calculation of pixels on target settles this before any work starts. See [When the Customer's Footage Doesn't Match the Demo](post:customer-footage-does-not-match-the-demo).
+The client wants to read number plates at 60 metres from a wide-angle overview camera, or check whether workers wear gloves from a camera on the ceiling of a large hall. If the detail is not in the pixels, no model will find it. A quick calculation of pixels on target settles this before any work starts.
+
+![A line chart of pixels across a 52 cm number plate against distance, for a 1080p camera at three fields of view. Horizontal bands mark what each pixel count allows: below 25 pixels nothing usable, 25 to 70 a box but no characters, above 70 characters readable. The 90 degree wide overview lens falls below 70 pixels beyond about 7 metres and reaches only 8 pixels at 60 metres. The 50 degree medium lens gives 107 pixels at 10 metres and 18 at 60. The 20 degree zoomed lens stays readable to about 40 metres.](img:turning-down-a-computer-vision-project-pixels-on-target.png "Geometry only. Pixels across equals the object width divided by the scene width at that distance, times the image width. The bands are the usual rules of thumb for plate reading.")
+
+That chart is the conversation. A plate at 60 metres on a 90° camera is **8 pixels across** — narrower than this full stop is wide on your screen. There is no model, no upscaler and no budget that reads seven characters from eight pixels, and the honest answer takes about thirty seconds to work out:
+
+```text
+pixels across = plate width / scene width at that distance × image width
+              = 0.52 m / 120 m × 1920
+              = 8 px
+```
+
+Do that sum in the first meeting. It is far easier to say no before you have quoted than after you have failed. See [When the Customer's Footage Doesn't Match the Demo](post:customer-footage-does-not-match-the-demo).
 
 ### The accuracy expectation is impossible
 

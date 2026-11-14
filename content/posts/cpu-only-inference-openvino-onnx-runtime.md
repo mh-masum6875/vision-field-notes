@@ -25,6 +25,12 @@ Whatever you choose, measure on the exact machine you will deploy on. CPU infere
 
 On a CPU, compute is the limit, and the two big levers are model size and input size. Convolution cost grows roughly with the number of input pixels, so going from 640 to 480 cuts the work by almost half, and from 640 to 320 by three quarters. A nano model at 640 does a fraction of the work of a small model at 640.
 
+![Two panels. The left is a bar chart of work relative to an input size of 640, for sizes from 320 to 1280: 320 is 0.25 times, 416 is 0.42, 480 is 0.56, 544 is 0.72, 640 is 1.00, 768 is 1.44, 960 is 2.25 and 1280 is 4.00. The right panel turns the same arithmetic into cameras per box on one CPU, relative to 640: 320 pixels gives 4 times the cameras, 480 gives 1.78 times, 640 gives 1 and 960 gives 0.44.](img:cpu-only-inference-openvino-onnx-runtime-input-size-cost.png "Arithmetic from pixel count alone. Real throughput also depends on the CPU, the runtime and threading, which is why the capacity section says to measure.")
+
+The right-hand panel is the one to take to a budget conversation. Dropping from 640 to 480 is not a 25% saving because the side shrank by 25%; it is a **44% saving**, because both sides did. That is the difference between four cameras on a box and seven.
+
+It also runs the other way, which is the part people get caught by. Someone raises the input size to 1280 to help with small objects and quietly asks the machine for **four times** the work. Nothing errors. The queue just grows until frames start being dropped, and the symptom shows up somewhere else entirely.
+
 Start with the smallest model and input size that meet your accuracy needs on your own footage, then move up only if necessary. [Input Resolution or Model Size](post:input-resolution-or-model-size) explains which to change first for small objects.
 
 ## Tune threads

@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/</loc><lastmod>2026-11-13</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/yolo-and-detection-basics/</loc><lastmod>2026-11-13</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/datasets-and-training/</loc><lastmod>2026-11-13</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/edge-hardware-and-deployment/</loc><lastmod>2026-11-13</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/video-analytics/</loc><lastmod>2026-11-13</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/tools-and-workflow/</loc><lastmod>2026-11-13</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/career-and-freelancing/</loc><lastmod>2026-11-13</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/yolo-and-detection-basics/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/datasets-and-training/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/edge-hardware-and-deployment/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/video-analytics/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/tools-and-workflow/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/career-and-freelancing/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/watchdogs-for-unattended-edge-boxes/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/deduplicating-video-frames-before-labelling/</loc><lastmod>2026-11-14</lastmod></url>
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/profiling-a-python-vision-pipeline/</loc><lastmod>2026-11-13</lastmod></url>
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/how-many-fps-does-analytics-need/</loc><lastmod>2026-11-13</lastmod></url>
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/detector-confidence-is-not-a-probability/</loc><lastmod>2026-11-12</lastmod></url>
@@ -90,9 +92,9 @@
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/annotation-mistakes-that-hurt-models/</loc><lastmod>2026-10-24</lastmod></url>
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/</loc><lastmod>2026-10-24</lastmod></url>
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/pre-deployment-testing-checklist/</loc><lastmod>2026-10-24</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/about/</loc><lastmod>2026-11-13</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/contact/</loc><lastmod>2026-11-13</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/disclosure/</loc><lastmod>2026-11-13</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/privacy/</loc><lastmod>2026-11-13</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/start-here/</loc><lastmod>2026-11-13</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/about/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/contact/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/disclosure/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/privacy/</loc><lastmod>2026-11-14</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/start-here/</loc><lastmod>2026-11-14</lastmod></url>
 </urlset>

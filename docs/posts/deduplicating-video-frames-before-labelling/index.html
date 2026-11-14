@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deduplicating Video Frames Before Labelling | Vision Field Notes</title>
+<meta name="description" content="Most frames from a fixed camera are near-copies. How to pick frames worth labelling with difference checks, hashes and embeddings, keeping rare cases.">
+<link rel="canonical" href="https://mh-masum6875.github.io/vision-field-notes/posts/deduplicating-video-frames-before-labelling/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Deduplicating Video Frames Before Labelling | Vision Field Notes"><meta property="og:description" content="Most frames from a fixed camera are near-copies. How to pick frames worth labelling with difference checks, hashes and embeddings, keeping rare cases.">
+<meta property="og:url" content="https://mh-masum6875.github.io/vision-field-notes/posts/deduplicating-video-frames-before-labelling/"><meta property="og:site_name" content="Vision Field Notes"><meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-11-14"><meta property="article:author" content="https://mh-masum6875.github.io"><meta property="article:section" content="Datasets and Training"><meta property="article:tag" content="datasets"><meta property="article:tag" content="deduplication"><meta property="article:tag" content="labelling"><meta property="article:tag" content="video"><meta property="article:tag" content="sampling">
+<link rel="alternate" type="application/atom+xml" title="Vision Field Notes" href="https://mh-masum6875.github.io/vision-field-notes/feed.xml">
+
+<meta property="og:image" content="https://mh-masum6875.github.io/vision-field-notes/images/deduplicating-video-frames-before-labelling-selection.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<meta name="google-site-verification" content="B1rDBY5iKrbjTB8G4hetNb5K8bocBC1Rum9hT_1gCEc">
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img,figure video{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Deduplicating Video Frames Before Labelling", "description": "Most frames from a fixed camera are near-copies. How to pick frames worth labelling with difference checks, hashes and embeddings, keeping rare cases.", "datePublished": "2026-11-14", "dateModified": "2026-11-14", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mh-masum6875.github.io", "sameAs": ["https://mh-masum6875.github.io", "https://github.com/mh-masum6875"]}, "inLanguage": "en", "wordCount": 1097, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://mh-masum6875.github.io/vision-field-notes/posts/deduplicating-video-frames-before-labelling/", "image": "https://mh-masum6875.github.io/vision-field-notes/images/deduplicating-video-frames-before-labelling-selection.png", "articleSection": "Datasets and Training", "keywords": "datasets, deduplication, labelling, video, sampling"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mh-masum6875.github.io/vision-field-notes/"}, {"@type": "ListItem", "position": 2, "name": "Datasets and Training", "item": "https://mh-masum6875.github.io/vision-field-notes/category/datasets-and-training/"}, {"@type": "ListItem", "position": 3, "name": "Deduplicating Video Frames Before Labelling"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/vision-field-notes/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/vision-field-notes/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/vision-field-notes/category/datasets-and-training/">Training</a><a href="/vision-field-notes/category/edge-hardware-and-deployment/">Edge</a><a href="/vision-field-notes/category/video-analytics/">Video</a><a href="/vision-field-notes/category/tools-and-workflow/">Tools</a><a href="/vision-field-notes/category/career-and-freelancing/">Career</a><a href="/vision-field-notes/start-here/">Start here</a><a href="/vision-field-notes/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/vision-field-notes/">Home</a> / <a href="/vision-field-notes/category/datasets-and-training/">Datasets and Training</a></div><h1>Deduplicating Video Frames Before Labelling</h1><div class="byline">By Maidul Hasan Masum · 2026-11-14 · 5 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#why-duplicates-hurt">Why duplicates hurt</a></li><li><a href="#fixed-interval-sampling-and-its-problem">Fixed-interval sampling and its problem</a></li><li><a href="#method-1-keep-a-frame-when-it-differs-enough">Method 1: keep a frame when it differs enough</a></li><li><a href="#method-2-perceptual-hashes">Method 2: perceptual hashes</a></li><li><a href="#method-3-embeddings-for-variety">Method 3: embeddings for variety</a></li><li><a href="#do-not-throw-away-the-rare-cases">Do not throw away the rare cases</a></li><li><a href="#order-of-operations">Order of operations</a></li><li><a href="#record-what-you-did">Record what you did</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>A fixed camera produces tens of thousands of frames an hour, and most of them look almost exactly like the one before. Label them all and you pay to draw the same boxes again and again, while the model learns little from the repeats. Sample naively, say one frame every few seconds, and you waste labels on an empty scene for most of the day and miss the few seconds when something interesting happened.</p>
+<p>This article covers practical ways to choose frames for labelling from video: removing near-duplicates, keeping variety, and not losing the rare cases that matter most.</p>
+<h2 id="why-duplicates-hurt">Why duplicates hurt</h2>
+<p>Near-duplicate frames cost labelling time and add almost no new information. They also distort training: a scene that appears in 500 nearly identical frames gets 500 times the weight of a scene that appears once. The model becomes very good at that one moment and no better at others.</p>
+<p>They also cause leakage if they end up on both sides of a train/test split. That problem is solved by splitting by camera and time first, before any sampling. See <a href="/vision-field-notes/posts/train-val-test-split-video-frames/">Train/Validation Split for Video Frames</a>. Deduplication is about efficiency within each split.</p>
+<h2 id="fixed-interval-sampling-and-its-problem">Fixed-interval sampling and its problem</h2>
+<p>The simplest approach is one frame every N seconds. It is easy and unbiased in time, which is exactly the problem: most time is boring. A loading bay is empty most of the day. Fixed sampling spends most of the budget on empty frames and gets a handful of frames from each busy period.</p>
+<figure><img alt="A synthetic 60 second clip at 5 frames per second. A line shows the mean absolute difference from the last kept frame, flat near 0.7 when the scene is static and rising above a dashed keep threshold during two shaded periods when something moves. Below, orange ticks show 68 frames kept by a change rule, nearly all inside the moving periods, and grey ticks show 30 frames kept by sampling every 2 seconds, spread evenly." src="/vision-field-notes/images/deduplicating-video-frames-before-labelling-selection.png" width="2063" height="878" loading="lazy"><figcaption>Computed on a synthetic clip, not camera footage. Change-based selection concentrates labels where the scene changes; fixed-interval sampling spends most of them on a static scene.</figcaption></figure>
+<h2 id="method-1-keep-a-frame-when-it-differs-enough">Method 1: keep a frame when it differs enough</h2>
+<p>Compare each frame with the last frame you kept, and keep it only if it differs enough. Working on a small, blurred greyscale version makes the comparison cheap and tolerant to noise and compression:</p>
+<pre><code class="language-python">import cv2
+import numpy as np
+
+def small(frame):
+    g = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    return cv2.resize(g, (64, 36), interpolation=cv2.INTER_AREA).astype(np.float32)
+
+def select(frames, threshold=4.0, min_gap=1.0):
+    &quot;&quot;&quot;frames: iterable of (timestamp_seconds, frame). Yields frames worth keeping.&quot;&quot;&quot;
+    last, last_t = None, -1e9
+    for t, f in frames:
+        s = small(f)
+        if last is None or (t - last_t &gt;= min_gap and np.abs(s - last).mean() &gt; threshold):
+            last, last_t = s, t
+            yield t, f
+</code></pre>
+<p>The threshold depends on the camera and lighting; look at a few hours of results and adjust. The minimum gap stops a busy period from producing a frame every 0.2 seconds.</p>
+<p>Limitations: slow lighting changes, such as the sun moving, can trigger frames, and a small object in a large view may not change the mean much. For small objects, compare in a region of interest or use a maximum over grid cells instead of the global mean.</p>
+<h2 id="method-2-perceptual-hashes">Method 2: perceptual hashes</h2>
+<p>A perceptual hash turns an image into a short fingerprint, such as 64 bits, that changes little for small changes in the image. Two frames are near-duplicates if the Hamming distance between their hashes is small. Difference hashes and DCT-based hashes are common, and small libraries implement them.</p>
+<p>Hashes are useful across a whole collection, not only between consecutive frames: they find duplicates between different days, between clips that overlap, or between images someone exported twice. Compute a hash for every candidate frame, group those within a small distance of each other, and keep one or a few per group.</p>
+<h2 id="method-3-embeddings-for-variety">Method 3: embeddings for variety</h2>
+<p>For larger collections, use a pretrained image model to compute an embedding vector per frame, then cluster the embeddings and sample from each cluster. This groups frames by what they show rather than by pixel differences, so it can spread labels across scene types: empty, busy, night, rain, deliveries.</p>
+<p>It costs more compute and some setup, so it pays off on large collections or when you need to balance many conditions. For a few cameras, difference checks and hashes are usually enough.</p>
+<h2 id="do-not-throw-away-the-rare-cases">Do not throw away the rare cases</h2>
+<p>Aggressive deduplication can remove exactly the frames you most need: the brief moment when a person passes the far end of the view, a vehicle in rain, the one night with fog. Some safeguards:</p>
+<ul>
+<li><strong>Keep event windows.</strong> If you know when events happened, from alerts, operator reports or a baseline model, keep frames from those windows more densely.</li>
+<li><strong>Use a baseline detector.</strong> Run any reasonable detector and keep frames where it finds objects, especially at low confidence. These often contain the hard cases.</li>
+<li><strong>Balance by condition.</strong> After deduplication, check the share of night, day, busy and empty frames, and top up conditions that are under-represented.</li>
+<li><strong>Keep some empty frames.</strong> Background frames matter for false positives. Do not let them disappear entirely; see <a href="/vision-field-notes/posts/hard-negative-mining-from-production/">Hard Negative Mining from Production Footage</a>.</li>
+</ul>
+<h2 id="order-of-operations">Order of operations</h2>
+<ol>
+<li>Split footage by camera and time into train, validation and test.</li>
+<li>Within each split, remove near-duplicates.</li>
+<li>Add event windows and detector-selected frames.</li>
+<li>Check balance across cameras and conditions; top up gaps.</li>
+<li>Send to labelling, with pre-labels if useful. See <a href="/vision-field-notes/posts/pseudo-labelling-with-a-larger-model/">Pseudo-Labelling with a Larger Model</a>.</li>
+</ol>
+<p>For the test set, sampling by a fixed rule matters more than efficiency, because the test set should represent reality, including its boring parts. Deduplicate it lightly, if at all. See <a href="/vision-field-notes/posts/why-your-test-set-flatters-you/">Why Your Test Set Flatters You</a>.</p>
+<h2 id="record-what-you-did">Record what you did</h2>
+<p>Store the selection method, thresholds and the list of kept frames with their source clip and timestamp. When you later wonder why the model is weak on a condition, you can check whether that condition was filtered out. See <a href="/vision-field-notes/posts/versioning-datasets-and-models/">Versioning Datasets and Models Together</a>.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Split by camera and time before sampling.</li>
+<li>Prefer change-based selection to fixed intervals for training data.</li>
+<li>Use a minimum time gap between kept frames.</li>
+<li>Use hashes to find duplicates across the whole collection.</li>
+<li>Consider embeddings and clustering for large collections.</li>
+<li>Keep event windows and detector-selected frames.</li>
+<li>Check and rebalance conditions after deduplication.</li>
+<li>Sample the test set by rule, not for efficiency.</li>
+<li>Record the selection method and parameters.</li>
+</ul>
+<p>Next steps: <a href="/vision-field-notes/posts/how-many-images-do-you-need/">How Many Images Do You Need to Train an Object Detector?</a> and <a href="/vision-field-notes/posts/annotation-guide-labellers-can-follow/">Writing an Annotation Guide Labellers Can Follow</a>.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mh-masum6875.github.io/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mh-masum6875.github.io">get in touch</a> about a project.</p></aside></article><div class="related"><h2 class="sec">Related articles</h2><div class="grid"><a class="card" href="/vision-field-notes/posts/annotation-guide-labellers-can-follow/"><div class="cat">Datasets and Training</div><h3>Writing an Annotation Guide Labellers Can Follow</h3><p>Labels are only as consistent as the rules behind them. What to put in an annotation guide, how to show edge cases and how to keep it current.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/pseudo-labelling-with-a-larger-model/"><div class="cat">Datasets and Training</div><h3>Pseudo-Labelling with a Larger Model: Time Saver or Data Poison?</h3><p>Using a big model to pre-label images can cut annotation time, or quietly copy its mistakes into your dataset. How to use pseudo-labels safely.</p><div class="meta">5 min read</div></a><a class="card" href="/vision-field-notes/posts/measuring-label-quality-annotator-agreement/"><div class="cat">Datasets and Training</div><h3>Measuring Label Quality with Annotator Agreement</h3><p>Double-label a sample, match the boxes and count disagreements. How to measure label quality, what it means for small objects, and what to do next.</p><div class="meta">5 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/vision-field-notes/about/">About</a> · <a href="/vision-field-notes/contact/">Contact</a> · <a href="/vision-field-notes/privacy/">Privacy</a> · <a href="/vision-field-notes/disclosure/">Affiliate disclosure</a> · <a href="/vision-field-notes/feed.xml">Feed</a></div>
+<div><a href="https://mh-masum6875.github.io">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="/vision-field-notes";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+<script data-goatcounter="https://mhmasum6875.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+
+</body></html>

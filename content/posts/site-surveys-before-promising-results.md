@@ -10,6 +10,12 @@ Most failed camera analytics projects were decided before any code was written. 
 
 This article is a practical survey checklist: what to look at on site or remotely, what to record, and what to ask, before promising any result.
 
+![A plan view of a schematic site. A camera is mounted 4.5 metres up on a building, with its field of view shaded across a yard towards a dashed area of interest. Two measured sight lines run into that area: at 18 metres a person is 74 pixels tall, at 44 metres a person is 30 pixels tall. A pillar stands between the camera and the area, marked as occluding. Parked vehicles are marked as moving. A low sun at the far corner is marked as shining into the lens at dusk. A comms cabinet in the near corner is marked with power, PoE and uplink, with an arrow asking how the streams get out and at what bitrate.](img:site-surveys-before-promising-results-what-to-measure.png "Not a real site. Every label is something the survey has to come back with a number or an answer for.")
+
+Look at the two sight lines. The same person, the same camera, the same model: **74 pixels tall at the near edge and 30 at the far edge** of one zone. Whatever you promise has to be true at 30 pixels, not at 74, and that is decided by where the camera already is.
+
+Nothing on that drawing is a modelling decision. The pillar, the sun, the mounting height and the uplink bitrate are all fixed before anyone opens a laptop, and all of them cap what the finished system can do.
+
 ## Remote or on site
 
 An on-site visit is best for anything involving camera positions, lighting and installation. A remote survey, with footage, photos and a call with the site team, is often enough for a first assessment and for sites with many similar cameras. Either way, get real recordings from the actual cameras, including at night, before committing to numbers. See [When the Customer's Footage Doesn't Match the Demo](post:customer-footage-does-not-match-the-demo).

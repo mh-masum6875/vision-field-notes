@@ -16,6 +16,12 @@ Two reasons.
 
 **Visibility.** If night images are 10% of your test set, a large drop in night performance moves the overall score by a small amount. On a separate night set, the same drop is the headline.
 
+![Two panels. The left plots the number you report against recall on night images, with day recall fixed at 92%. A dashed line shows the night set itself falling one for one. Three shallower lines show the overall score when night is 10%, 25% and 50% of the test set. At 45% night recall the 10% line still reads 87% overall. The right panel compares how far each reported number falls for that same failure: the night set falls 47 points, the overall score falls 4.7 points when night is a tenth of the set, 11.7 points at a quarter and 23.5 points at a half.](img:night-and-bad-weather-test-set-dilution.png "Arithmetic, with day recall held at 92%. Overall equals one minus the night share times day, plus the night share times night.")
+
+Put numbers on it. Night recall collapsing from 92% to 45% is a **47-point** failure — more than half the events missed, every night, on every camera. Reported as an overall figure with night at a tenth of the set, it is a **4.7-point** dip, from 92% to 87%.
+
+Nobody investigates a five-point dip. It looks like noise between training runs, and it is indistinguishable from one on that chart. The averaging is not hiding the problem by accident; it is doing exactly what an average does.
+
 **Stability.** Hard conditions vary a lot, so you need enough examples of each to get a number that does not jump around between versions. A dedicated set lets you collect enough without distorting the main test set's proportions.
 
 Keep the main test set representative of reality, and report the hard-conditions set alongside it, not merged into it. See [Why Your Test Set Flatters You](post:why-your-test-set-flatters-you).

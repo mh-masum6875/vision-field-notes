@@ -2,7 +2,7 @@
 title: "CPU-Only Inference: Getting the Most from OpenVINO and ONNX Runtime"
 description: "No GPU on site? Detectors can still run on x86 CPUs. How to export, tune threads, pick input size and precision, and measure what a CPU can carry."
 category: "Edge Hardware and Deployment"
-date: 2026-11-17
+date: 2026-11-23
 tags: [cpu, openvino, onnx-runtime, inference, edge-ai]
 ---
 

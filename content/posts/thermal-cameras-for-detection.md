@@ -2,7 +2,7 @@
 title: "Thermal Cameras for Detection: What Transfers and What Does Not"
 description: "Thermal sees through darkness and smoke, and sees none of the texture your detector learned from. What changes when you swap the sensor."
 category: "Edge Hardware and Deployment"
-date: 2026-11-29
+date: 2027-01-10
 tags: [thermal, cameras, detection, training, deployment]
 ---
 

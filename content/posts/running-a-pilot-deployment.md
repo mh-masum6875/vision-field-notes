@@ -2,7 +2,7 @@
 title: "Running a Pilot Deployment: Scope, Duration and Exit Criteria"
 description: "A pilot answers one question cheaply: will this work here, for these people? How to scope it, run shadow mode and decide go, fix or stop."
 category: "Career and Freelancing"
-date: 2026-11-21
+date: 2026-12-11
 tags: [pilot, deployment, clients, evaluation, project-management]
 ---
 

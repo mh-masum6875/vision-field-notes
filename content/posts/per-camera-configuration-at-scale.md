@@ -2,7 +2,7 @@
 title: "Managing Per-Camera Configuration at Scale"
 description: "Zones, thresholds, schedules and streams for hundreds of cameras: how to layer defaults and overrides, validate them and keep them versioned."
 category: "Tools and Workflow"
-date: 2026-11-16
+date: 2026-11-21
 tags: [configuration, operations, cameras, scaling, workflow]
 ---
 

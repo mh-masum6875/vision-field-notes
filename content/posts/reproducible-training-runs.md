@@ -2,7 +2,7 @@
 title: "Reproducible Training Runs: Seeds, Versions and What Still Varies"
 description: "Setting a seed is not enough to reproduce a detector. What else to pin, which differences remain even then, and how to work with the variation."
 category: "Tools and Workflow"
-date: 2026-11-22
+date: 2026-12-13
 tags: [reproducibility, training, seeds, pytorch, workflow]
 ---
 

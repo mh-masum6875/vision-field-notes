@@ -1,38 +1,77 @@
 name: Tell search engines about new pages
 
-# Submits the site's URLs to IndexNow, which Bing, Yandex, Seznam and DuckDuckGo
-# use. Google does not take IndexNow; it is covered by Search Console.
+# Submits newly published URLs to IndexNow, which Bing, Yandex, Seznam and
+# DuckDuckGo use. Google does not take IndexNow; it is covered by Search Console.
+#
+# Only URLs that are new since the previous build are sent. Resubmitting the
+# whole sitemap on every run is what IndexNow throttles, and it tells the
+# search engines nothing they did not already have.
 
 on:
   workflow_run:
     workflows: ["Publish scheduled posts"]
     types: [completed]
   workflow_dispatch:
+    inputs:
+      resubmit_all:
+        description: "Submit every URL in the sitemap, not just the new ones"
+        type: boolean
+        default: false
 
 jobs:
   submit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Submit the sitemap's URLs
+        with:
+          fetch-depth: 2          # enough to diff against the previous build
+      - name: Submit the URLs that are new
+        env:
+          RESUBMIT_ALL: ${{ github.event.inputs.resubmit_all }}
         run: |
           python3 - <<'PY'
-          import json, re, urllib.request
+          import json, os, re, subprocess, urllib.request
+
           site = json.load(open("site.json"))
           key = site.get("indexnow_key")
           if not key:
               print("No IndexNow key set; nothing to do.")
               raise SystemExit
+
           base = site["base_url"].rstrip("/")
           host = base.split("/")[2]
-          urls = re.findall(r"<loc>(.*?)</loc>", open("docs/sitemap.xml").read())
+          locs = lambda text: set(re.findall(r"<loc>(.*?)</loc>", text))
+
+          now = locs(open("docs/sitemap.xml").read())
+
+          if os.environ.get("RESUBMIT_ALL") == "true":
+              new = sorted(now)
+              print(f"Resubmitting all {len(new)} URLs by request.")
+          else:
+              try:
+                  before = subprocess.run(
+                      ["git", "show", "HEAD~1:docs/sitemap.xml"],
+                      capture_output=True, text=True, check=True).stdout
+                  new = sorted(now - locs(before))
+              except subprocess.CalledProcessError:
+                  new = sorted(now)      # no previous sitemap: this is the first build
+                  print("No previous sitemap found; submitting everything once.")
+
+          if not new:
+              print("No new URLs since the last build.")
+              raise SystemExit
+
           body = json.dumps({"host": host, "key": key,
-                             "keyLocation": f"{base}/{key}.txt", "urlList": urls}).encode()
-          req = urllib.request.Request("https://api.indexnow.org/IndexNow", data=body,
-                                       headers={"Content-Type": "application/json; charset=utf-8"})
+                             "keyLocation": f"{base}/{key}.txt",
+                             "urlList": new}).encode()
+          req = urllib.request.Request(
+              "https://api.indexnow.org/IndexNow", data=body,
+              headers={"Content-Type": "application/json; charset=utf-8"})
           try:
               with urllib.request.urlopen(req, timeout=30) as r:
-                  print(f"Submitted {len(urls)} URLs, response {r.status}")
+                  print(f"Submitted {len(new)} new URL(s), response {r.status}")
+                  for u in new:
+                      print(f"  {u}")
           except Exception as e:
               print(f"IndexNow submission failed: {e}")
           PY

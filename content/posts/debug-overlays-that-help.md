@@ -2,7 +2,7 @@
 title: "Debug Overlays That Actually Help"
 description: "A good overlay on the video answers 'why did it alert?' at a glance. What to draw: track IDs, rule state, below-threshold boxes, zones and a status bar."
 category: "Tools and Workflow"
-date: 2026-11-19
+date: 2026-12-01
 tags: [debugging, visualisation, opencv, video-analytics, workflow]
 ---
 

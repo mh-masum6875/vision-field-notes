@@ -2,7 +2,7 @@
 title: "Running Analytics on Fisheye and 360 Cameras"
 description: "Detectors trained on rectilinear images do badly on fisheye footage. Dewarping, training on warped frames, and when each one is the right call."
 category: "Video Analytics"
-date: 2026-11-24
+date: 2026-12-23
 tags: [fisheye, cameras, dewarping, detection, deployment]
 ---
 

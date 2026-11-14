@@ -2,7 +2,7 @@
 title: "Git LFS, DVC or Object Storage: Where to Keep Large Vision Files"
 description: "Images, videos and model weights do not belong in plain Git. How Git LFS, DVC and object storage with a manifest compare, and how to choose for your team."
 category: "Tools and Workflow"
-date: 2026-11-21
+date: 2026-12-09
 tags: [git-lfs, dvc, storage, datasets, workflow]
 ---
 

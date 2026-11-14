@@ -2,7 +2,7 @@
 title: "Tracker ID Switches and Double Counting: Diagnosing Count Errors"
 description: "When counts drift high or low, the tracker is often to blame. Why IDs switch, how a switch becomes a double count, and counting rules that tolerate it."
 category: "Video Analytics"
-date: 2026-11-19
+date: 2026-12-03
 tags: [tracking, counting, bytetrack, id-switch, video-analytics]
 ---
 

@@ -2,7 +2,7 @@
 title: "Reading Computer Vision Papers as a Practitioner"
 description: "New detection papers appear every week. How to read them quickly for what matters in practice: setting, baselines, cost, code and licence."
 category: "Career and Freelancing"
-date: 2026-11-23
+date: 2026-12-19
 tags: [research, papers, learning, career, evaluation]
 ---
 

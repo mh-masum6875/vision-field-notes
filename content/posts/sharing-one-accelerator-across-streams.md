@@ -2,7 +2,7 @@
 title: "Sharing One Accelerator Across Many Streams"
 description: "One GPU or NPU serving many cameras needs scheduling: one shared model, latest-frame queues, batching across streams and fair turns."
 category: "Edge Hardware and Deployment"
-date: 2026-11-20
+date: 2026-12-07
 tags: [scaling, gpu, batching, scheduling, edge-ai]
 ---
 

@@ -2,7 +2,7 @@
 title: "When Synthetic Data Helps a Detector and When It Wastes a Month"
 description: "Rendered and composited training data can fill gaps real footage will not. It can also teach a model shortcuts that break in production."
 category: "Datasets and Training"
-date: 2026-11-26
+date: 2026-12-29
 tags: [synthetic-data, training, datasets, augmentation]
 ---
 

@@ -2,7 +2,7 @@
 title: "Edge or Cloud: Building the Cost Model Before You Choose"
 description: "The architecture decision is usually made on instinct. A simple model over three years makes it obvious, and sometimes surprising."
 category: "Edge Hardware and Deployment"
-date: 2026-11-27
+date: 2027-01-02
 tags: [edge, cloud, cost, architecture, deployment]
 ---
 

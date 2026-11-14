@@ -2,7 +2,7 @@
 title: "Choosing What to Label Next: Active Learning That Works"
 description: "Labelling budget is finite. Picking frames by uncertainty beats picking at random, if you avoid the three ways it goes wrong."
 category: "Datasets and Training"
-date: 2026-11-28
+date: 2027-01-06
 tags: [active-learning, labelling, datasets, training, workflow]
 ---
 

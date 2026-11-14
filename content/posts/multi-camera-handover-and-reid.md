@@ -2,7 +2,7 @@
 title: "Following a Person Across Cameras: Handover and Re-ID"
 description: "Tracking within one view is routine. Matching the same person across non-overlapping cameras is a different problem with different failure modes."
 category: "Video Analytics"
-date: 2026-11-25
+date: 2026-12-25
 tags: [tracking, re-identification, multi-camera, video-analytics]
 ---
 

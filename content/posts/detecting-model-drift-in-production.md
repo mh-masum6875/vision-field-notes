@@ -2,7 +2,7 @@
 title: "Detecting Model Drift in Production Without Labels"
 description: "Your detector was fine in March and quietly worse by September. How to notice drift when nobody is labelling production footage."
 category: "Video Analytics"
-date: 2026-11-24
+date: 2026-12-21
 tags: [monitoring, drift, production, metrics, deployment]
 ---
 

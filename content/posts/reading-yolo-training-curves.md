@@ -2,7 +2,7 @@
 title: "Reading YOLO Training Curves: When to Stop and What to Change"
 description: "What YOLO loss and metric curves tell you, the shapes of overfitting and under-training, and the quirks in the curves that are not problems."
 category: "Datasets and Training"
-date: 2026-11-17
+date: 2026-11-25
 tags: [training, yolo, overfitting, loss-curves, ultralytics]
 ---
 

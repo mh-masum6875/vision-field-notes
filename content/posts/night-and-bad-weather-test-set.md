@@ -2,7 +2,7 @@
 title: "Building a Night and Bad-Weather Test Set"
 description: "Average scores hide night, rain and glare. How to collect, label and use a dedicated test set for hard conditions so weaknesses show early."
 category: "Datasets and Training"
-date: 2026-11-20
+date: 2026-12-05
 tags: [test-set, night, weather, evaluation, datasets]
 ---
 

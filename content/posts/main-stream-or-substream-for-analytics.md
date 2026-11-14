@@ -2,7 +2,7 @@
 title: "Main Stream or Substream: Choosing Resolution and Bitrate for Analytics"
 description: "IP cameras offer a full-quality main stream and a lighter substream. Which to analyse depends on object size, model input and decode budget."
 category: "Video Analytics"
-date: 2026-11-16
+date: 2026-11-19
 tags: [rtsp, substream, resolution, bitrate, cameras]
 ---
 

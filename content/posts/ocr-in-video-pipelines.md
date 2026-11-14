@@ -2,7 +2,7 @@
 title: "Reading Text from Video: Plates, Containers and Hull Numbers"
 description: "OCR on a still scan is solved. OCR on a moving subject through a camera outdoors is not. What changes, and how to get a usable read rate."
 category: "Video Analytics"
-date: 2026-11-25
+date: 2026-12-27
 tags: [ocr, anpr, text-recognition, video-analytics, deployment]
 ---
 

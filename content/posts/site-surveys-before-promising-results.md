@@ -2,7 +2,7 @@
 title: "Site Surveys: What to Check Before Promising a Result"
 description: "A short visit or remote survey before quoting catches most problems that sink camera analytics projects. What to check, record and ask."
 category: "Career and Freelancing"
-date: 2026-11-18
+date: 2026-11-27
 tags: [site-survey, scoping, cameras, clients, freelancing]
 ---
 

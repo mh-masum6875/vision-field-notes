@@ -2,7 +2,7 @@
 title: "GStreamer, FFmpeg or OpenCV for Video Pipelines"
 description: "Three common ways to get frames from cameras into a model. What each is good at, where each struggles, and how to choose for one camera or hundreds."
 category: "Tools and Workflow"
-date: 2026-11-23
+date: 2026-12-17
 tags: [gstreamer, ffmpeg, opencv, video, pipelines]
 ---
 

@@ -2,7 +2,7 @@
 title: "Turning Down a Computer Vision Project (and Offering Something Better)"
 description: "Some vision projects should not be accepted as asked. How to spot them, say no without losing the client, and offer a version that works."
 category: "Career and Freelancing"
-date: 2026-11-15
+date: 2026-11-17
 tags: [freelancing, clients, scoping, ethics, career]
 ---
 

@@ -2,7 +2,7 @@
 title: "Test-Time Augmentation for Detection: When It Is Worth the Cost"
 description: "Running a detector on flipped and rescaled copies can raise accuracy at two or more times the compute. Where TTA helps, where it hurts."
 category: "YOLO and Detection Basics"
-date: 2026-11-18
+date: 2026-11-29
 tags: [tta, augmentation, inference, accuracy, yolo]
 ---
 

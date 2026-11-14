@@ -2,7 +2,7 @@
 title: "From Research Code to Production Code in Computer Vision"
 description: "A notebook that reaches a good score is not a system. What changes when vision code must run unattended for months, without a rewrite."
 category: "Career and Freelancing"
-date: 2026-11-22
+date: 2026-12-15
 tags: [production, software-engineering, research, career, workflow]
 ---
 

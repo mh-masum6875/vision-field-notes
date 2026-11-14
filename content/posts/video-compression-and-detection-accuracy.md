@@ -2,7 +2,7 @@
 title: "What Video Compression Does to Your Detector"
 description: "Bitrate, keyframe interval and codec choice change detection accuracy measurably. Where the cliff is, and how to find yours."
 category: "Video Analytics"
-date: 2026-11-26
+date: 2026-12-31
 tags: [compression, codec, bitrate, accuracy, cameras]
 ---
 

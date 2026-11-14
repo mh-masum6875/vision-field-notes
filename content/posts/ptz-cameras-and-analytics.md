@@ -2,7 +2,7 @@
 title: "PTZ Cameras and Analytics: Why Your Zones Stop Working"
 description: "A camera that moves breaks every assumption fixed-camera analytics makes. What survives, what does not, and how to handle presets."
 category: "Video Analytics"
-date: 2026-11-28
+date: 2027-01-08
 tags: [ptz, cameras, zones, calibration, video-analytics]
 ---
 

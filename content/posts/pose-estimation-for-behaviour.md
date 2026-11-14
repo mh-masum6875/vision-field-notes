@@ -2,7 +2,7 @@
 title: "Using Pose Estimation for Behaviour, Not Just Keypoints"
 description: "Keypoints are easy to get and hard to turn into reliable behaviour alerts. What works between the skeleton and the alert."
 category: "Video Analytics"
-date: 2026-11-27
+date: 2027-01-04
 tags: [pose-estimation, keypoints, behaviour, alerts, video-analytics]
 ---
 

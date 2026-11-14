@@ -26,6 +26,12 @@ Temporal inconsistency and disagreement give the best return in my experience, b
 
 **Near-duplicates.** Video is 25 frames a second of almost the same picture. An uncertainty score picks the hardest frame, and then the next 24 frames are equally hard and nearly identical. You spend your whole budget labelling one difficult moment.
 
+![Two stacked line charts of uncertainty across 120 seconds of video at 25 frames per second, with six clear peaks. The top chart marks the 30 frames chosen by taking the highest uncertainty scores: they form two dense vertical stripes on two of the peaks, covering 2 distinct moments. The bottom chart marks the 30 frames chosen with a two-second minimum gap: they are spread across all six peaks and the quieter stretches between them, covering 26 distinct moments.](img:active-learning-for-detection-near-duplicates.png "Simulated uncertainty. Both rows label exactly 30 frames and use the same scores; only the spacing rule differs.")
+
+Both rows cost the same to label. The top one buys you **two moments**, sampled 30 times, which is roughly two labelled examples with 28 copies. The bottom one buys 26.
+
+Worse, look at which peaks the top row missed. Four genuinely hard moments got no frames at all, because the two highest peaks absorbed the entire budget before the selector reached them.
+
 Fix it by deduplicating before selection: enforce a minimum time gap between chosen frames, and cluster by embedding similarity to drop near-identical picks from different moments.
 
 **Distribution skew.** Uncertainty sampling concentrates on the hard tail by design. Do it for several rounds and your training set is almost entirely edge cases, with the easy majority under-represented. The model gets better at the tail and worse at the ordinary cases that make up most of production.

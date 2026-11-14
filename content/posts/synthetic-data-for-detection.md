@@ -20,6 +20,12 @@ The difference usually comes down to what kind of gap you are filling.
 
 These fail differently and it is worth not treating them as one option.
 
+![A scatter plot with control over what the labels say on the horizontal axis and how real the pixels are on the vertical. Compositing sits top right, with genuine photographic pixels and partial label control, described as real objects on real backgrounds where blending seams are the risk. Rendering sits bottom right, with exact labels by construction but a rendered look, described as perfect labels and unlimited volume but expensive to set up. Generative sits upper left, with fairly real pixels but almost no label control, described as cheap per image, hard to control, and labels are the problem. The top right quadrant is shaded and marked as real pixels and trustworthy labels.](img:synthetic-data-for-detection-three-kinds.png "Positions are judgements from the post, not measurements. They exist to make the trade-off explicit rather than to rank the three.")
+
+Nothing sits in the top-right corner, and that is the honest summary. Each approach gives up one of the two things you want. Compositing keeps real pixels and loses some label precision at the seams. Rendering gives exact labels and loses photographic realism. Generative gives cheap volume and loses both control and labels.
+
+Choosing is therefore not about which is best. It is about which of those two losses your problem can absorb.
+
 ## The gap that synthetic data fills well
 
 Synthetic data is good at **coverage of configurations**.

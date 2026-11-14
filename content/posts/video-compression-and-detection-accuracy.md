@@ -18,6 +18,12 @@ That is precisely backwards for small-object detection. The things your model st
 
 The result is a failure mode that does not look like a failure. The frame looks fine. The large objects are detected fine. Recall on small objects has dropped and nothing in the pipeline reports it.
 
+![Two panels. The left plots recall against stream bitrate on a log scale, for three object sizes. Large objects reach their ceiling of 94% below 1 Mbps. Medium objects reach 89% by about 2 Mbps. Small objects climb much later, reaching 78% only above 8 Mbps. A dashed line at 2 Mbps marks what the installer left configured: there, large objects are at 93% and small objects at 42%. The right panel shows recall lost at 2 Mbps against the same model at 12 Mbps: 1 point for large objects, 6 for medium and 36 for small.](img:video-compression-and-detection-accuracy-bitrate-cliff.png "Simulated curves with the shape the post describes. Measure your own cliff; it moves with resolution, scene motion and object size.")
+
+Read the dashed line. At the same bitrate, on the same stream, from the same model: large objects lose **1 point** and small objects lose **36**.
+
+That is why this is hard to catch. Anyone checking the system looks at the frame, sees vehicles and nearby people boxed correctly, and concludes the stream is fine. The thing that broke is the thing nobody can verify by looking.
+
 ## The three settings that matter
 
 **Bitrate** is the big one. Below some threshold, accuracy falls off a cliff rather than degrading smoothly. Above it, extra bits buy you nothing. The threshold depends on resolution, scene motion and object size, so the number for one site is not the number for another.

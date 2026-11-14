@@ -18,6 +18,12 @@ The mean confidence of your detections is a weak signal because it moves for bor
 
 A healthy detector on familiar data gives you a bimodal histogram: a cluster of confident detections near the top, and a tail of marginal ones near your threshold. When the domain shifts, the confident cluster thins out and the tail fattens. The mean may barely move while that is happening.
 
+![Two panels. The left overlays two histograms of detection confidence. The baseline month is bimodal, with a large cluster above 0.8 and a separate tail near 0.2. Six months later the distribution is a single broad hump centred around 0.65, with far less mass above 0.8. Two dashed mean lines sit almost exactly on top of each other at 0.630 and 0.631. The right panel compares how far each monitoring number moved: mean confidence moved 0%, labelled invisible, while the fraction above 0.8 moved 61%, labelled obvious.](img:detecting-model-drift-in-production-confidence-shape.png "Simulated, and constructed so the two months have the same mean. Only the shape differs.")
+
+Those two months have the same mean confidence to three decimal places: **0.630 and 0.631**. A dashboard tracking mean confidence would have shown a flat line for six months.
+
+Over the same period the fraction of detections above 0.8 fell from **45% to 18%**. Both numbers are one line of code to compute from the same data. One of them reports nothing.
+
 Record a histogram of detection confidences per camera per day. Compare it against a baseline period using something like a Kolmogorov-Smirnov statistic or simply the proportion of detections above 0.8. A camera whose high-confidence fraction halves over a month is telling you something, and it costs nothing to compute.
 
 Do this per camera. Aggregating across a site averages away exactly the signal you want, because drift is usually local to one view.

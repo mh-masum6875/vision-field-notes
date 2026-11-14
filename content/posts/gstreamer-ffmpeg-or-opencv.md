@@ -26,7 +26,13 @@ ok, frame = cap.read()
 **Struggles with:**
 
 - **Limited control.** Transport (TCP or UDP), buffering and timeouts are set through environment variables or backend-specific options, and behaviour differs between builds.
-- **Buffering and latency.** If you read slower than the camera sends, frames can queue, and you process old frames. The usual fix is a dedicated reader thread that keeps only the latest frame. See [Reading RTSP Streams with OpenCV and FFmpeg](post:read-rtsp-streams-with-opencv).
+- **Buffering and latency.** If you read slower than the camera sends, frames can queue, and you process old frames. The usual fix is a dedicated reader thread that keeps only the latest frame.
+
+![Two panels. The left plots how old the frame being processed is against minutes since the stream started, for a camera sending 25 frames per second into a pipeline that handles 18. Reading every frame in order gives a straight line climbing to 17 seconds behind after one minute, 50 after three and 84 after five. Keeping only the latest frame stays flat near zero. The right panel shows the resulting alert delay as bars: 8 seconds after half a minute, 17 after one, 34 after two and 84 after five, against a dashed line at 10 seconds marked as an alert nobody can act on.](img:gstreamer-ffmpeg-or-opencv-backlog.png "Arithmetic, not a benchmark. The backlog grows whenever frames are queued rather than dropped, whichever library is doing the queueing.")
+
+  The arithmetic is unforgiving. A shortfall of seven frames a second is **17 seconds of lag for every minute the process runs**, and it never recovers on its own — there is no quiet moment in a 25 fps stream for the pipeline to catch up in.
+
+  The symptom is confusing because nothing errors. Detections stay accurate, the log fills normally, and the frame rate looks right. The system is simply reporting what happened a minute and a half ago, and the longer it has been up, the further behind it is. See [Reading RTSP Streams with OpenCV and FFmpeg](post:read-rtsp-streams-with-opencv).
 - **Hanging on network problems.** A read can block for a long time when a stream stalls, so reconnect logic needs timeouts around it. See [Handling RTSP Dropouts](post:handling-rtsp-dropouts-and-reconnects).
 - **Hardware decoding** depends on how OpenCV was built and is often not used by default.
 - **Timestamps** for live streams can be unreliable depending on the backend.

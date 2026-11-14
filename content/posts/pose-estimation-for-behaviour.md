@@ -16,6 +16,12 @@ Keypoints jitter frame to frame even when the person is still. Occluded joints a
 
 Every one of these breaks naive rules. "Alert when the wrist is above the shoulder" will fire constantly on jitter alone.
 
+![Two stacked charts over 24 seconds. The top plots observed wrist height above the shoulder against what is really happening: the wrist sits below the shoulder except for one genuine raise between 14 and 16.5 seconds. Narrow red bands mark every moment the raw rule fires, 28 in total, clustered in the two stretches where the signal is noisiest. A single wide green band covers the real raise. The bottom chart plots keypoint confidence, which sits near 0.86 but collapses below 0.5 during two occluded stretches that line up exactly with the clusters of false alerts.](img:pose-estimation-for-behaviour-jitter-and-confidence.png "Simulated keypoints. Both rows use the same rule and the same data; only the guards differ.")
+
+Twenty-eight alerts, one of which is real. Now look at the bottom chart: every cluster of false alerts sits inside a stretch where keypoint confidence has collapsed below 0.5. The model was not detecting a raised arm. It was guessing where an occluded arm might be, and the guess wandered across the threshold.
+
+Two guards remove all 27. Refuse to decide when confidence is below 0.5, and require the condition to hold for 0.4 seconds. Neither is machine learning, and together they are the difference between an alert anyone trusts and one everybody mutes.
+
 ## Use the confidences, do not just read the coordinates
 
 Pose models output a confidence per keypoint, and most people ignore it.

@@ -23,6 +23,12 @@ This article describes what changes when research code becomes production code, 
 
 Neither kind of code is better. Research code that is over-engineered slows down experiments. Production code written like an experiment fails in ways nobody can debug. The skill is knowing which you are writing.
 
+![Two panels. The left shows stacked columns for research code and production code, broken into the method itself, handling bad input, running unattended and recovering, configuration, tests, and logging and metrics. The method block is drawn the same size in both columns. The research column totals 123 and is almost entirely the method; the production column totals 440, with the method at the bottom and five much larger blocks above it. The right panel shows the share of each codebase that is the method: 81% for research code and 23% for production code.](img:research-code-to-production-code-what-surrounds-it.png "Illustrative proportions, not a line count from a real repository. The method block is deliberately identical in both columns.")
+
+The orange block is the same height in both columns, and that is the whole picture. The clever part — the model, the loss, the thing the thesis was about — does not shrink and does not get rewritten. It goes from being **81%** of the codebase to **23%** of it.
+
+This is why the move feels disheartening from the research side: months of work on the interesting part, and it ends up as a quarter of the repository. It is also why it feels baffling from the other side, when an engineer asks why a working model needs another three months. Both are looking at the same orange block and counting differently.
+
 ## What production code needs that research code skips
 
 ### Handling bad input

@@ -21,6 +21,12 @@ Before reading, know your question. Typical practitioner questions:
 
 A clear question turns reading from browsing into searching, and makes it easy to drop papers that do not help.
 
+![Two panels. The left is a funnel: 30 papers arrive in a week; pass 1, reading title, abstract, main figure and results at five minutes each, costs 2.5 hours and keeps 5; pass 2, reading method, baselines, ablations and cost at thirty minutes each, costs 2.5 hours and keeps 2; pass 3, reproducing it on your own data at three hours each, costs 6 hours and leaves 1 paper actually tried. The right panel compares the weekly budget: 5 hours for passes 1 and 2, against 22.5 hours to read all 30 properly.](img:reading-papers-as-a-practitioner-three-passes.png "Assumes 17% survive pass 1, 40% of those survive pass 2, and half of those are worth reproducing. Substitute your own rates.")
+
+The filter is doing the work, not the reading speed. Five minutes a paper is not skimming badly; it is spending your attention where the survival rate justifies it.
+
+Note where the hours actually go. Passes 1 and 2 together cost about **five hours a week** and handle all thirty papers. Reading the same thirty properly would cost **22.5 hours**, which is most of a working week and would still end with one paper worth trying.
+
 ## A three-pass reading
 
 ### Pass 1: five minutes

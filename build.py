@@ -126,7 +126,7 @@ def render_body(p):
                            extension_configs={"toc": {"toc_depth": "2-3", "permalink": False}})
     h = md.convert(body)
     # a video alone in a paragraph becomes a looping figure, before the image rules below
-    h = re.sub(r'<p><img alt="([^"]*)" src="([^"]+/videos/[^"]+)"(?: title="([^"]*)")? /></p>',
+    h = re.sub(r'<p><img alt="([^"]*)" src="([^"]*/videos/[^"]+)"(?: title="([^"]*)")? /></p>',
                lambda m: video_figure(m.group(1), m.group(2), m.group(3) or ""), h)
     # an image alone in a paragraph becomes a figure; its title text is the caption
     h = re.sub(r'<p><img alt="([^"]*)" src="([^"]+)" title="([^"]*)" /></p>',
@@ -429,6 +429,18 @@ if S.get("indexnow_key"):
     (OUT / f"{S['indexnow_key']}.txt").write_text(S["indexnow_key"])
 (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")
 (OUT / ".nojekyll").write_text("")
+
+# GitHub Pages reads the custom domain from docs/CNAME, and this script deletes
+# docs/ on every build. Writing it here means a publish cannot silently drop the
+# domain, which would take the site down until someone noticed.
+if S.get("custom_domain"):
+    domain = S["custom_domain"].strip().lower()
+    if domain.startswith(("http://", "https://")) or "/" in domain:
+        raise SystemExit(f'custom_domain must be a bare host, not a URL: {domain!r}')
+    if not BASE.startswith(f"https://{domain}"):
+        raise SystemExit(f'custom_domain {domain!r} does not match base_url {BASE!r}; '
+                         f'set base_url to "https://{domain}" as well')
+    (OUT / "CNAME").write_text(domain + "\n")
 if S["adsense_publisher_id"]:
     (OUT / "ads.txt").write_text(f"google.com, pub-{S['adsense_publisher_id']}, DIRECT, f08c47fec0942fa0\n")
 (OUT / "search.json").write_text(json.dumps([{"s": p["slug"], "t": p["title"], "d": p["description"], "c": p["category"], "g": " ".join(map(str, p.get("tags", [])))} for p in posts]))

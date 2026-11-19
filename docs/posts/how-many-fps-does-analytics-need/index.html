@@ -152,7 +152,7 @@ nav.main a{white-space:nowrap}}
 <p>And express all temporal settings in seconds: filter windows, minimum durations, tracker buffers. Then you can change the analysis rate without retuning everything.</p>
 <h2 id="lower-analysis-rate-does-not-mean-lower-decode-cost">Lower analysis rate does not mean lower decode cost</h2>
 <p>This is the catch. Compressed video frames depend on earlier frames, so a decoder usually has to decode every frame even if you only analyse some of them. If decoding is your bottleneck, analysing fewer frames helps less than you expect.</p>
-<p>To save decode work, lower the frame rate at the camera, on the stream you consume. Most IP cameras let you set the frame rate per stream, so the substream can run at the analysis rate while the main stream keeps full rate for recording. <a href="/vision-field-notes/posts/hardware-video-decoding-on-edge/">Hardware Video Decoding on Edge Devices</a> and Main Stream or Substream cover this.</p>
+<p>To save decode work, lower the frame rate at the camera, on the stream you consume. Most IP cameras let you set the frame rate per stream, so the substream can run at the analysis rate while the main stream keeps full rate for recording. <a href="/vision-field-notes/posts/hardware-video-decoding-on-edge/">Hardware Video Decoding on Edge Devices</a> and <a href="/vision-field-notes/posts/main-stream-or-substream-for-analytics/">Main Stream or Substream</a> cover this.</p>
 <h2 id="test-it-on-recorded-footage">Test it on recorded footage</h2>
 <p>The reliable way to choose is to measure:</p>
 <ol>

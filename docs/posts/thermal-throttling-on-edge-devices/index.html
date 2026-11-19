@@ -172,7 +172,7 @@ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq   # current CPU clock 
 <p>If a box throttles, a few changes can bring the load down without new hardware:</p>
 <ul>
 <li>Lower the analysis frame rate, if the use case allows.</li>
-<li>Use the camera's substream at a lower resolution instead of decoding the main stream and resizing. See Main Stream or Substream.</li>
+<li>Use the camera's substream at a lower resolution instead of decoding the main stream and resizing. See <a href="/vision-field-notes/posts/main-stream-or-substream-for-analytics/">Main Stream or Substream</a>.</li>
 <li>Use hardware video decoding if the board has it, instead of software decoding on the CPU.</li>
 <li>Use a smaller model or a lower input size, after checking accuracy.</li>
 <li>Move work that is not time-critical, such as uploading snapshots, out of the busiest moments.</li>

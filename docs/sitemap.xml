@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/</loc><lastmod>2026-11-20</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/yolo-and-detection-basics/</loc><lastmod>2026-11-20</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/datasets-and-training/</loc><lastmod>2026-11-20</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/edge-hardware-and-deployment/</loc><lastmod>2026-11-20</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/video-analytics/</loc><lastmod>2026-11-20</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/tools-and-workflow/</loc><lastmod>2026-11-20</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/career-and-freelancing/</loc><lastmod>2026-11-20</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/yolo-and-detection-basics/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/datasets-and-training/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/edge-hardware-and-deployment/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/video-analytics/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/tools-and-workflow/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/category/career-and-freelancing/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/per-camera-configuration-at-scale/</loc><lastmod>2026-11-21</lastmod></url>
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/main-stream-or-substream-for-analytics/</loc><lastmod>2026-11-19</lastmod></url>
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/turning-down-a-computer-vision-project/</loc><lastmod>2026-11-17</lastmod></url>
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/merge-or-split-detection-classes/</loc><lastmod>2026-11-15</lastmod></url>
@@ -95,9 +96,9 @@
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/annotation-mistakes-that-hurt-models/</loc><lastmod>2026-10-24</lastmod></url>
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/anchor-free-vs-anchor-based-detectors/</loc><lastmod>2026-10-24</lastmod></url>
 <url><loc>https://mh-masum6875.github.io/vision-field-notes/posts/pre-deployment-testing-checklist/</loc><lastmod>2026-10-24</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/about/</loc><lastmod>2026-11-20</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/contact/</loc><lastmod>2026-11-20</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/disclosure/</loc><lastmod>2026-11-20</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/privacy/</loc><lastmod>2026-11-20</lastmod></url>
-<url><loc>https://mh-masum6875.github.io/vision-field-notes/start-here/</loc><lastmod>2026-11-20</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/about/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/contact/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/disclosure/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/privacy/</loc><lastmod>2026-11-21</lastmod></url>
+<url><loc>https://mh-masum6875.github.io/vision-field-notes/start-here/</loc><lastmod>2026-11-21</lastmod></url>
 </urlset>

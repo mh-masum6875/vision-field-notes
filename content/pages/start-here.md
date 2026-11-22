@@ -37,4 +37,4 @@ New to the site? Pick the path that matches what you are doing right now.
 
 New articles are added regularly.
 
-Want to try detection without installing anything? Open the [CV Test Bench](https://mh-masum6875.github.io/cv-test-bench/) in your browser.
+Want to try detection without installing anything? Open the [CV Test Bench](https://mhmasum.dev/cv-test-bench/) in your browser.

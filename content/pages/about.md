@@ -21,4 +21,4 @@ I am Maidul Hasan Masum, a computer vision engineer based in Malaysia. I have mo
 
 I avoid quoting numbers I cannot back up. If something depends on your hardware or footage, I say so and show you how to measure it. If you find a mistake, please tell me and I will correct it.
 
-My own projects, including a browser tool for testing detection models, are on [my portfolio](https://mh-masum6875.github.io) and [GitHub](https://github.com/mh-masum6875).
+My own projects, including a browser tool for testing detection models, are on [my portfolio](https://mhmasum.dev) and [GitHub](https://github.com/mh-masum6875).

@@ -1,6 +1,6 @@
 # Vision Field Notes
 
-Source for the blog at https://mh-masum6875.github.io/vision-field-notes/ — practical computer vision and edge AI.
+Source for the blog at https://blog.mhmasum.dev/ — practical computer vision and edge AI.
 
 ## Write a post
 

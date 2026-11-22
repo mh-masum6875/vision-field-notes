@@ -1,10 +1,10 @@
 {
   "name": "Vision Field Notes",
   "tagline": "Practical computer vision and edge AI, from someone who runs it in production.",
-  "base_url": "https://mh-masum6875.github.io/vision-field-notes",
-  "custom_domain": "",
+  "base_url": "https://blog.mhmasum.dev",
+  "custom_domain": "blog.mhmasum.dev",
   "author": "Maidul Hasan Masum",
-  "author_url": "https://mh-masum6875.github.io",
+  "author_url": "https://mhmasum.dev",
   "github": "https://github.com/mh-masum6875",
   "same_as": [],
   "adsense_client": "",

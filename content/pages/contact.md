@@ -7,6 +7,6 @@ Questions about an article, a correction, or a computer vision project you would
 
 {{CONTACT_FORM}}
 
-You can also find me on [GitHub](https://github.com/mh-masum6875) and see my work on my [portfolio](https://mh-masum6875.github.io).
+You can also find me on [GitHub](https://github.com/mh-masum6875) and see my work on my [portfolio](https://mhmasum.dev).
 
 Please do not send confidential data or private video footage through this form.

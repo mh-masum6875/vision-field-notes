@@ -237,6 +237,7 @@ footer.site a{color:var(--mut)}
 .cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
 .cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
 .cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.comments{margin:40px 0 0}.comments h2{margin:0 0 4px}.comments .hint{color:var(--mut);font-size:14.5px;margin:0 0 14px}
 .author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
 .author p{margin:6px 0 0}
 figure{margin:1.8em 0}figure img,figure video{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
@@ -336,6 +337,15 @@ AUTHOR_BOX = (f'<aside class="author"><b>About the author</b><p>{html.escape(S["
               f'video analytics on live camera feeds. Try his <a href="{S["author_url"]}/cv-test-bench/">CV Test Bench</a> demo in your browser, '
               f'or <a href="{S["author_url"]}">get in touch</a> about a project.</p></aside>')
 
+G = S.get("giscus") or {}
+COMMENTS = ('<section class="comments"><h2>Comments</h2>'
+            '<p class="hint">Sign in with GitHub to leave a comment or a question.</p>'
+            f'<script src="https://giscus.app/client.js" data-repo="{html.escape(G["repo"])}" data-repo-id="{html.escape(G["repo_id"])}" '
+            f'data-category="{html.escape(G["category"])}" data-category-id="{html.escape(G["category_id"])}" '
+            'data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" '
+            'data-input-position="top" data-theme="preferred_color_scheme" data-lang="en" data-loading="lazy" '
+            'crossorigin="anonymous" async></script></section>') if G.get("repo_id") and G.get("category_id") else ""
+
 AUTHOR_LD = {"@type": "Person", "name": S["author"], "url": S["author_url"],
              "sameAs": [u for u in [S["author_url"], S["github"], *S.get("same_as", [])] if u]}
 
@@ -393,7 +403,7 @@ for p in posts:
     ad = ('<div class="ad"><ins class="adsbygoogle" style="display:block" data-ad-client="%s" data-ad-format="auto" data-full-width-responsive="true"></ins></div>' % S["adsense_client"]) if S["adsense_client"] else ""
     content = (f'<article><div class="crumb"><a href="{BP}/">Home</a> / <a href="{BP}/category/{slugify(p["category"])}/">{html.escape(p["category"])}</a></div>'
                f'<h1>{html.escape(p["title"])}</h1><div class="byline">By {html.escape(S["author"])} · {p["date"]} · {p["minutes"]} min read</div>'
-               f'{note}{toc}{p["html"]}{ad}{AUTHOR_BOX}</article>'
+               f'{note}{toc}{p["html"]}{ad}{AUTHOR_BOX}{COMMENTS}</article>'
                f'<div class="related"><h2 class="sec">Related articles</h2><div class="grid">{"".join(card(q) for q in rel)}</div></div>')
     crumb = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "Home", "item": BASE + "/"},

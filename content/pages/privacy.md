@@ -22,6 +22,10 @@ If advertising or analytics are enabled on this site, third-party providers may 
 
 Where required by law, such as in the European Economic Area and the United Kingdom, a consent notice is shown before non-essential cookies are used.
 
+## Comments
+
+Comments on articles are provided by [giscus](https://giscus.app), which stores them as GitHub Discussions. The comment box loads from giscus.app. To post a comment you sign in with your GitHub account, and your comment and GitHub username are then public. You can read the articles without loading or using the comments.
+
 ## Affiliate links
 
 Some links on this site are affiliate links. See the [affiliate disclosure](page:disclosure) for details.

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<url><loc>https://blog.mhmasum.dev/</loc><lastmod>2026-11-22</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/category/yolo-and-detection-basics/</loc><lastmod>2026-11-22</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/category/datasets-and-training/</loc><lastmod>2026-11-22</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/category/edge-hardware-and-deployment/</loc><lastmod>2026-11-22</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/category/video-analytics/</loc><lastmod>2026-11-22</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/category/tools-and-workflow/</loc><lastmod>2026-11-22</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/category/career-and-freelancing/</loc><lastmod>2026-11-22</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/category/yolo-and-detection-basics/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/category/datasets-and-training/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/category/edge-hardware-and-deployment/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/category/video-analytics/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/category/tools-and-workflow/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/category/career-and-freelancing/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/posts/cpu-only-inference-openvino-onnx-runtime/</loc><lastmod>2026-11-23</lastmod></url>
 <url><loc>https://blog.mhmasum.dev/posts/per-camera-configuration-at-scale/</loc><lastmod>2026-11-21</lastmod></url>
 <url><loc>https://blog.mhmasum.dev/posts/main-stream-or-substream-for-analytics/</loc><lastmod>2026-11-19</lastmod></url>
 <url><loc>https://blog.mhmasum.dev/posts/turning-down-a-computer-vision-project/</loc><lastmod>2026-11-17</lastmod></url>
@@ -96,9 +97,9 @@
 <url><loc>https://blog.mhmasum.dev/posts/annotation-mistakes-that-hurt-models/</loc><lastmod>2026-10-24</lastmod></url>
 <url><loc>https://blog.mhmasum.dev/posts/anchor-free-vs-anchor-based-detectors/</loc><lastmod>2026-10-24</lastmod></url>
 <url><loc>https://blog.mhmasum.dev/posts/pre-deployment-testing-checklist/</loc><lastmod>2026-10-24</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/about/</loc><lastmod>2026-11-22</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/contact/</loc><lastmod>2026-11-22</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/disclosure/</loc><lastmod>2026-11-22</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/privacy/</loc><lastmod>2026-11-22</lastmod></url>
-<url><loc>https://blog.mhmasum.dev/start-here/</loc><lastmod>2026-11-22</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/about/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/contact/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/disclosure/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/privacy/</loc><lastmod>2026-11-23</lastmod></url>
+<url><loc>https://blog.mhmasum.dev/start-here/</loc><lastmod>2026-11-23</lastmod></url>
 </urlset>

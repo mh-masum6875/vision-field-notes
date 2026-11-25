@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reading YOLO Training Curves: When to Stop and What to Change</title>
+<meta name="description" content="What YOLO loss and metric curves tell you, the shapes of overfitting and under-training, and the quirks in the curves that are not problems.">
+<link rel="canonical" href="https://blog.mhmasum.dev/posts/reading-yolo-training-curves/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Reading YOLO Training Curves: When to Stop and What to Change"><meta property="og:description" content="What YOLO loss and metric curves tell you, the shapes of overfitting and under-training, and the quirks in the curves that are not problems.">
+<meta property="og:url" content="https://blog.mhmasum.dev/posts/reading-yolo-training-curves/"><meta property="og:site_name" content="Vision Field Notes"><meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-11-25"><meta property="article:author" content="https://mhmasum.dev"><meta property="article:section" content="Datasets and Training"><meta property="article:tag" content="training"><meta property="article:tag" content="yolo"><meta property="article:tag" content="overfitting"><meta property="article:tag" content="loss-curves"><meta property="article:tag" content="ultralytics">
+<link rel="alternate" type="application/atom+xml" title="Vision Field Notes" href="https://blog.mhmasum.dev/feed.xml">
+
+<meta property="og:image" content="https://blog.mhmasum.dev/images/reading-yolo-training-curves-shapes.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b6b5c'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='white'/%3E%3C/svg%3E">
+
+<meta name="google-site-verification" content="B1rDBY5iKrbjTB8G4hetNb5K8bocBC1Rum9hT_1gCEc">
+<style>
+:root{--bg:#fbfbf9;--fg:#1c1f23;--mut:#5b6470;--line:#e3e4df;--card:#fff;--acc:#0b6b5c;--acc2:#e8f3f0;--code:#f1f2ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}}
+:root[data-theme=dark]{--bg:#101315;--fg:#e6e8e6;--mut:#9aa3aa;--line:#262b2f;--card:#171b1e;--acc:#5fd0b9;--acc2:#16282a;--code:#1b2023}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--acc)}a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.site{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5}
+header.site .wrap{display:flex;align-items:center;gap:20px;min-height:58px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:19px;color:var(--fg);text-decoration:none;letter-spacing:-.01em}
+.brand span{color:var(--acc)}
+nav.main{display:flex;gap:16px;flex:1;flex-wrap:wrap}
+nav.main a{color:var(--mut);text-decoration:none;font-size:15px}nav.main a:hover{color:var(--fg)}
+.search{position:relative}
+.search input{font:inherit;font-size:15px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);width:210px;max-width:100%}
+#results{position:absolute;right:0;top:42px;width:min(420px,92vw);background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;max-height:60vh;overflow:auto}
+#results a{display:block;padding:10px 14px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line);font-size:15px;line-height:1.4}
+#results a small{display:block;color:var(--mut)}#results a:last-child{border:0}#results a:hover{background:var(--acc2)}
+.hero{padding:56px 0 30px}.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+.hero p{font-size:19px;color:var(--mut);max-width:640px;margin:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 8px}
+.chips a{font-size:14px;padding:6px 13px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--fg);background:var(--card)}
+.chips a:hover{border-color:var(--acc);color:var(--acc)}
+h2.sec{font-size:22px;margin:42px 0 16px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.card:hover{border-color:var(--acc)}
+.card .cat{font-size:12.5px;font-weight:600;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+.card h3{font-size:18px;line-height:1.3;margin:8px 0 8px}
+.card p{font-size:15px;color:var(--mut);margin:0 0 10px;line-height:1.55}
+.card .meta{font-size:13px;color:var(--mut)}
+article{max-width:720px;margin:0 auto;padding:40px 20px 30px}
+article h1{font-size:clamp(28px,4.4vw,40px);line-height:1.15;margin:8px 0 14px;letter-spacing:-.025em}
+.byline{color:var(--mut);font-size:14.5px;margin-bottom:26px}
+.crumb{font-size:14px;color:var(--mut)}.crumb a{color:var(--mut)}
+article h2{font-size:25px;margin:2.1em 0 .5em;line-height:1.25;letter-spacing:-.015em}
+article h3{font-size:20px;margin:1.7em 0 .4em}
+article p,article li{margin:0 0 1em}article ul,article ol{padding-left:1.3em}
+article img{max-width:100%}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font-size:14.5px;line-height:1.55}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;background:var(--code);padding:.1em .35em;border-radius:5px}pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:15.5px;margin:1.2em 0;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}th{background:var(--acc2)}
+blockquote{margin:1.2em 0;padding:.2em 1.1em;border-left:3px solid var(--acc);color:var(--mut)}
+.toc{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:12px 18px;margin:0 0 28px;font-size:15px}
+.toc b{display:block;margin-bottom:4px}.toc ul{margin:0;padding-left:1.1em}.toc li{margin:2px 0}
+.note{background:var(--acc2);border-radius:10px;padding:11px 15px;font-size:14.5px;margin:0 0 26px;color:var(--fg)}
+.ad{margin:30px 0;min-height:90px;text-align:center}
+.related{max-width:1040px;margin:10px auto 0;padding:0 20px}
+footer.site{margin-top:70px;border-top:1px solid var(--line);padding:30px 0 40px;color:var(--mut);font-size:14.5px}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer.site a{color:var(--mut)}
+.cookie{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.15);display:none;z-index:9}
+.cookie button{font:inherit;font-size:14px;padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;margin-right:8px}
+.cookie button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.comments{margin:40px 0 0}.comments h2{margin:0 0 4px}.comments .hint{color:var(--mut);font-size:14.5px;margin:0 0 14px}
+.author{margin:40px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:15.5px}
+.author p{margin:6px 0 0}
+figure{margin:1.8em 0}figure img,figure video{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line);background:#fff}
+figcaption{font-size:14px;color:var(--mut);margin-top:8px;line-height:1.5}
+form.contact{display:grid;gap:14px;max-width:560px;margin:10px 0 26px}
+form.contact label{display:grid;gap:5px;font-size:15px;font-weight:600}
+form.contact input,form.contact select,form.contact textarea{font:inherit;font-weight:400;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+form.contact button{justify-self:start;font:inherit;font-weight:600;padding:9px 20px;border-radius:8px;border:0;background:var(--acc);color:#fff;cursor:pointer}
+form.contact button:disabled{opacity:.6}.form-status{margin:0;font-size:15px}.hp{display:none}
+.pager{display:flex;gap:10px;flex-wrap:wrap;margin:30px 0}
+@media (max-width:700px){body{font-size:16.5px}header.site{position:static}header.site .wrap{gap:8px 14px;padding-top:10px;padding-bottom:10px}
+.search{order:2;flex:1;min-width:140px}.search input{width:100%}nav.main{order:3;flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding-bottom:2px;scrollbar-width:none}
+nav.main a{white-space:nowrap}}
+</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "Reading YOLO Training Curves: When to Stop and What to Change", "description": "What YOLO loss and metric curves tell you, the shapes of overfitting and under-training, and the quirks in the curves that are not problems.", "datePublished": "2026-11-25", "dateModified": "2026-11-25", "author": {"@type": "Person", "name": "Maidul Hasan Masum", "url": "https://mhmasum.dev", "sameAs": ["https://mhmasum.dev", "https://github.com/mh-masum6875"]}, "inLanguage": "en", "wordCount": 1210, "publisher": {"@type": "Organization", "name": "Vision Field Notes"}, "mainEntityOfPage": "https://blog.mhmasum.dev/posts/reading-yolo-training-curves/", "image": "https://blog.mhmasum.dev/images/reading-yolo-training-curves-shapes.png", "articleSection": "Datasets and Training", "keywords": "training, yolo, overfitting, loss-curves, ultralytics"}, {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://blog.mhmasum.dev/"}, {"@type": "ListItem", "position": 2, "name": "Datasets and Training", "item": "https://blog.mhmasum.dev/category/datasets-and-training/"}, {"@type": "ListItem", "position": 3, "name": "Reading YOLO Training Curves: When to Stop and What to Change"}]}]</script>
+</head><body>
+<header class="site"><div class="wrap">
+<a class="brand" href="/">Vision <span>Field Notes</span></a>
+<nav class="main"><a href="/category/yolo-and-detection-basics/">YOLO Basics</a><a href="/category/datasets-and-training/">Training</a><a href="/category/edge-hardware-and-deployment/">Edge</a><a href="/category/video-analytics/">Video</a><a href="/category/tools-and-workflow/">Tools</a><a href="/category/career-and-freelancing/">Career</a><a href="/start-here/">Start here</a><a href="/about/">About</a></nav>
+<div class="search"><input id="q" type="search" placeholder="Search articles" aria-label="Search articles" autocomplete="off"><div id="results"></div></div>
+</div></header>
+<main><article><div class="crumb"><a href="/">Home</a> / <a href="/category/datasets-and-training/">Datasets and Training</a></div><h1>Reading YOLO Training Curves: When to Stop and What to Change</h1><div class="byline">By Maidul Hasan Masum · 2026-11-25 · 6 min read</div><nav class="toc"><b>In this article</b><ul><li><a href="#what-is-plotted">What is plotted</a></li><li><a href="#three-shapes-worth-recognising">Three shapes worth recognising</a></li><li><a href="#other-patterns">Other patterns</a></li><li><a href="#things-that-look-odd-but-are-normal">Things that look odd but are normal</a></li><li><a href="#which-weights-to-keep">Which weights to keep</a></li><li><a href="#early-stopping-and-epoch-budgets">Early stopping and epoch budgets</a></li><li><a href="#compare-curves-across-runs">Compare curves across runs</a></li><li><a href="#checklist">Checklist</a></li></ul></nav><p>Every Ultralytics training run leaves a <code>results.csv</code> and a <code>results.png</code> in its run folder: a grid of loss and metric curves over epochs. Most people glance at the final mAP and move on. The curves say much more: whether training finished, whether the model memorised the training set, whether the data or the settings are the problem, and how many epochs the next run needs.</p>
+<p>This article explains how to read those curves, the shapes worth recognising, and a few features of the curves that look alarming but are normal.</p>
+<h2 id="what-is-plotted">What is plotted</h2>
+<p>For detection, the run records, per epoch:</p>
+<ul>
+<li><strong>Training losses:</strong> box loss (how well boxes fit), classification loss (how well classes are predicted) and, in recent YOLO versions, a distribution focal loss (DFL) related to box edge prediction.</li>
+<li><strong>Validation losses:</strong> the same three, computed on the validation set.</li>
+<li><strong>Metrics on the validation set:</strong> precision, recall, mAP50 and mAP50-95.</li>
+</ul>
+<p>The losses are what the optimiser minimises. The metrics are what you care about. They usually move together, but not always, so read both.</p>
+<h2 id="three-shapes-worth-recognising">Three shapes worth recognising</h2>
+<figure><img alt="Three panels of constructed train and validation loss curves over 200 epochs. Left, healthy: both fall and flatten with a small steady gap. Middle, overfitting: training loss keeps falling while validation loss reaches a minimum and then rises, with a dashed line marking the best validation point. Right, not finished: both curves are still falling at the last epoch." src="/images/reading-yolo-training-curves-shapes.png" width="2591" height="909" loading="lazy"><figcaption>Constructed curves, not a real run. The gap between the two curves, and what the validation curve does late in training, tell you whether to stop earlier, train longer or change the data.</figcaption></figure>
+<h3 id="healthy">Healthy</h3>
+<p>Training and validation losses both fall and then flatten, with a modest, stable gap between them. Validation mAP rises and plateaus. More epochs would not help much; to improve further, change the data or the model, not the schedule.</p>
+<h3 id="overfitting">Overfitting</h3>
+<p>Training loss keeps falling while validation loss stops falling and starts to rise, and validation mAP plateaus or falls. The model is memorising the training set. Common causes and fixes:</p>
+<ul>
+<li><strong>Too little or too repetitive data,</strong> for example many near-identical video frames. See <a href="/posts/deduplicating-video-frames-before-labelling/">Deduplicating Video Frames Before Labelling</a>.</li>
+<li><strong>Too large a model</strong> for the amount of data. Try a smaller one.</li>
+<li><strong>Too little augmentation.</strong> See <a href="/posts/data-augmentation-for-detection/">Data Augmentation for Object Detection</a>.</li>
+<li><strong>Too many epochs.</strong> Stop earlier, or rely on early stopping.</li>
+</ul>
+<p><a href="/posts/spotting-overfitting-in-detection/">How to Spot Overfitting in Object Detection</a> goes deeper.</p>
+<h3 id="not-finished">Not finished</h3>
+<p>Both curves are still falling clearly at the last epoch, and mAP is still rising. Train longer. If time is limited, it is better to know the model is under-trained than to conclude that the approach does not work.</p>
+<h2 id="other-patterns">Other patterns</h2>
+<ul>
+<li><strong>Validation loss far above training loss from the start.</strong> The validation set differs from the training set: different cameras, conditions or label conventions. That may be intended (a deliberately harder held-out set) or a sign of a labelling mismatch. Check that both follow the same guide.</li>
+<li><strong>Metrics stuck near zero.</strong> Usually a data problem: labels in the wrong format, class IDs that do not match the class list, coordinates not normalised, or images and labels mismatched. Look at the training batch images Ultralytics saves in the run folder, with labels drawn on them. If the boxes there are wrong, everything else is too.</li>
+<li><strong>Very noisy validation metrics.</strong> A small validation set. One image more or less changes the metrics. Treat small differences between epochs as noise. See <a href="/posts/comparing-two-detectors-fairly/">Comparing Two Detectors Fairly</a>.</li>
+<li><strong>Precision high, recall low, flat.</strong> The model is conservative, often because of missing labels: unlabelled objects in training images teach the model that those objects are background. See <a href="/posts/annotation-mistakes-that-hurt-models/">Annotation Mistakes That Quietly Ruin Your Model</a>.</li>
+<li><strong>One loss falls, another does not.</strong> If box loss falls but classification loss stays high, the model finds objects but confuses classes; check class definitions and balance.</li>
+</ul>
+<h2 id="things-that-look-odd-but-are-normal">Things that look odd but are normal</h2>
+<ul>
+<li><strong>A bump in the first few epochs.</strong> Ultralytics uses a learning-rate warm-up at the start of training (three epochs by default at the time of writing). Early curves can move unevenly.</li>
+<li><strong>A change near the end.</strong> By default, Ultralytics turns off mosaic augmentation for the last few epochs (<code>close_mosaic</code>, 10 by default at the time of writing). Training images suddenly look more like validation images, and losses and metrics often jump slightly. This is expected.</li>
+<li><strong>Training loss above validation loss.</strong> Augmentation makes training images harder than validation images, so training loss can be higher, especially early on. It is not a bug.</li>
+</ul>
+<p>Defaults change between versions, so check the documentation or the <code>args.yaml</code> saved in your run folder for the values actually used.</p>
+<h2 id="which-weights-to-keep">Which weights to keep</h2>
+<p>Ultralytics saves <code>last.pt</code> (the final epoch) and <code>best.pt</code>. The best epoch is chosen by a fitness score computed from validation metrics, which in current versions weights mAP50-95 much more heavily than mAP50. That is a sensible default but not necessarily your criterion. If you care about recall at a fixed precision, or about one class, evaluate a few candidate epochs on your own criterion. See <a href="/posts/what-map-hides/">What mAP Hides</a>.</p>
+<p>Note too that "best on validation" is chosen using the validation set, so its validation score is slightly optimistic. Confirm on a separate test set. See <a href="/posts/why-your-test-set-flatters-you/">Why Your Test Set Flatters You</a>.</p>
+<h2 id="early-stopping-and-epoch-budgets">Early stopping and epoch budgets</h2>
+<p>Ultralytics has a <code>patience</code> setting: training stops if the fitness has not improved for that many epochs. It saves time on runs that have plateaued, but stopping is triggered by noisy validation metrics, so a very small patience can stop too early on small validation sets.</p>
+<p>Use the curves from one full run to set the budget for the next ones. If the healthy plateau starts around epoch 120, there is little reason to train for 300 next time with the same data and model. When you change data volume or model size significantly, run long once again and look.</p>
+<h2 id="compare-curves-across-runs">Compare curves across runs</h2>
+<p>Curves are most useful side by side. Overlay validation mAP from two runs that differ in one thing: data version, augmentation, model size. An experiment tracker makes this easy; see <a href="/posts/experiment-tracking-tensorboard-wandb-mlflow/">Experiment Tracking: TensorBoard, Weights &amp; Biases and MLflow</a>. Look for differences in the shape, not only the final number: a run that reaches the same mAP in half the epochs, or that overfits later, tells you something.</p>
+<h2 id="checklist">Checklist</h2>
+<ul>
+<li>Read losses and validation metrics, not just final mAP.</li>
+<li>Recognise healthy, overfitting and unfinished shapes.</li>
+<li>Check the saved training batch images when metrics stay near zero.</li>
+<li>Expect warm-up bumps and an end-of-training change from mosaic closing.</li>
+<li>Choose the epoch by your own criterion if it differs from the default fitness.</li>
+<li>Confirm the chosen weights on a separate test set.</li>
+<li>Set epoch budgets and patience from full runs.</li>
+<li>Compare curves across runs that differ in one thing.</li>
+</ul>
+<p>Next steps: <a href="/posts/spotting-overfitting-in-detection/">How to Spot Overfitting in Object Detection</a> and Reproducible Training Runs.</p><aside class="author"><b>About the author</b><p>Maidul Hasan Masum is a computer vision engineer who builds and runs video analytics on live camera feeds. Try his <a href="https://mhmasum.dev/cv-test-bench/">CV Test Bench</a> demo in your browser, or <a href="https://mhmasum.dev">get in touch</a> about a project.</p></aside><section class="comments"><h2>Comments</h2><p class="hint">Sign in with GitHub to leave a comment or a question.</p><script src="https://giscus.app/client.js" data-repo="mh-masum6875/vision-field-notes" data-repo-id="R_kgDOVWFgTQ" data-category="Announcements" data-category-id="DIC_kwDOVWFgTc4DLvHo" data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="en" data-loading="lazy" crossorigin="anonymous" async></script></section></article><div class="related"><h2 class="sec">Related articles</h2><div class="grid"><a class="card" href="/posts/train-yolo-on-a-custom-dataset/"><div class="cat">Datasets and Training</div><h3>Train YOLO on a Custom Dataset: A Step-by-Step Guide</h3><p>Train YOLO on a custom dataset with Ultralytics: folder layout, data.yaml, the training command, reading results and the first improvements to try.</p><div class="meta">7 min read</div></a><a class="card" href="/posts/spotting-overfitting-in-detection/"><div class="cat">Datasets and Training</div><h3>How to Spot Overfitting in Object Detection</h3><p>How to spot overfitting in object detection: read loss curves and validation metrics, recognise the warning signs, and apply practical fixes that work.</p><div class="meta">6 min read</div></a><a class="card" href="/posts/how-many-images-do-you-need/"><div class="cat">Datasets and Training</div><h3>How Many Images Do You Need to Train an Object Detector?</h3><p>How many images to train an object detector? Realistic dataset sizes, how to know when to stop collecting, and ways to get more from a small dataset.</p><div class="meta">7 min read</div></a></div></div></main>
+<footer class="site"><div class="wrap">
+<div>© 2026 Maidul Hasan Masum. <a href="/about/">About</a> · <a href="/contact/">Contact</a> · <a href="/privacy/">Privacy</a> · <a href="/disclosure/">Affiliate disclosure</a> · <a href="/feed.xml">Feed</a></div>
+<div><a href="https://mhmasum.dev">Portfolio</a> · <a href="https://github.com/mh-masum6875">GitHub</a></div>
+</div></footer>
+
+<script>window.BP="";
+(function(){var i=document.getElementById('q'),r=document.getElementById('results'),d=null;
+function load(){if(d)return Promise.resolve(d);return fetch(window.BP+'/search.json').then(function(x){return x.json()}).then(function(j){d=j;return j})}
+i.addEventListener('focus',load);
+i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();if(q.length<2){r.style.display='none';return}
+load().then(function(a){var t=q.split(/\s+/);var m=a.map(function(p){var h=(p.t+' '+p.d+' '+p.g).toLowerCase(),s=0;t.forEach(function(w){if(p.t.toLowerCase().indexOf(w)>-1)s+=3;if(h.indexOf(w)>-1)s+=1;else s-=10});return[s,p]}).filter(function(x){return x[0]>0}).sort(function(a,b){return b[0]-a[0]}).slice(0,8);
+r.innerHTML=m.length?m.map(function(x){return'<a href="'+window.BP+'/posts/'+x[1].s+'/">'+x[1].t+'<small>'+x[1].c+'</small></a>'}).join(''):'<a>No matches</a>';r.style.display='block'})});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))r.style.display='none'})})();
+</script>
+<script data-goatcounter="https://mhmasum6875.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+
+</body></html>
